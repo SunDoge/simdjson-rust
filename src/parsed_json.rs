@@ -1,4 +1,5 @@
 use simdjson_sys as lib;
+use std::fmt;
 
 pub const DEFUALT_MAX_DEPTH: usize = 1024;
 
@@ -30,6 +31,14 @@ impl ParsedJson {
     }
 }
 
+impl fmt::Display for ParsedJson {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if !self.is_valid() {
+            return Err(fmt::Error);
+        }
+        write!(f, "{}", "not implemented yet")
+    }
+}
 
 impl Drop for ParsedJson {
     fn drop(&mut self) {

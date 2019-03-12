@@ -2,7 +2,18 @@
 
 ## Usage
 
+Add this to your `Cargo.toml`
+
+```toml
+# In the `[dependencies]` section
+simdjson-rust = {git = "https://github.com/SunDoge/simdjson-rust"}
+```
+
+Then, get started.
+
 ```rust
+use simdjson_rust::{build_parsed_json, ParsedJsonIterator};
+
 fn main() {
     let data = r#"
     {
@@ -32,3 +43,6 @@ fn main() {
 - [x] ParsedJson
 - [x] ParsedJsonIterator
 - [ ] printjson (impl Display)
+- [ ] ci
+- [ ] tests
+- [ ] benchmark

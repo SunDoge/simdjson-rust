@@ -1,3 +1,4 @@
+use super::parsed_json_iterator::ParsedJsonIterator;
 use simdjson_sys as lib;
 use std::fmt;
 
@@ -28,6 +29,10 @@ impl ParsedJson {
 
     pub fn get_mut(&mut self) -> &mut lib::ParsedJson {
         &mut self.value
+    }
+
+    pub fn iterator(&self) -> ParsedJsonIterator {
+        ParsedJsonIterator::new(self)
     }
 }
 

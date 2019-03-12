@@ -11,12 +11,8 @@ fn main() {
             .status()
             .unwrap();
     }
-
-    let mut dst = Config::new("simdjson")
-        // .define("SIMDJSON_BUILD_STATIC", "ON")    
-        .build();
-    // dst.push("build");
-    // dst.push("src");
+    
+    // out/lib64/libsimdjson.so
     let mut dst = cmake::build("simdjson");
     dst.push("lib64");
 

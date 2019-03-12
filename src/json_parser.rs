@@ -49,7 +49,12 @@ mod tests {
         let pj = build_parsed_json(data, true);
         assert!(pj.is_valid());
 
-        let iter = ParsedJsonIterator::new(&pj);
+        let mut iter = ParsedJsonIterator::new(&pj);
         assert!(iter.is_ok());
+
+        assert!(iter.down());
+        assert_eq!(iter.get_string(), "name");
+        assert!(iter.move_forward());
+        assert_eq!(iter.get_string(), "John Doe");
     }
 }

@@ -32,6 +32,7 @@ pub fn build_parsed_json(s: &str, realloc_if_needed: bool) -> ParsedJson {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::parsed_json_iterator::ParsedJsonIterator;
 
     #[test]
     fn parse() {
@@ -47,5 +48,8 @@ mod tests {
 
         let pj = build_parsed_json(data, true);
         assert!(pj.is_valid());
+
+        let iter = ParsedJsonIterator::new(&pj);
+        assert!(iter.is_ok());
     }
 }

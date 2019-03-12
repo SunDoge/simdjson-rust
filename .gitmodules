@@ -1,0 +1,3 @@
+[submodule "simdjson-sys/simdjson"]
+	path = simdjson-sys/simdjson
+	url = https://github.com/lemire/simdjson.git

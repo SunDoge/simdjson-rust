@@ -31,6 +31,13 @@ impl ParsedJson {
     }
 }
 
+// Clippy says I should add a Default for it.
+impl Default for ParsedJson {
+    fn default() -> ParsedJson {
+        ParsedJson::new()
+    }
+}
+
 impl fmt::Display for ParsedJson {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if !self.is_valid() {

@@ -5,14 +5,14 @@ use std::ffi;
 
 pub struct ParsedJsonIterator<'a> {
     value: lib::ParsedJson_iterator,
-    pj: &'a ParsedJson,
+    _pj: &'a ParsedJson,
 }
 
 impl<'a> ParsedJsonIterator<'a> {
     pub fn new(pj: &ParsedJson) -> ParsedJsonIterator {
         ParsedJsonIterator {
             value: unsafe { lib::ParsedJson_iterator::new(pj.get() as *const _ as *mut _) },
-            pj,
+            _pj: pj,
         }
     }
 

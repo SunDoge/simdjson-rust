@@ -2,6 +2,7 @@ use bindgen;
 use std::env;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use cmake::Config;
 
 fn main() {
     if !Path::new("simdjson/.git").exists() {
@@ -12,7 +13,14 @@ fn main() {
     }
     
     // out/build/libsimdjson.so
-    let mut dst = cmake::build("simdjson");
+    let mut config = Config::new("simdjson");
+    
+    let mut dst = if cfg!(windows) {
+        config.define("CMAKE_GENERATOR_PLATFORM", "x64").build()
+    } else {
+        config.build()
+    };
+
     dst.push("build");
 
     println!("cargo:rustc-link-search=native={}", dst.display());

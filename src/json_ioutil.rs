@@ -6,29 +6,27 @@ use std::slice;
 
 pub const SIMDJSON_PADDING: usize = 32; // sizeof(__m256i)
 
-pub fn allocate_padded_buffer(length: usize) -> Vec<u8> {
-    unsafe {
-        let ptr = lib::allocate_padded_buffer(length) as *mut u8;
-        Vec::from_raw_parts(ptr, length, length + SIMDJSON_PADDING)
-    }
+pub fn allocate_padded_buffer(length: usize) -> *mut u8 {
+    unsafe { lib::allocate_padded_buffer(length) as *mut u8 }
 }
 
 pub fn get_corpus<P: AsRef<Path>>(path: P) -> Result<String, io::Error> {
     let mut fp = File::open(path)?;
     // Get file length
-    let len = fp.metadata()?.len();
-    let mut buf = allocate_padded_buffer(len as usize);
-    if buf.as_ptr().is_null() {
+    let len = fp.metadata()?.len() as usize;
+    let ptr = allocate_padded_buffer(len);
+    if ptr.is_null() {
         panic!("could not allocate memory");
     }
+    let mut buf = unsafe { String::from_raw_parts(ptr, 0, len + SIMDJSON_PADDING) };
 
-    fp.read(&mut buf)?;
-    if buf.len() != len as usize {
+    fp.read_to_string(&mut buf)?;
+    if buf.len() != len {
         // unsafe { lib::aligned_free(buf.as_mut_ptr()) };
         panic!("could not read the data len: {}-{}", buf.len(), len);
     }
 
-    Ok(unsafe { String::from_utf8_unchecked(buf) })
+    Ok(buf)
 }
 
 #[cfg(test)]

@@ -2,7 +2,6 @@ use simdjson_sys as lib;
 use std::fs::File;
 use std::io::{self, prelude::*};
 use std::path::Path;
-use std::slice;
 
 pub const SIMDJSON_PADDING: usize = 32; // sizeof(__m256i)
 

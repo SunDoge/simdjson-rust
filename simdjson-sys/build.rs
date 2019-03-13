@@ -50,6 +50,7 @@ fn main() {
         .whitelist_function("build_parsed_json")
         .whitelist_function("allocate_padded_buffer")
         // .whitelist_function("aligned_free")
+        // .generate_inline_functions(true)
         .opaque_type("std::.*")
         // .whitelist_type("ParsedJson")
         // .opaque_type("ParsedJson")

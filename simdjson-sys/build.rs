@@ -1,5 +1,4 @@
 use bindgen;
-use cmake::Config;
 use std::env;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -12,9 +11,9 @@ fn main() {
             .unwrap();
     }
     
-    // out/lib64/libsimdjson.so
+    // out/build/libsimdjson.so
     let mut dst = cmake::build("simdjson");
-    dst.push("lib64");
+    dst.push("build");
 
     println!("cargo:rustc-link-search=native={}", dst.display());
     println!("cargo:rustc-link-lib=simdjson");

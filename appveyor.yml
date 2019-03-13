@@ -1,8 +1,14 @@
-environment:
-  RUST_BACKTRACE: 1
-  matrix:
-  - TARGET: x86_64-pc-windows-msvc
-  - TARGET: x86_64-pc-windows-gnu
+# environment:
+#   RUST_BACKTRACE: 1
+#   matrix:
+#   - TARGET: x86_64-pc-windows-msvc
+#   - TARGET: x86_64-pc-windows-gnu
+image:
+  - Visual Studio 2017
+
+platform:
+  - x64
+
 install:
   - curl -sSf -o rustup-init.exe https://win.rustup.rs/
   - rustup-init.exe -y --default-host %TARGET%

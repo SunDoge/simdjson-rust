@@ -31,13 +31,13 @@ fn main() {
     let pj = build_parsed_json(data, true);
     assert!(pj.is_valid());
 
-    let mut iter = ParsedJsonIterator::new(&pj);
-    assert!(iter.is_ok());
+    let mut pjh = pj.iterator();
+    assert!(pjh.is_ok());
 
-    assert!(iter.down());
-    assert_eq!(iter.get_string(), "name");
-    assert!(iter.move_forward());
-    assert_eq!(iter.get_string(), "John Doe");
+    assert!(pjh.down());
+    assert_eq!(pjh.get_string(), "name");
+    assert!(pjh.move_forward());
+    assert_eq!(pjh.get_string(), "John Doe");
 }
 ```
 

@@ -40,6 +40,8 @@ fn main() {
         // .clang_arg("-stdlib=libc++")
         .whitelist_function("json_parse")
         .whitelist_function("build_parsed_json")
+        .whitelist_function("allocate_padded_buffer")
+        // .whitelist_function("aligned_free")
         .opaque_type("std::.*")
         // .whitelist_type("ParsedJson")
         // .opaque_type("ParsedJson")

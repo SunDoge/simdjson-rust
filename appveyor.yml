@@ -1,8 +1,9 @@
-# environment:
-#   RUST_BACKTRACE: 1
-#   matrix:
-#   - TARGET: x86_64-pc-windows-msvc
-#   - TARGET: x86_64-pc-windows-gnu
+environment:
+  RUST_BACKTRACE: 1
+  matrix:
+  - TARGET: x86_64-pc-windows-msvc
+  - TARGET: x86_64-pc-windows-gnu
+
 image:
   - Visual Studio 2017
 

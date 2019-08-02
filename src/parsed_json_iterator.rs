@@ -34,10 +34,6 @@ impl<'a> ParsedJsonIterator<'a> {
     //     unsafe { self.value.move_forward() }
     // }
 
-    // pub fn get_type(&self) -> u8 {
-    //     unsafe { self.value.get_type() }
-    // }
-
     // pub fn get_integer(&self) -> i64 {
     //     unsafe { self.value.get_integer() }
     // }
@@ -50,24 +46,41 @@ impl<'a> ParsedJsonIterator<'a> {
     //     unsafe { self.value.get_double() }
     // }
 
-    // pub fn is_object_or_array(&self) -> bool {
-    //     unsafe { self.value.is_object_or_array() }
-    // }
-    // pub fn is_object(&self) -> bool {
-    //     unsafe { self.value.is_object() }
-    // }
-    // pub fn is_array(&self) -> bool {
-    //     unsafe { self.value.is_array() }
-    // }
-    // pub fn is_string(&self) -> bool {
-    //     unsafe { self.value.is_string() }
-    // }
-    // pub fn is_integer(&self) -> bool {
-    //     unsafe { self.value.is_integer() }
-    // }
-    // pub fn is_double(&self) -> bool {
-    //     unsafe { self.value.is_double() }
-    // }
+    pub fn is_object_or_array(&self) -> bool {
+        self.is_object() || self.is_array()
+    }
+
+    pub fn is_object(&self) -> bool {
+        self.get_type() == b'{'
+    }
+
+    pub fn is_array(&self) -> bool {
+        self.get_type() == b'{'
+    }
+
+    pub fn is_string(&self) -> bool {
+        self.get_type() == b'"'
+    }
+
+    pub fn is_integer(&self) -> bool {
+        self.get_type() == b'l'
+    }
+
+    pub fn is_double(&self) -> bool {
+        self.get_type() == b'd'
+    }
+
+    pub fn is_true(&self) -> bool {
+        self.get_type() == b't'
+    }
+
+    pub fn is_false(&self) -> bool {
+        self.get_type() == b'f'
+    }
+
+    pub fn is_null(&self) -> bool {
+        self.get_type() == b'n'
+    }
 
     // pub fn move_to_key(&mut self, key: &str) -> bool {
     //     unsafe {
@@ -97,6 +110,10 @@ impl<'a> ParsedJsonIterator<'a> {
     //         self.value.to_start_scope();
     //     }
     // }
+
+    pub fn get_type(&self) -> u8 {
+        self.value.current_type
+    }
 }
 
 impl<'a> Drop for ParsedJsonIterator<'a> {

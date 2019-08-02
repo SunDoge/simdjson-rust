@@ -8,4 +8,8 @@ edition = "2018"
 
 [build-dependencies]
 bindgen = "0.51.0"
-cmake = "0.1"
+cmake = "0.1.40"
+
+[features]
+default = []
+disable_avx = []

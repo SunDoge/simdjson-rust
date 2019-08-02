@@ -41,6 +41,10 @@ fn main() {
 }
 ```
 
+## Other interesting things
+
+There are also Rust port for simdjson available [here](https://github.com/Licenser/simdjson-rs)
+
 ## Roadmap
 
 - [x] ParsedJson

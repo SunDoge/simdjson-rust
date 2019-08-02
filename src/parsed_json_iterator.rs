@@ -18,9 +18,9 @@ impl<'a> ParsedJsonIterator<'a> {
         }
     }
 
-    // pub fn is_ok(&self) -> bool {
-    //     unsafe { self.value.is_ok() }
-    // }
+    pub fn is_ok(&self) -> bool {
+        self.value.location < self.value.tape_length
+    }
 
     // pub fn get_depth(&self) -> usize {
     //     unsafe { self.value.get_depth() }

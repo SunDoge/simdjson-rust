@@ -17,3 +17,8 @@ matrix:
         - export CC=gcc-7
 
     # - os: osx
+
+
+# Don't notify me on success.
+notifications:
+  on_success: never

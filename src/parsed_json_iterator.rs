@@ -1,11 +1,11 @@
-use super::parsed_json::ParsedJson;
+use super::parsed_json::{ParsedJson, JSON_VALUE_MASK};
 use simdjson_sys as lib;
 use std::borrow::Cow;
 use std::ffi;
 
 pub struct ParsedJsonIterator<'a> {
     value: lib::simdjson_ParsedJson_Iterator,
-    _pj: &'a ParsedJson,
+    pj: &'a ParsedJson,
 }
 
 impl<'a> ParsedJsonIterator<'a> {
@@ -14,7 +14,7 @@ impl<'a> ParsedJsonIterator<'a> {
             value: unsafe {
                 lib::simdjson_ParsedJson_Iterator::new(pj.get() as *const _ as *mut _)
             },
-            _pj: pj,
+            pj,
         }
     }
 
@@ -22,9 +22,9 @@ impl<'a> ParsedJsonIterator<'a> {
         self.value.location < self.value.tape_length
     }
 
-    // pub fn get_depth(&self) -> usize {
-    //     unsafe { self.value.get_depth() }
-    // }
+    pub fn get_depth(&self) -> usize {
+        self.value.depth
+    }
 
     // pub fn get_scope_type(&self) -> u8 {
     //     unsafe { self.value.get_scope_type() }
@@ -101,9 +101,27 @@ impl<'a> ParsedJsonIterator<'a> {
     //     unsafe { self.value.up() }
     // }
 
-    // pub fn down(&mut self) -> bool {
-    //     unsafe { self.value.down() }
-    // }
+    pub fn down(&mut self) -> bool {
+        if self.value.location + 1 >= self.value.tape_length {
+            return false;
+        }
+
+        if self.is_array() || self.is_object() {
+            let npos = self.value.current_val as usize & JSON_VALUE_MASK;
+            if npos == self.value.location + 2 {
+                return false;
+            }
+            let mut depth_index = unsafe { *self.value.depth_index.add(self.value.depth) };
+            depth_index.start_of_scope = self.value.location;
+            depth_index.scope_type = self.value.current_type;
+            self.value.current_val = unsafe { *self.pj.value.tape.add(self.value.location) };
+            self.value.current_type = self.value.current_val.overflowing_shr(56).0 as u8;
+            self.value.depth += 1;
+            self.value.location += 1;
+            return true;
+        }
+        false
+    }
 
     // pub fn to_start_scope(&mut self) {
     //     unsafe {

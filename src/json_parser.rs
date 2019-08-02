@@ -1,5 +1,5 @@
 use super::error::SimdJsonError;
-use super::parsed_json::{ParsedJson, DEFUALT_MAX_DEPTH};
+use super::parsed_json::{ParsedJson, DEFAULT_MAX_DEPTH};
 use simdjson_sys as lib;
 
 pub fn json_parse(
@@ -17,6 +17,8 @@ pub fn json_parse(
         // } else {
         //     0
         // }
+
+        // Just panic when no simd support.
         lib::simdjson_json_parse_ptr.unwrap()(s.as_ptr(), s.len(), pj.get_mut(), realloc_if_needed)
     };
     if ret == 0 {
@@ -29,7 +31,7 @@ pub fn json_parse(
 // [TODO] Make another fn return Result<ParsedJson, SimdJsonError> instead of an invalid pj.
 pub fn build_parsed_json(s: &str, realloc_if_needed: bool) -> ParsedJson {
     let mut pj = ParsedJson::new();
-    let ok = pj.allocate_capacity(s.len(), DEFUALT_MAX_DEPTH);
+    let ok = pj.allocate_capacity(s.len(), DEFAULT_MAX_DEPTH);
 
     if ok {
         let res = json_parse(s, &mut pj, realloc_if_needed);
@@ -63,7 +65,7 @@ mod tests {
         assert!(pjh.is_ok());
 
         // [TODO] impl inline methods
-        // assert!(pjh.down());
+        assert!(pjh.down());
         // assert_eq!(pjh.get_string(), "name");
         // assert!(pjh.move_forward());
         // assert_eq!(pjh.get_string(), "John Doe");

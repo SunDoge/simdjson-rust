@@ -6,7 +6,7 @@ pub mod parsed_json_iterator;
 
 pub use error::SimdJsonError;
 pub use json_parser::{build_parsed_json, json_parse};
-pub use parsed_json::{ParsedJson, DEFUALT_MAX_DEPTH};
+pub use parsed_json::{ParsedJson, DEFAULT_MAX_DEPTH};
 pub use parsed_json_iterator::ParsedJsonIterator;
 
 #[cfg(test)]

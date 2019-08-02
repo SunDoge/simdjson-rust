@@ -2,10 +2,11 @@ use super::parsed_json_iterator::ParsedJsonIterator;
 use simdjson_sys as lib;
 use std::fmt;
 
-pub const DEFUALT_MAX_DEPTH: usize = 1024;
+pub const DEFAULT_MAX_DEPTH: usize = 1024;
+pub const JSON_VALUE_MASK: usize = 0xFFFFFFFFFFFFFF;
 
 pub struct ParsedJson {
-    value: lib::simdjson_ParsedJson,
+    pub value: lib::simdjson_ParsedJson,
 }
 
 impl ParsedJson {

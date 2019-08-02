@@ -5,29 +5,29 @@ use std::fmt;
 pub const DEFUALT_MAX_DEPTH: usize = 1024;
 
 pub struct ParsedJson {
-    value: lib::ParsedJson,
+    value: lib::simdjson_ParsedJson,
 }
 
 impl ParsedJson {
     pub fn new() -> ParsedJson {
         ParsedJson {
-            value: unsafe { lib::ParsedJson::new() },
+            value: unsafe { lib::simdjson_ParsedJson::new() },
         }
     }
 
     pub fn is_valid(&self) -> bool {
-        unsafe { self.value.isValid() }
+        unsafe { self.value.is_valid() }
     }
 
     pub fn allocate_capacity(&mut self, len: usize, max_depth: usize) -> bool {
-        unsafe { self.value.allocateCapacity(len, max_depth) }
+        unsafe { self.value.allocate_capacity(len, max_depth) }
     }
 
-    pub fn get(&self) -> &lib::ParsedJson {
+    pub fn get(&self) -> &lib::simdjson_ParsedJson {
         &self.value
     }
 
-    pub fn get_mut(&mut self) -> &mut lib::ParsedJson {
+    pub fn get_mut(&mut self) -> &mut lib::simdjson_ParsedJson {
         &mut self.value
     }
 

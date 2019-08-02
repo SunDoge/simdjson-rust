@@ -46,9 +46,11 @@ fn main() {
         // .clang_arg("-lstdc++")
         // .clang_arg("-static")
         // .clang_arg("-stdlib=libc++")
-        .whitelist_function("json_parse")
-        .whitelist_function("build_parsed_json")
-        .whitelist_function("allocate_padded_buffer")
+
+        .whitelist_var("simdjson::json_parse_ptr")
+        .whitelist_function("simdjson::build_parsed_json")
+        .whitelist_function("simdjson::allocate_padded_buffer")
+
         // .whitelist_function("aligned_free")
         // .generate_inline_functions(true)
         .opaque_type("std::.*")

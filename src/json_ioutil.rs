@@ -6,7 +6,7 @@ use std::path::Path;
 pub const SIMDJSON_PADDING: usize = 32; // sizeof(__m256i)
 
 pub fn allocate_padded_buffer(length: usize) -> *mut u8 {
-    unsafe { lib::allocate_padded_buffer(length) as *mut u8 }
+    unsafe { lib::simdjson_allocate_padded_buffer(length) as *mut u8 }
 }
 
 pub fn get_corpus<P: AsRef<Path>>(path: P) -> Result<String, io::Error> {

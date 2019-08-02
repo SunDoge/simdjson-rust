@@ -7,7 +7,18 @@ pub fn json_parse(
     pj: &mut ParsedJson,
     realloc_if_needed: bool,
 ) -> Result<(), SimdJsonError> {
-    let ret = unsafe { lib::json_parse(s.as_ptr(), s.len(), pj.get_mut(), realloc_if_needed) };
+    // let ret = unsafe {
+    //     lib::simdjson_json_parse_ptr(s.as_ptr(), s.len(), pj.get_mut(), realloc_if_needed)
+    //     };
+
+    let ret = unsafe {
+        // if let Some(simdjson_json_parse) = lib::simdjson_json_parse_ptr {
+        //     simdjson_json_parse(s.as_ptr(), s.len(), pj.get_mut(), realloc_if_needed)
+        // } else {
+        //     0
+        // }
+        lib::simdjson_json_parse_ptr.unwrap()(s.as_ptr(), s.len(), pj.get_mut(), realloc_if_needed)
+    };
     if ret == 0 {
         Ok(())
     } else {

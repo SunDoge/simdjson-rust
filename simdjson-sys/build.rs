@@ -42,6 +42,7 @@ fn main() {
         .clang_arg("-x")
         .clang_arg("c++")
         .clang_arg("-std=c++17")
+        .clang_arg("-fno-inline-functions")
         // .clang_arg("-lc++abi")
         // .clang_arg("-lstdc++")
         // .clang_arg("-static")

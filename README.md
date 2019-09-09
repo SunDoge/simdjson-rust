@@ -3,6 +3,8 @@
 [![Build Status](https://travis-ci.org/SunDoge/simdjson-rust.svg?branch=master)](https://travis-ci.org/SunDoge/simdjson-rust)
 [![Build status](https://ci.appveyor.com/api/projects/status/xiwngkkjvg9dbvgs?svg=true)](https://ci.appveyor.com/project/SunDoge/simdjson-rust)
 
+⚠ This crate is currently updating to support `simdjson 0.2.0` on dev branch.
+
 ## Usage
 
 Add this to your `Cargo.toml`

@@ -32,6 +32,12 @@ impl ParsedJson {
         &mut self.value
     }
 
+    pub fn get_error_code(&self) -> i32 {
+        unsafe {
+            self.value.get_error_code()
+        }
+    }
+
     // pub fn iterator(&self) -> ParsedJsonIterator {
     //     ParsedJsonIterator::new(self)
     // }

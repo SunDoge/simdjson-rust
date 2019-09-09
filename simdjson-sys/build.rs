@@ -1,8 +1,8 @@
 use bindgen;
+use cmake::Config;
 use std::env;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use cmake::Config;
 
 fn main() {
     if !Path::new("simdjson/.git").exists() {
@@ -11,10 +11,10 @@ fn main() {
             .status()
             .unwrap();
     }
-    
+
     // out/build/libsimdjson.so
     let mut config = Config::new("simdjson");
-    
+
     let mut dst = if cfg!(windows) {
         config.define("CMAKE_GENERATOR_PLATFORM", "x64").build()
     } else {
@@ -44,17 +44,14 @@ fn main() {
         .clang_arg("-std=c++17")
         // .clang_arg("-fno-inline-functions")
         .clang_arg("-fkeep-inline-functions")
-
         // .clang_arg("-lc++abi")
         // .clang_arg("-lstdc++")
         // .clang_arg("-static")
         // .clang_arg("-stdlib=libc++")
-
         // .whitelist_var("json_parse_ptr")
         .whitelist_function("simdjson::json_parse")
         .whitelist_function("simdjson::build_parsed_json")
         .whitelist_function("simdjson::allocate_padded_buffer")
-
         // .whitelist_function("aligned_free")
         .generate_inline_functions(true)
         .opaque_type("std::.*")

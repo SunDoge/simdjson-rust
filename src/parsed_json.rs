@@ -32,9 +32,9 @@ impl ParsedJson {
         &mut self.value
     }
 
-    pub fn iterator(&self) -> ParsedJsonIterator {
-        ParsedJsonIterator::new(self)
-    }
+    // pub fn iterator(&self) -> ParsedJsonIterator {
+    //     ParsedJsonIterator::new(self)
+    // }
 }
 
 // Clippy says I should add a Default for it.

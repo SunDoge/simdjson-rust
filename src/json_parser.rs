@@ -21,9 +21,8 @@ pub fn json_parse(
     //     // Just panic when no simd support.
     //     lib::simdjson_json_parse_ptr.unwrap()(s.as_ptr(), s.len(), pj.get_mut(), realloc_if_needed)
     // };
-    let ret = unsafe {
-        lib::simdjson_json_parse(s.as_ptr(), s.len(), pj.get_mut(), realloc_if_needed)
-    };
+    let ret =
+        unsafe { lib::simdjson_json_parse(s.as_ptr(), s.len(), pj.get_mut(), realloc_if_needed) };
 
     if ret == 0 {
         Ok(())
@@ -33,17 +32,20 @@ pub fn json_parse(
 }
 
 // [TODO] Make another fn return Result<ParsedJson, SimdJsonError> instead of an invalid pj.
+// [TODO] Use Builder pattern to build a ParsedJson
 pub fn build_parsed_json(s: &str, realloc_if_needed: bool) -> ParsedJson {
-    let mut pj = ParsedJson::new();
-    let ok = pj.allocate_capacity(s.len(), DEFAULT_MAX_DEPTH);
+    // let mut pj = ParsedJson::new();
+    // let ok = pj.allocate_capacity(s.len(), DEFAULT_MAX_DEPTH);
 
-    if ok {
-        let res = json_parse(s, &mut pj, realloc_if_needed);
-        assert_eq!(res.is_ok(), pj.is_valid());
-    } else {
-        eprintln!("failure during memory allocation ");
-    }
-    pj
+    // if ok {
+    //     let res = json_parse(s, &mut pj, realloc_if_needed);
+    //     assert_eq!(res.is_ok(), pj.is_valid());
+    // } else {
+    //     eprintln!("failure during memory allocation ");
+    // }
+    // pj
+    let pj = unsafe { lib::simdjson_build_parsed_json(s.as_ptr(), s.len(), realloc_if_needed) };
+    ParsedJson::from(pj)
 }
 
 #[cfg(test)]

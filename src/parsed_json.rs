@@ -60,3 +60,11 @@ impl Drop for ParsedJson {
         }
     }
 }
+
+impl From<lib::simdjson_ParsedJson> for ParsedJson {
+    fn from(value: lib::simdjson_ParsedJson) -> ParsedJson {
+        ParsedJson {
+            value
+        }
+    }
+}

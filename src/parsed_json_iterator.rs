@@ -1,10 +1,75 @@
-use super::parsed_json::{ParsedJson, JSON_VALUE_MASK};
+use super::parsed_json::{ParsedJson, DEFAULT_MAX_DEPTH, JSON_VALUE_MASK};
 use simdjson_sys as lib;
 use std::borrow::Cow;
 use std::ffi;
 
+type ScopeIndex = lib::simdjson_ParsedJson_BasicIterator_scopeindex_t;
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct NewParsedJsonIterator {
+    pj: *const lib::simdjson_ParsedJson,
+    depth: usize,
+    location: usize,
+    tape_length: usize,
+    current_type: u8,
+    current_val: u64,
+    depth_index: Vec<ScopeIndex>,
+}
+
+// #[repr(C)]
+// #[derive(Default, Debug)]
+// pub struct ScopeIndex {
+//     start_of_scope: usize,
+//     scope_type: u8,
+// }
+
+impl NewParsedJsonIterator {
+    pub fn new(pj: &ParsedJson, max_depth: usize) -> NewParsedJsonIterator {
+        let mut depth = 0;
+        let mut location = 0;
+        let mut tape_length = 0;
+
+        if !pj.is_valid() {
+            panic!("invalid json");
+        }
+
+        let mut depth_index: Vec<ScopeIndex> = Vec::with_capacity(max_depth);
+        depth_index[0].start_of_scope = location;
+        let mut current_val = unsafe { *pj.value.tape.add(location) };
+        location += 1;
+        let mut current_type = current_val >> 56;
+        if current_val == b'r' as u64 {
+            tape_length = current_val as usize & JSON_VALUE_MASK;
+
+            if location < tape_length {
+                current_val = unsafe { *pj.value.tape.add(location) };
+                current_type = current_val >> 56;
+                depth +=1 ;
+
+                assert!(depth < max_depth);
+
+                depth_index[depth].start_of_scope = location;
+                depth_index[depth].scope_type = current_type as u8;
+            }
+        } else {
+            panic!("invalid json");
+        }
+
+        NewParsedJsonIterator {
+            pj: &pj.value,
+            depth,
+            location,
+            tape_length,
+            current_type: current_type as u8,
+            current_val,
+            depth_index
+        }
+    }
+}
+
 pub struct ParsedJsonIterator<'a> {
-    value: lib::simdjson_ParsedJson_Iterator,
+    value: *mut lib::simdjson_ParsedJson_Iterator,
     pj: &'a ParsedJson,
 }
 
@@ -141,3 +206,12 @@ impl<'a> ParsedJsonIterator<'a> {
 //         }
 //     }
 // }
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    fn test_iterator() {
+        assert_eq!(2 + 2, 4);
+    }
+}

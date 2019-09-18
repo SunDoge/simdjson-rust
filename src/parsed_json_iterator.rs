@@ -2,11 +2,12 @@ use super::parsed_json::{ParsedJson, DEFAULT_MAX_DEPTH, JSON_VALUE_MASK};
 use simdjson_sys as lib;
 use std::borrow::Cow;
 use std::ffi;
+use std::mem;
+// use std::
 
 type ScopeIndex = lib::simdjson_ParsedJson_BasicIterator_scopeindex_t;
 
 #[repr(C)]
-#[derive(Debug)]
 pub struct NewParsedJsonIterator {
     pj: *const lib::simdjson_ParsedJson,
     depth: usize,
@@ -14,18 +15,18 @@ pub struct NewParsedJsonIterator {
     tape_length: usize,
     current_type: u8,
     current_val: u64,
-    depth_index: Vec<ScopeIndex>,
+    depth_index: [ScopeIndex; DEFAULT_MAX_DEPTH],
 }
 
 // #[repr(C)]
-// #[derive(Default, Debug)]
+// #[derive(Default, Debug, Copy)]
 // pub struct ScopeIndex {
 //     start_of_scope: usize,
 //     scope_type: u8,
 // }
 
 impl NewParsedJsonIterator {
-    pub fn new(pj: &ParsedJson, max_depth: usize) -> NewParsedJsonIterator {
+    pub fn new(pj: &ParsedJson) -> NewParsedJsonIterator {
         let mut depth = 0;
         let mut location = 0;
         let mut tape_length = 0;
@@ -34,20 +35,30 @@ impl NewParsedJsonIterator {
             panic!("invalid json");
         }
 
-        let mut depth_index: Vec<ScopeIndex> = Vec::with_capacity(max_depth);
+        //let mut depth_index: Vec<ScopeIndex> = Vec::with_capacity(max_depth);
+        // const N: usize = mem::size_of::<D>() / mem::size_of::<ScopeIndex>();
+        // let mut depth_index: D = [ScopeIndex {
+        //     start_of_scope: 0,
+        //     scope_type: 0,
+        // }; N];
+        let mut depth_index = [ScopeIndex{ start_of_scope:0, scope_type: 0 }; DEFAULT_MAX_DEPTH];
+
         depth_index[0].start_of_scope = location;
         let mut current_val = unsafe { *pj.value.tape.add(location) };
+        // println!("{}", unsafe { *pj.value.tape.add(0) });
+
         location += 1;
         let mut current_type = current_val >> 56;
-        if current_val == b'r' as u64 {
+        
+        if current_type == b'r' as u64  {
             tape_length = current_val as usize & JSON_VALUE_MASK;
 
             if location < tape_length {
                 current_val = unsafe { *pj.value.tape.add(location) };
                 current_type = current_val >> 56;
-                depth +=1 ;
+                depth += 1;
 
-                assert!(depth < max_depth);
+                assert!(depth < DEFAULT_MAX_DEPTH);
 
                 depth_index[depth].start_of_scope = location;
                 depth_index[depth].scope_type = current_type as u8;
@@ -63,10 +74,19 @@ impl NewParsedJsonIterator {
             tape_length,
             current_type: current_type as u8,
             current_val,
-            depth_index
+            depth_index,
         }
     }
+
+    pub fn is_ok(&self) -> bool {
+        // unsafe {
+        //     lib::simdjson_ParsedJson_BasicIterator_is_ok(self as *const NewParsedJsonIterator as *const u8)
+        // }
+        self.location < self.tape_length
+    }
 }
+
+
 
 pub struct ParsedJsonIterator<'a> {
     value: *mut lib::simdjson_ParsedJson_Iterator,
@@ -209,9 +229,25 @@ impl<'a> ParsedJsonIterator<'a> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use crate::json_parser::build_parsed_json;
 
     #[test]
     fn test_iterator() {
-        assert_eq!(2 + 2, 4);
+        let data = r#"
+        {
+            "name": "John Doe",
+            "age": 43,
+            "phones": [
+                "+44 1234567",
+                "+44 2345678"
+            ]
+        }"#;
+
+        let pj = build_parsed_json(data, true);
+        assert!(pj.is_valid());
+        
+        let pjh = NewParsedJsonIterator::new(&pj); 
+        assert!(pjh.is_ok());
     }
 }

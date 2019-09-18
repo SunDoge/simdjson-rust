@@ -49,10 +49,12 @@ fn main() {
         // .clang_arg("-static")
         // .clang_arg("-stdlib=libc++")
         // .whitelist_var("json_parse_ptr")
+
         .whitelist_function("simdjson::json_parse")
         .whitelist_function("simdjson::build_parsed_json")
         .whitelist_function("simdjson::allocate_padded_buffer")
-        .whitelist_type("simdjson::BasicIterator")
+        // .whitelist_type("*Iterator")
+
         // .whitelist_function("aligned_free")
         .generate_inline_functions(true)
         .derive_default(true)

@@ -33,9 +33,7 @@ impl ParsedJson {
     }
 
     pub fn get_error_code(&self) -> i32 {
-        unsafe {
-            self.value.get_error_code()
-        }
+        unsafe { self.value.get_error_code() }
     }
 
     // pub fn iterator(&self) -> ParsedJsonIterator {
@@ -69,8 +67,6 @@ impl Drop for ParsedJson {
 
 impl From<lib::simdjson_ParsedJson> for ParsedJson {
     fn from(value: lib::simdjson_ParsedJson) -> ParsedJson {
-        ParsedJson {
-            value
-        }
+        ParsedJson { value }
     }
 }

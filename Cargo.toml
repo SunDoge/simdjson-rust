@@ -5,8 +5,4 @@ authors = ["SunDoge <384813529@qq.com>"]
 edition = "2018"
 
 [dependencies]
-# simdjson-sys = { path="simdjson-sys"}
-cxx = "0.3"
-
-[build-dependencies]
-cxx-build = "0.3"
+simdjson-sys = { path="simdjson-sys"}

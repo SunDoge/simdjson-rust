@@ -4,3 +4,4 @@ Cargo.lock
 /simdjson-sys/target
 
 .idea/
+.vscode/

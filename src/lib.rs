@@ -9,6 +9,16 @@
 // pub use parsed_json::{ParsedJson, DEFUALT_MAX_DEPTH};
 // pub use parsed_json_iterator::ParsedJsonIterator;
 
+#[cxx::bridge(namespace = simdjson::ffi)]
+pub mod ffi {
+    extern "C" {
+        include!("csrc/wrapper.h");
+        fn hello();
+    }
+
+}
+
+
 #[cfg(test)]
 mod tests {
 

@@ -13,7 +13,11 @@
 pub mod ffi {
     extern "C" {
         include!("csrc/wrapper.h");
+        type parser;
+
         fn hello();
+
+        fn parser_new(max_capacity: usize) -> UniquePtr<parser>;
     }
 
 }

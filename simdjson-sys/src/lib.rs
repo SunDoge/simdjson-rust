@@ -1,10 +1,13 @@
 #[cxx::bridge(namespace = simdjson::ffi)]
 pub mod ffi {
+
+
     extern "C" {
         include!("csrc/wrapper.h");
         type parser;
         type element;
         type padded_string;
+        type tape_ref;
 
         fn parser_new(max_capacity: usize) -> UniquePtr<parser>;
         fn parser_load(p: &mut parser, path: &str) -> Result<UniquePtr<element>>;
@@ -12,6 +15,10 @@ pub mod ffi {
         fn parser_parse_padded_string(p: &mut parser, s: &padded_string) -> Result<UniquePtr<element>>;
 
         fn padded_string_from_string(s: &str) -> UniquePtr<padded_string>;
+
+        fn tape_ref_type(tr: &tape_ref) -> u8;
+        fn tape_ref_next_tape_value(tr: &tape_ref) -> u64;
+        fn element_get_str(tr: &tape_ref) -> Result<&str>;
     }
 }
 

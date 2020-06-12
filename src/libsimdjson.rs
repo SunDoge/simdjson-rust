@@ -3,7 +3,7 @@ pub mod ffi {
 
 
     extern "C" {
-        include!("wrapper.h");
+        include!("csrc/wrapper.h");
         type parser;
         type element;
         type padded_string;
@@ -42,7 +42,7 @@ pub mod ffi {
     }
 }
 
-const SIMDJSON_MAXSIZE_BYTES: usize = 0xFFFFFFFF;
+pub const SIMDJSON_MAXSIZE_BYTES: usize = 0xFFFFFFFF;
 
 #[cfg(test)]
 mod tests {

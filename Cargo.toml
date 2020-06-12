@@ -4,5 +4,15 @@ version = "0.1.0"
 authors = ["SunDoge <384813529@qq.com>"]
 edition = "2018"
 
+# [dependencies]
+# simdjson-sys = {path="simdjson-sys"}
+
+# [workspace]
+# members = ["simdjson-sys"]
+
+
 [dependencies]
-simdjson-sys = { path="simdjson-sys"}
+cxx = "0.3"
+
+[build-dependencies]
+cxx-build = "0.3"

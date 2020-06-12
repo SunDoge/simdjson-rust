@@ -9,6 +9,8 @@
 // pub use parsed_json::{ParsedJson, DEFUALT_MAX_DEPTH};
 // pub use parsed_json_iterator::ParsedJsonIterator;
 
+pub mod libsimdjson;
+pub mod dom;
 
 
 

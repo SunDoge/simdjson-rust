@@ -15,6 +15,7 @@ namespace simdjson
         using simdjson::dom::object;
         using simdjson::dom::parser;
         using simdjson::internal::tape_ref;
+        using simdjson::error_code;
 
         std::unique_ptr<parser> parser_new(size_t max_capacity);
 

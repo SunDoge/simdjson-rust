@@ -10,7 +10,7 @@ namespace simdjson
 
         // using simdjson::padded_string;
         // // using simdjson::simdjson_result;
-        // using simdjson::error_code;
+        using simdjson::error_code;
         // using simdjson::dom::array;
         // using simdjson::dom::element;
         // using simdjson::dom::object;
@@ -24,23 +24,25 @@ namespace simdjson
 
 
         struct ElementResult;
+        struct StringResult;
+       
 
 
         std::unique_ptr<parser> parser_new(size_t max_capacity);
 
         ElementResult parser_load(parser &p, rust::Str path);
 
-        // std::unique_ptr<element> parser_parse_string(parser &p, rust::Str s, int &code);
+        ElementResult parser_parse_string(parser &p, rust::Str s);
 
-        // std::unique_ptr<element> parser_parse_padded_string(parser &p, const padded_string &s, int &code);
+        ElementResult parser_parse_padded_string(parser &p, const padded_string &s);
 
-        // std::unique_ptr<padded_string> padded_string_from_string(rust::Str s);
+        std::unique_ptr<padded_string> padded_string_from_string(rust::Str s);
 
         // // uint8_t tape_ref_type(const tape_ref &tr);
 
         // // uint64_t tape_ref_next_tape_value(const tape_ref &tr);
 
-        // rust::Str element_get_string(const element &elm, int &code);
+        StringResult element_get_string(const element &elm);
 
         // std::unique_ptr<array> element_get_array(const element &elm);
 

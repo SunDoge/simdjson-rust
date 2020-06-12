@@ -14,40 +14,47 @@ namespace simdjson
             return std::make_unique<parser>(max_capacity);
         }
 
-        std::unique_ptr<element> parser_load(parser &p, rust::Str path, int &code)
+        ElementResult parser_load(parser &p, rust::Str path)
         {
             element value;
             error_code error;
             const std::string &cpath = std::string(path);
             p.load(cpath).tie(value, error);
-            code = int(error);
-            return std::make_unique<element>(value);
+
+            return ElementResult{
+                .value = std::make_unique<element>(value),
+                .code = int(error),
+            };
         }
 
-        // std::unique_ptr<element> parser_parse_string(parser &p, rust::Str s, int &code)
-        // {
-        //     element value;
-        //     error_code error;
-        //     const std::string &cs = std::string(s);
-        //     p.parse(cs).tie(value, error);
-        //     code = int(error);
-        //     return std::make_unique<element>(value);
-        // }
+        ElementResult parser_parse_string(parser &p, rust::Str s)
+        {
+            element value;
+            error_code error;
+            const std::string &cs = std::string(s);
+            p.parse(cs).tie(value, error);
+            return ElementResult{
+                .value = std::make_unique<element>(value),
+                .code = int(error),
+            };
+        }
 
-        // std::unique_ptr<element> parser_parse_padded_string(parser &p, const padded_string &s, int &code)
-        // {
-        //     element value;
-        //     error_code error;
-        //     p.parse(s).tie(value, error);
-        //     code = int(error);
-        //     return std::make_unique<element>(value);
-        // }
+        ElementResult parser_parse_padded_string(parser &p, const padded_string &s)
+        {
+            element value;
+            error_code error;
+            p.parse(s).tie(value, error);
+            return ElementResult{
+                .value = std::make_unique<element>(value),
+                .code = int(error),
+            };
+        }
 
-        // std::unique_ptr<padded_string> padded_string_from_string(rust::Str s)
-        // {
-        //     const std::string &cs = std::string(s);
-        //     return std::make_unique<padded_string>(cs);
-        // }
+        std::unique_ptr<padded_string> padded_string_from_string(rust::Str s)
+        {
+            const std::string &cs = std::string(s);
+            return std::make_unique<padded_string>(cs);
+        }
 
         // // uint8_t tape_ref_type(const tape_ref &tr)
         // // {
@@ -61,14 +68,16 @@ namespace simdjson
         // //     return value;
         // // }
 
-        // rust::Str element_get_string(const element &elm, int &code)
-        // {
-        //     const char *value;
-        //     error_code error;
-        //     elm.get<const char *>().tie(value, error);
-        //     code = int(error);
-        //     return rust::Str(value);
-        // }
+        StringResult element_get_string(const element &elm)
+        {
+            const char *value;
+            error_code error;
+            elm.get<const char *>().tie(value, error);
+            return StringResult{
+                .value = std::make_unique<std::string>(value),
+                .code = int(error),
+            };
+        }
 
         // std::unique_ptr<array> element_get_array(const element &elm)
         // {

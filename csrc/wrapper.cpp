@@ -70,12 +70,12 @@ namespace simdjson
 
         StringResult element_get_string(const element &elm)
         {
-            std::string_view value;
+            const char * value;
             error_code error;
-            elm.get<std::string_view>().tie(value, error);
+            elm.get<const char *>().tie(value, error);
 
             return StringResult{
-                .value = std::make_unique<std::string>(value),
+                .value = rust::String(value),
                 .code = int(error),
             };
         }
@@ -102,12 +102,46 @@ namespace simdjson
             };
         }
 
-        NumberResult element_get_number(const element &elm)
+        // NumberResult element_get_number(const element &elm)
+        // {
+        //     uint64_t value;
+        //     error_code error;
+        //     elm.get<uint64_t>().tie(value, error);
+        //     return NumberResult{
+        //         .value = value,
+        //         .code = int(error),
+        //     };
+        // }
+
+        U64Result element_get_u64(const element &elm)
         {
             uint64_t value;
             error_code error;
             elm.get<uint64_t>().tie(value, error);
-            return NumberResult{
+            return U64Result{
+                .value = value,
+                .code = int(error),
+            };
+        }
+
+        I64Result element_get_i64(const element &elm)
+        {
+            int64_t value;
+            error_code error;
+            elm.get<int64_t>().tie(value, error);
+            return I64Result{
+                .value = value,
+                .code = int(error),
+            };
+        }
+
+
+        F64Result element_get_f64(const element &elm)
+        {
+            double value;
+            error_code error;
+            elm.get<double>().tie(value, error);
+            return F64Result{
                 .value = value,
                 .code = int(error),
             };
@@ -259,7 +293,7 @@ namespace simdjson
                 key_value_pair kvp = **iter.begin;
                 ++(*iter.begin);
                 return KeyValuePair {
-                    .key=std::make_unique<std::string>(kvp.key),
+                    .key=rust::String(kvp.key.data()),
                     .value=std::make_unique<element>(kvp.value),
                 };
             }

@@ -1,3 +1,5 @@
+
+
 #[cxx::bridge(namespace = simdjson::ffi)]
 pub mod ffi {
 
@@ -7,7 +9,7 @@ pub mod ffi {
     }
 
     struct StringResult {
-        value: UniquePtr<CxxString>,
+        value: String,
         code: i32,
     }
 
@@ -16,8 +18,22 @@ pub mod ffi {
         code: i32,
     }
 
-    struct NumberResult {
+    // struct NumberResult {
+    //     value: u64,
+    //     code: i32,
+    // }
+    struct U64Result {
         value: u64,
+        code: i32,
+    }
+
+    struct I64Result {
+        value: i64,
+        code: i32,
+    }
+
+    struct F64Result {
+        value: f64,
         code: i32,
     }
 
@@ -32,7 +48,7 @@ pub mod ffi {
     }
 
     struct KeyValuePair {
-        key: UniquePtr<CxxString>,
+        key: String,
         value: UniquePtr<element>,
     }
 
@@ -74,7 +90,12 @@ pub mod ffi {
         fn element_get_string(elm: &element) -> StringResult;
         fn element_get_array(elm: &element) -> ArrayResult;
         fn element_get_object(elm: &element) -> ObjectResult;
-        fn element_get_number(elm: &element) -> NumberResult;
+        // fn element_get_number(elm: &element) -> NumberResult;
+        fn element_get_u64(elm: &element) -> U64Result;
+        fn element_get_i64(elm: &element) -> I64Result;
+        fn element_get_f64(elm: &element) -> F64Result;
+
+
         fn element_get_bool(elm: &element) -> BoolResult;
         fn element_is_null(elm: &element) -> bool;
         fn element_at(elm: &element, json_pointer: &str) -> ElementResult;

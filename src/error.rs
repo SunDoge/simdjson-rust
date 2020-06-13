@@ -37,6 +37,7 @@
 
 // impl error::Error for SimdJsonError {}
 
+use std::str::Utf8Error;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -46,6 +47,9 @@ pub enum SimdJsonError {
 
     #[error("Error allocating memory, we're most likely out of memory")]
     MemAlloc,
+
+    #[error("The input is not valid UTF-8")]
+    Utf8Error(#[from] Utf8Error),
 }
 
 impl From<i32> for SimdJsonError {

@@ -29,11 +29,14 @@ namespace simdjson
         struct StringResult;
         struct ArrayResult;
         struct ObjectResult;
-        struct NumberResult;
+        // struct NumberResult;
         struct BoolResult;
         struct ArrayIterator;
         struct ObjectIterator;
         struct KeyValuePair;
+        struct U64Result;
+        struct I64Result;
+        struct F64Result;
 
         std::unique_ptr<parser> parser_new(size_t max_capacity);
 
@@ -55,7 +58,10 @@ namespace simdjson
 
         ObjectResult element_get_object(const element &elm);
 
-        NumberResult element_get_number(const element &elm);
+        // NumberResult element_get_number(const element &elm);
+        U64Result element_get_u64(const element &elm);
+        I64Result element_get_i64(const element &elm);
+        F64Result element_get_f64(const element &elm);
 
         BoolResult element_get_bool(const element &elm);
 

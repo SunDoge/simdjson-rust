@@ -47,16 +47,6 @@ impl From<i32> for ElementType {
     }
 }
 
-impl ffi::StringResult {
-    pub fn to_str(&self) -> Result<&str, SimdJsonError> {
-        if self.code > 2 {
-            Ok(str::from_utf8(self.value.as_bytes())?)
-        } else {
-            Err(SimdJsonError::from(self.code))
-        }
-    }
-}
-
 pub struct Element<'a> {
     ptr: ElementPtr,
     // ptr: &'a ffi::element,
@@ -85,6 +75,16 @@ impl<'a> Element<'a> {
         //     Err(SimdJsonError::from(result.code))
         // }
 
+        check_result!(result, Element)
+    }
+
+    pub fn at_key(&self, key: &str) -> Result<Element, SimdJsonError> {
+        let result = ffi::element_at_key(&self.ptr, key);
+        check_result!(result, Element)
+    }
+
+    pub fn at_index(&self, index: usize) -> Result<Element, SimdJsonError> {
+        let result = ffi::element_at_index(&self.ptr, index);
         check_result!(result, Element)
     }
 
@@ -125,6 +125,10 @@ impl<'a> Element<'a> {
 
     pub fn get_type(&self) -> ElementType {
         ElementType::from(ffi::element_get_type(&self.ptr))
+    }
+
+    pub fn is_null(&self) -> bool {
+        ffi::element_is_null(&self.ptr)
     }
 }
 

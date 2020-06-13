@@ -1,4 +1,6 @@
+use super::element::Element;
 use super::parser::Parser;
+use crate::error::{SimdJsonError, SimdJsonResult};
 use crate::libsimdjson::ffi;
 use cxx::UniquePtr;
 use std::marker::PhantomData;
@@ -16,6 +18,16 @@ impl<'a> Array<'a> {
             ptr,
             _phantom: PhantomData,
         }
+    }
+
+    pub fn at(&self, json_pointer: &str) -> SimdJsonResult<Element> {
+        let result = ffi::array_at(&self.ptr, json_pointer);
+        check_result!(result, Element)
+    }
+
+    pub fn at_index(&self, index: usize) -> SimdJsonResult<Element> {
+        let result = ffi::array_at_index(&self.ptr, index);
+        check_result!(result, Element)
     }
 }
 

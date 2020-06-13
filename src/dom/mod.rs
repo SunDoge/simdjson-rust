@@ -3,6 +3,8 @@ mod utils;
 
 pub mod element;
 pub mod parser;
+pub mod array;
+pub mod object;
 
 
 

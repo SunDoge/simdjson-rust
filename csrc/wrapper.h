@@ -25,7 +25,10 @@ namespace simdjson
 
         struct ElementResult;
         struct StringResult;
-       
+        struct ArrayResult;
+        struct ObjectResult;
+        struct NumberResult;
+        struct BoolResult;
 
 
         std::unique_ptr<parser> parser_new(size_t max_capacity);
@@ -44,29 +47,31 @@ namespace simdjson
 
         StringResult element_get_string(const element &elm);
 
-        // std::unique_ptr<array> element_get_array(const element &elm);
+        ArrayResult element_get_array(const element &elm);
 
-        // std::unique_ptr<object> element_get_object(const element &elm);
+        ObjectResult element_get_object(const element &elm);
 
-        // uint64_t element_get_number(const element &elm);
+        NumberResult element_get_number(const element &elm);
 
-        // bool element_is_null(const element &elm);
+        BoolResult element_get_bool(const element &elm);
 
-        // std::unique_ptr<element> element_at(const element &elm, rust::Str s);
+        bool element_is_null(const element &elm);
 
-        // std::unique_ptr<element> element_at_index(const element &elm, size_t index);
+        ElementResult element_at(const element &elm, rust::Str s);
 
-        // std::unique_ptr<element> element_at_key(const element &elm, rust::Str s);
+        ElementResult element_at_index(const element &elm, size_t index);
 
-        // std::unique_ptr<element> array_at(const array &arr, rust::Str s);
+        ElementResult element_at_key(const element &elm, rust::Str s);
 
-        // std::unique_ptr<element> array_at_index(const array &arr, size_t index);
+        ElementResult array_at(const array &arr, rust::Str s);
 
-        // std::unique_ptr<element> object_at(const object &obj, rust::Str s);
+        ElementResult array_at_index(const array &arr, size_t index);
 
-        // std::unique_ptr<element> object_at_key(const object &obj, rust::Str s);
+        ElementResult object_at(const object &obj, rust::Str s);
 
-        // std::unique_ptr<element> object_at_key_case_insensitive(const object &obj, rust::Str s);
+        ElementResult object_at_key(const object &obj, rust::Str s);
+
+        ElementResult object_at_key_case_insensitive(const object &obj, rust::Str s);
 
     } // namespace ffi
 } // namespace simdjson

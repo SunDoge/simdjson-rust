@@ -31,6 +31,11 @@ pub mod ffi {
         code: i32,
     }
 
+    struct KeyValuePair {
+        key: UniquePtr<CxxString>,
+        value: UniquePtr<element>,
+    }
+
     extern "C" {
         include!("csrc/wrapper.h");
         type parser;
@@ -58,21 +63,22 @@ pub mod ffi {
         // fn tape_ref_next_tape_value(tr: &tape_ref) -> u64;
 
         fn element_get_string(elm: &element) -> StringResult;
-    // fn element_get_array(elm: &element) -> Result<UniquePtr<array>>;
-    // fn element_get_object(elm: &element) -> Result<UniquePtr<object>>;
-    // fn element_get_number(elm: &element) -> Result<u64>;
-    // fn element_is_null(elm: &element) -> bool;
-    // fn element_at(elm: &element, json_pointer: &str) -> Result<UniquePtr<element>>;
-    // fn element_at_index(elm: &element, index: usize) -> Result<UniquePtr<element>>;
-    // fn element_at_key(elm: &element, key: &str) -> Result<UniquePtr<element>>;
+        fn element_get_array(elm: &element) -> ArrayResult;
+        fn element_get_object(elm: &element) -> ObjectResult;
+        fn element_get_number(elm: &element) -> NumberResult;
+        fn element_get_bool(elm: &element) -> BoolResult;
+        fn element_is_null(elm: &element) -> bool;
+        fn element_at(elm: &element, json_pointer: &str) -> ElementResult;
+        fn element_at_index(elm: &element, index: usize) -> ElementResult;
+        fn element_at_key(elm: &element, key: &str) -> ElementResult;
 
-    // fn array_at(arr: &array, json_pointer: &str) -> Result<UniquePtr<element>>;
-    // fn array_at_index(arr: &array, index: usize) -> Result<UniquePtr<element>>;
+        fn array_at(arr: &array, json_pointer: &str) -> ElementResult;
+        fn array_at_index(arr: &array, index: usize) -> ElementResult;
 
-    // fn object_at(obj: &object, json_pointer: &str) -> Result<UniquePtr<element>>;
-    // fn object_at_key(obj: &object, key: &str) -> Result<UniquePtr<element>>;
-    // fn object_at_key_case_insensitive(obj: &object, key: &str) -> Result<UniquePtr<element>>;
-
+        fn object_at(obj: &object, json_pointer: &str) -> ElementResult;
+        fn object_at_key(obj: &object, key: &str) -> ElementResult;
+        fn object_at_key_case_insensitive(obj: &object, key: &str) -> ElementResult;
+        
     }
 }
 

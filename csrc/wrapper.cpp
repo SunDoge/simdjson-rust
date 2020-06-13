@@ -70,90 +70,157 @@ namespace simdjson
 
         StringResult element_get_string(const element &elm)
         {
-            const char *value;
+            std::string_view value;
             error_code error;
-            elm.get<const char *>().tie(value, error);
+            elm.get<std::string_view>().tie(value, error);
+
             return StringResult{
                 .value = std::make_unique<std::string>(value),
                 .code = int(error),
             };
         }
 
-        // std::unique_ptr<array> element_get_array(const element &elm)
-        // {
-        //     auto result = elm.get<array>();
-        //     return std::make_unique<array>(result.value());
-        // }
+        ArrayResult element_get_array(const element &elm)
+        {
+            array value;
+            error_code error;
+            elm.get<array>().tie(value, error);
+            return ArrayResult{
+                .value = std::make_unique<array>(value),
+                .code = int(error),
+            };
+        }
 
-        // std::unique_ptr<object> element_get_object(const element &elm)
-        // {
-        //     auto result = elm.get<object>();
-        //     return std::make_unique<object>(result.value());
-        // }
+        ObjectResult element_get_object(const element &elm)
+        {
+            object value;
+            error_code error;
+            elm.get<object>().tie(value, error);
+            return ObjectResult{
+                .value = std::make_unique<object>(value),
+                .code = int(error),
+            };
+        }
 
-        // uint64_t element_get_number(const element &elm)
-        // {
-        //     auto result = elm.get<uint64_t>();
-        //     return result.value();
-        // }
+        NumberResult element_get_number(const element &elm)
+        {
+            uint64_t value;
+            error_code error;
+            elm.get<uint64_t>().tie(value, error);
+            return NumberResult{
+                .value = value,
+                .code = int(error),
+            };
+        }
 
-        // bool element_is_null(const element &elm)
-        // {
-        //     return elm.is_null();
-        // }
+        BoolResult element_get_bool(const element &elm)
+        {
+            bool value;
+            error_code error;
+            elm.get<bool>().tie(value, error);
+            return BoolResult{
+                .value = value,
+                .code = int(error),
+            };
+        }
 
-        // std::unique_ptr<element> element_at(const element &elm, rust::Str s)
-        // {
-        //     auto json_pointer = std::string_view(s.data(), s.size());
-        //     auto result = elm.at(json_pointer);
-        //     return std::make_unique<element>(result.value());
-        // }
+        bool element_is_null(const element &elm)
+        {
+            return elm.is_null();
+        }
 
-        // std::unique_ptr<element> element_at_index(const element &elm, size_t index)
-        // {
-        //     auto result = elm.at(index);
-        //     return std::make_unique<element>(result.value());
-        // }
+        ElementResult element_at(const element &elm, rust::Str s)
+        {
+            element value;
+            error_code error;
+            auto json_pointer = std::string_view(s.data(), s.size());
+            elm.at(json_pointer).tie(value, error);
+            return ElementResult{
+                .value = std::make_unique<element>(value),
+                .code = int(error),
+            };
+        }
 
-        // std::unique_ptr<element> element_at_key(const element &elm, rust::Str s)
-        // {
-        //     auto key = std::string_view(s.data(), s.size());
-        //     auto result = elm.at_key(key);
-        //     return std::make_unique<element>(result.value());
-        // }
+        ElementResult element_at_index(const element &elm, size_t index)
+        {
+            element value;
+            error_code error;
+            elm.at(index).tie(value, error);
+            return ElementResult{
+                .value = std::make_unique<element>(value),
+                .code = int(error),
+            };
+        }
 
-        // std::unique_ptr<element> array_at(const array &arr, rust::Str s)
-        // {
-        //     auto json_pointer = std::string_view(s.data(), s.size());
-        //     auto result = arr.at(json_pointer);
-        //     return std::make_unique<element>(result.value());
-        // }
+        ElementResult element_at_key(const element &elm, rust::Str s)
+        {
+            element value;
+            error_code error;
+            auto key = std::string_view(s.data(), s.size());
+            elm.at_key(key).tie(value, error);
+            return ElementResult{
+                .value = std::make_unique<element>(value),
+                .code = int(error),
+            };
+        }
 
-        // std::unique_ptr<element> array_at_index(const array &arr, size_t index)
-        // {
-        //     auto result = arr.at(index);
-        //     return std::make_unique<element>(result.value());
-        // }
+        ElementResult array_at(const array &arr, rust::Str s)
+        {
+            element value;
+            error_code error;
+            auto json_pointer = std::string_view(s.data(), s.size());
+            arr.at(json_pointer).tie(value, error);
+            return ElementResult{
+                .value = std::make_unique<element>(value),
+                .code = int(error),
+            };
+        }
 
-        // std::unique_ptr<element> object_at(const object &obj, rust::Str s)
-        // {
-        //     auto json_pointer = std::string_view(s.data(), s.size());
-        //     auto result = obj.at(json_pointer);
-        //     return std::make_unique<element>(result.value());
-        // }
+        ElementResult array_at_index(const array &arr, size_t index)
+        {
+            element value;
+            error_code error;
+            arr.at(index).tie(value, error);
+            return ElementResult{
+                .value = std::make_unique<element>(value),
+                .code = int(error),
+            };
+        }
 
-        // std::unique_ptr<element> object_at_key(const object &obj, rust::Str s)
-        // {
-        //     auto key = std::string_view(s.data(), s.size());
-        //     auto result = obj.at_key(key);
-        //     return std::make_unique<element>(result.value());
-        // }
+        ElementResult object_at(const object &obj, rust::Str s)
+        {
+            element value;
+            error_code error;
+            auto json_pointer = std::string_view(s.data(), s.size());
+            obj.at(json_pointer).tie(value, error);
+            return ElementResult{
+                .value = std::make_unique<element>(value),
+                .code = int(error),
+            };
+        }
 
-        // std::unique_ptr<element> object_at_key_case_insensitive(const object &obj, rust::Str s)
-        // {
-        //     auto key = std::string_view(s.data(), s.size());
-        //     auto result = obj.at_key_case_insensitive(key);
-        //     return std::make_unique<element>(result.value());
-        // }
+        ElementResult object_at_key(const object &obj, rust::Str s)
+        {
+            element value;
+            error_code error;
+            auto key = std::string_view(s.data(), s.size());
+            obj.at_key(key).tie(value, error);
+            return ElementResult{
+                .value = std::make_unique<element>(value),
+                .code = int(error),
+            };
+        }
+
+        ElementResult object_at_key_case_insensitive(const object &obj, rust::Str s)
+        {
+            element value;
+            error_code error;
+            auto key = std::string_view(s.data(), s.size());
+            obj.at_key_case_insensitive(key).tie(value, error);
+            return ElementResult{
+                .value = std::make_unique<element>(value),
+                .code = int(error),
+            };
+        }
     } // namespace ffi
 } // namespace simdjson

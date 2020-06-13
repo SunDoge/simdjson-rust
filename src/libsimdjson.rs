@@ -36,6 +36,16 @@ pub mod ffi {
         value: UniquePtr<element>,
     }
 
+    struct ArrayIterator {
+        begin: UniquePtr<array_iterator>,
+        end: UniquePtr<array_iterator>,
+    }
+
+    struct ObjectIterator {
+        begin: UniquePtr<object_iterator>,
+        end: UniquePtr<object_iterator>,
+    }
+
     extern "C" {
         include!("csrc/wrapper.h");
         type parser;
@@ -45,6 +55,9 @@ pub mod ffi {
 
         type array;
         type object;
+
+        type array_iterator;
+        type object_iterator;
 
         // type simdjson_result;
 
@@ -79,6 +92,10 @@ pub mod ffi {
         fn object_at_key(obj: &object, key: &str) -> ElementResult;
         fn object_at_key_case_insensitive(obj: &object, key: &str) -> ElementResult;
         
+        fn array_get_iterator(arr: &array) -> ArrayIterator;
+        fn array_iterator_next(arr_iter: &mut ArrayIterator) -> UniquePtr<element>;
+
+        fn object_get_iterator(obj: &object) -> ObjectIterator;
     }
 }
 

@@ -19,9 +19,11 @@ namespace simdjson
 
         using namespace simdjson::dom;
 
+        using array_iterator = simdjson::dom::array::iterator;
+        using object_iterator = simdjson::dom::object::iterator;
+
         // using simdjson::dom::parser;
         // using simdjson::dom::element;
-
 
         struct ElementResult;
         struct StringResult;
@@ -29,7 +31,9 @@ namespace simdjson
         struct ObjectResult;
         struct NumberResult;
         struct BoolResult;
-
+        struct ArrayIterator;
+        struct ObjectIterator;
+        struct KeyValuePair;
 
         std::unique_ptr<parser> parser_new(size_t max_capacity);
 
@@ -72,6 +76,14 @@ namespace simdjson
         ElementResult object_at_key(const object &obj, rust::Str s);
 
         ElementResult object_at_key_case_insensitive(const object &obj, rust::Str s);
+
+        ArrayIterator array_get_iterator(const array &arr);
+
+        std::unique_ptr<element> array_iterator_next(ArrayIterator &iter);
+
+        ObjectIterator object_get_iterator(const object &obj);
+
+        KeyValuePair object_iterator_next(ObjectIterator &iter);
 
     } // namespace ffi
 } // namespace simdjson

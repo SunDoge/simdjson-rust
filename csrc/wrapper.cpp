@@ -222,5 +222,55 @@ namespace simdjson
                 .code = int(error),
             };
         }
+
+        ArrayIterator array_get_iterator(const array &arr)
+        {
+            return ArrayIterator{
+                .begin = std::make_unique<array::iterator>(arr.begin()),
+                .end = std::make_unique<array::iterator>(arr.end()),
+            };
+        }
+
+        std::unique_ptr<element> array_iterator_next(ArrayIterator &iter)
+        {
+            if (iter.begin != iter.end)
+            {
+                element elm = **iter.begin;
+                ++(*iter.begin);
+                return std::make_unique<element>(elm);
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
+
+        ObjectIterator object_get_iterator(const object &arr)
+        {
+            return ObjectIterator{
+                .begin = std::make_unique<object::iterator>(arr.begin()),
+                .end = std::make_unique<object::iterator>(arr.end()),
+            };
+        }
+
+        KeyValuePair object_iterator_next(ObjectIterator &iter) {
+            if (iter.begin != iter.end)
+            {
+                key_value_pair kvp = **iter.begin;
+                ++(*iter.begin);
+                return KeyValuePair {
+                    .key=std::make_unique<std::string>(kvp.key),
+                    .value=std::make_unique<element>(kvp.value),
+                };
+            }
+            else
+            {
+                return KeyValuePair {
+                    .key=nullptr,
+                    .value=nullptr,
+                };
+            }
+        }
+
     } // namespace ffi
 } // namespace simdjson

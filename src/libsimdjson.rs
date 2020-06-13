@@ -1,5 +1,3 @@
-
-
 #[cxx::bridge(namespace = simdjson::ffi)]
 pub mod ffi {
 
@@ -62,6 +60,8 @@ pub mod ffi {
         end: UniquePtr<object_iterator>,
     }
 
+    
+
     extern "C" {
         include!("csrc/wrapper.h");
         type parser;
@@ -74,6 +74,7 @@ pub mod ffi {
 
         type array_iterator;
         type object_iterator;
+        
 
         // type simdjson_result;
 
@@ -95,12 +96,13 @@ pub mod ffi {
         fn element_get_i64(elm: &element) -> I64Result;
         fn element_get_f64(elm: &element) -> F64Result;
 
-
         fn element_get_bool(elm: &element) -> BoolResult;
         fn element_is_null(elm: &element) -> bool;
         fn element_at(elm: &element, json_pointer: &str) -> ElementResult;
         fn element_at_index(elm: &element, index: usize) -> ElementResult;
         fn element_at_key(elm: &element, key: &str) -> ElementResult;
+
+        fn element_get_type(elm: &element) -> i32;
 
         fn array_at(arr: &array, json_pointer: &str) -> ElementResult;
         fn array_at_index(arr: &array, index: usize) -> ElementResult;

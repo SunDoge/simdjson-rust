@@ -1,12 +1,10 @@
 #[macro_use]
 mod utils;
 
-pub mod element;
-pub mod parser;
 pub mod array;
+pub mod element;
 pub mod object;
-
-
+pub mod parser;
 
 #[cfg(test)]
 mod tests {
@@ -16,7 +14,9 @@ mod tests {
     #[test]
     fn it_works() {
         let mut parser = parser::Parser::default();
-        let value: bool = parser.parse_str("true").unwrap().get_bool().unwrap();
+        let elm = parser.parse_str("true").unwrap();
+        let value: bool = elm.get_bool().unwrap();
         assert_eq!(value, true);
+        assert_eq!(elm.get_type(), element::ElementType::Bool);
     }
 }

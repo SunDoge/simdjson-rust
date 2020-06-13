@@ -40,6 +40,8 @@
 use std::str::Utf8Error;
 use thiserror::Error;
 
+pub type SimdJsonResult<T> = Result<T, SimdJsonError>;
+
 #[derive(Debug, Error)]
 pub enum SimdJsonError {
     #[error("This parser can't support a document that big")]

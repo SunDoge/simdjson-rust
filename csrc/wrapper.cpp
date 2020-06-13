@@ -198,6 +198,10 @@ namespace simdjson
             };
         }
 
+        int element_get_type(const element &elm) {
+            return int(elm.type());
+        }
+
         ElementResult array_at(const array &arr, rust::Str s)
         {
             element value;

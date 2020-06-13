@@ -54,4 +54,13 @@ mod tests {
             .unwrap();
         assert_eq!(value, true);
     }
+
+    #[test]
+    fn borrow_checker() {
+        let mut parser = Parser::default();
+        let elm = parser.parse_str_padded(&"true".into()).unwrap();
+        elm.get_bool();
+        let new_elm = parser.parse_str("false").unwrap();
+        // elm.get_bool(); // This won't pass
+    }
 }

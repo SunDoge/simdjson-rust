@@ -72,6 +72,7 @@ namespace simdjson
         ElementResult element_at_index(const element &elm, size_t index);
 
         ElementResult element_at_key(const element &elm, rust::Str s);
+        int element_get_type(const element &elm);
 
         ElementResult array_at(const array &arr, rust::Str s);
 

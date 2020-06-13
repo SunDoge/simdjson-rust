@@ -1,3 +1,6 @@
+#[macro_use]
+mod utils;
+
 pub mod element;
 pub mod parser;
 
@@ -6,7 +9,7 @@ pub mod parser;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::element::Value;
+    use super::element::GetValue;
 
     #[test]
     fn it_works() {

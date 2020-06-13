@@ -50,7 +50,7 @@ pub mod ffi {
         include!("csrc/wrapper.h");
         type parser;
         type element;
-        // type padded_string;
+        type padded_string;
         // // type tape_ref;
 
         type array;
@@ -64,13 +64,9 @@ pub mod ffi {
         fn parser_new(max_capacity: usize) -> UniquePtr<parser>;
         fn parser_load(p: &mut parser, path: &str) -> ElementResult;
         fn parser_parse_string(p: &mut parser, s: &str) -> ElementResult;
-        // fn parser_parse_padded_string(
-        //     p: &mut parser,
-        //     s: &padded_string,
-        //     code: &mut i32,
-        // ) -> UniquePtr<element>;
+        fn parser_parse_padded_string(p: &mut parser, s: &padded_string) -> ElementResult;
 
-        // fn padded_string_from_string(s: &str) -> UniquePtr<padded_string>;
+        fn padded_string_from_string(s: &str) -> UniquePtr<padded_string>;
 
         // fn tape_ref_type(tr: &tape_ref) -> u8;
         // fn tape_ref_next_tape_value(tr: &tape_ref) -> u64;
@@ -91,7 +87,7 @@ pub mod ffi {
         fn object_at(obj: &object, json_pointer: &str) -> ElementResult;
         fn object_at_key(obj: &object, key: &str) -> ElementResult;
         fn object_at_key_case_insensitive(obj: &object, key: &str) -> ElementResult;
-        
+
         fn array_get_iterator(arr: &array) -> ArrayIterator;
         fn array_iterator_next(arr_iter: &mut ArrayIterator) -> UniquePtr<element>;
 
@@ -113,7 +109,6 @@ mod tests {
     #[test]
     fn get_parser() {
         let mut parser = ffi::parser_new(SIMDJSON_MAXSIZE_BYTES);
-        let mut code = 0;
         let result = ffi::parser_load(&mut parser, "json-examples/twitter.json");
         // dbg!(parser.load);
         println!("parse code: {}", result.code);

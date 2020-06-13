@@ -1,6 +1,7 @@
 use crate::error::SimdJsonError;
 use crate::libsimdjson::ffi;
 
+
 pub type ElementPtr = cxx::UniquePtr<ffi::element>;
 
 pub struct Element {
@@ -16,25 +17,28 @@ impl From<ElementPtr> for Element {
 impl Element {
     pub fn at(&self, json_pointer: &str) -> Result<Element, SimdJsonError> {
         let result = ffi::element_at(&self.ptr, json_pointer);
-        if result.code < 2 {
-            Ok(Element::from(result.value))
-        } else {
-            Err(SimdJsonError::from(result.code))
-        }
+        // if result.code < 2 {
+        //     Ok(Element::from(result.value))
+        // } else {
+        //     Err(SimdJsonError::from(result.code))
+        // }
+
+        check_result!(result, Element)
     }
 }
 
-pub trait Value<T> {
+pub trait GetValue<T> {
     fn get(&self) -> Result<T, SimdJsonError>;
 }
 
-impl Value<bool> for Element {
+impl GetValue<bool> for Element {
     fn get(&self) -> Result<bool, SimdJsonError> {
         let result = ffi::element_get_bool(&self.ptr);
-        if result.code < 2 {
-            Ok(result.value)
-        } else {
-            Err(SimdJsonError::from(result.code))
-        }
+        // if result.code < 2 {
+        //     Ok(result.value)
+        // } else {
+        //     Err(SimdJsonError::from(result.code))
+        // }        
+        check_result!(result)
     }
 }

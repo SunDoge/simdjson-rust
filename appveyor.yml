@@ -7,8 +7,8 @@ environment:
 image:
   - Visual Studio 2019
 
-# platform:
-#   - x64
+platform:
+  - x64
 
 install:
   - curl -sSf -o rustup-init.exe https://win.rustup.rs/

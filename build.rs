@@ -3,7 +3,7 @@ fn main() {
         .file("csrc/wrapper.cpp")
         .file("csrc/simdjson.cpp")
         .flag_if_supported("-std=c++17")
-        .flag_if_supported("/std:c++17") // For windows
+        .flag_if_supported("/std:c++latest") // For windows
         .compile("simdjson-sys");
 
     println!("cargo:rerun-if-changed=src/main.rs");

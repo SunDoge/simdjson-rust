@@ -41,6 +41,10 @@ impl<'a> Object<'a> {
         let result = ffi::object_at_key_case_insensitive(&self.ptr, key);
         check_result!(result, Element)
     }
+
+    pub fn minify(&self) -> &str {
+        ffi::object_minify(&self.ptr)
+    }
 }
 
 impl<'a> From<ObjectPtr> for Object<'a> {

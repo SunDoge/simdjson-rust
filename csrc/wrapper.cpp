@@ -324,5 +324,23 @@ namespace simdjson
             }
         }
 
+        rust::Str element_minify(const element &elm)
+        {
+            auto s = std::string(minify(elm));
+            return rust::Str(s);
+        }
+
+        rust::Str object_minify(const object &obj)
+        {
+            auto s = std::string(minify(obj));
+            return rust::Str(s);
+        }
+
+        rust::Str array_minify(const array &arr)
+        {
+            auto s = std::string(minify(arr));
+            return rust::Str(s);
+        }
+
     } // namespace ffi
 } // namespace simdjson

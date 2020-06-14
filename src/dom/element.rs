@@ -130,6 +130,10 @@ impl<'a> Element<'a> {
     pub fn is_null(&self) -> bool {
         ffi::element_is_null(&self.ptr)
     }
+
+    pub fn minify(&self) -> &str {
+        ffi::element_minify(&self.ptr)
+    }
 }
 
 

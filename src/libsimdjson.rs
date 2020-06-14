@@ -60,8 +60,6 @@ pub mod ffi {
     //     end: UniquePtr<object_iterator>,
     // }
 
-    
-
     extern "C" {
         include!("csrc/wrapper.h");
         type parser;
@@ -76,7 +74,6 @@ pub mod ffi {
         type object_iterator;
         type ArrayIterator;
         type ObjectIterator;
-        
 
         // type simdjson_result;
 
@@ -118,6 +115,10 @@ pub mod ffi {
 
         fn object_get_iterator(obj: &object) -> UniquePtr<ObjectIterator>;
         fn object_iterator_next(iter: &mut ObjectIterator) -> KeyValuePair;
+
+        fn element_minify(elm: &element) -> &str;
+        fn object_minify(obj: &object) -> &str;
+        fn array_minify(arr: &array) -> &str;
     }
 }
 

@@ -14,7 +14,7 @@ edition = "2018"
 [dependencies]
 cxx = "0.3"
 thiserror = "1.0"
-anyhow = "1.0"
+# anyhow = "1.0"
 
 # serde compatibilty
 serde = { version = "1", features = ["derive"], optional = true}

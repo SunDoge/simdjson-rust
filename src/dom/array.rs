@@ -30,6 +30,10 @@ impl<'a> Array<'a> {
         let result = ffi::array_at_index(&self.ptr, index);
         check_result!(result, Element)
     }
+
+    pub fn minify(&self) -> &str {
+        ffi::array_minify(&self.ptr)
+    }
 }
 
 impl<'a> From<ArrayPtr> for Array<'a> {

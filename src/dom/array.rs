@@ -44,14 +44,17 @@ impl<'a> From<ArrayPtr> for Array<'a> {
 
 pub struct ArrayIter<'a> {
     ptr: ArrayIterPtr,
-    _phantom: PhantomData<&'a Parser>,
+    // _phantom: PhantomData<&'a Parser>,
+    array: &'a Array<'a>,
 }
 
 impl<'a> ArrayIter<'a> {
-    pub fn new(ptr: ArrayIterPtr) -> Self {
+    pub fn new(array: &'a Array<'a>) -> Self {
+        let ptr = ffi::array_get_iterator(&array.ptr);
         ArrayIter {
             ptr,
-            _phantom: PhantomData,
+            // _phantom: PhantomData,
+            array,
         }
     }
 }
@@ -69,13 +72,12 @@ impl<'a> Iterator for ArrayIter<'a> {
     }
 }
 
-impl<'a> IntoIterator for &Array<'a> {
+impl<'a> IntoIterator for &'a Array<'a> {
     type Item = Element<'a>;
     type IntoIter = ArrayIter<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let ptr = ffi::array_get_iterator(&self.ptr);
-        ArrayIter::new(ptr)
+        ArrayIter::new(self)
     }
 }
 
@@ -98,7 +100,6 @@ mod tests {
             c += 1;
             println!("c={}, v={}", c, v.get_bool()?);
 
-        
             assert!(v.get_bool()?);
         }
 

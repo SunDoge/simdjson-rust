@@ -37,13 +37,18 @@
 
 // impl error::Error for SimdJsonError {}
 
+use serde::de;
 use std::str::Utf8Error;
 use thiserror::Error;
+use std::fmt::Display;
 
 pub type SimdJsonResult<T> = Result<T, SimdJsonError>;
 
 #[derive(Debug, Error)]
 pub enum SimdJsonError {
+    #[error("Message: {0}")]
+    Message(String),
+
     #[error("This parser can't support a document that big")]
     Capacity,
 
@@ -64,7 +69,6 @@ pub enum SimdJsonError {
 
     #[error("Problem while parsing an atom starting with the letter 'f'")]
     FAtomError,
-
 
     #[error("The JSON element does not have the requested type.")]
     IncorrectType,
@@ -89,5 +93,14 @@ impl From<i32> for SimdJsonError {
             17 => SimdJsonError::IncorrectType,
             x => panic!("Unknown error code: {}", x),
         }
+    }
+}
+
+impl de::Error for SimdJsonError {
+    fn custom<T>(msg: T) -> Self
+    where
+        T: Display,
+    {
+        Self::Message(msg.to_string())
     }
 }

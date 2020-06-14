@@ -303,25 +303,35 @@ namespace simdjson
             return std::make_unique<ObjectIterator>(iter);
         }
 
-        KeyValuePair object_iterator_next(ObjectIterator &iter)
+        void object_iterator_next(ObjectIterator &iter)
         {
-            if (iter.begin != iter.end)
-            {
-                key_value_pair kvp = *iter.begin;
-                auto out = KeyValuePair{
-                    .key = rust::String(kvp.key.data()),
-                    .value = std::make_unique<element>(kvp.value),
-                };
-                ++(iter.begin);
-                return out;
-            }
-            else
-            {
-                return KeyValuePair{
-                    .key = rust::String(""),
-                    .value = nullptr,
-                };
-            }
+            // if (iter.begin != iter.end)
+            // {
+            //     key_value_pair kvp = *iter.begin;
+            //     // auto out = KeyValuePair{
+            //     //     .key = rust::String(kvp.key.data()),
+            //     //     .value = std::make_unique<element>(kvp.value),
+            //     // };
+            //     ++(iter.begin);
+            //     // return out;
+            // }
+            // else
+            // {
+                
+            // }
+            ++(iter.begin);
+        }
+
+        bool object_iterator_has_next(const ObjectIterator &iter) {
+            return iter.begin != iter.end;
+        }
+
+      
+        rust::String object_iterator_key(const ObjectIterator &iter) {
+            return rust::String(iter.begin.key().data());
+        }
+        std::unique_ptr<element> object_iterator_value(const ObjectIterator &iter) {
+            return std::make_unique<element>(iter.begin.value());
         }
 
         rust::Str element_minify(const element &elm)

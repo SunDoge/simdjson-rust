@@ -54,16 +54,26 @@ impl<'a> From<ObjectPtr> for Object<'a> {
 }
 
 pub struct ObjectIter<'a> {
-    ptr: ObjectIterPtr,
-    _phantom: PhantomData<&'a Parser>,
+    pub ptr: ObjectIterPtr,
+    object: &'a Object<'a>,
 }
 
 impl<'a> ObjectIter<'a> {
-    pub fn new(ptr: ObjectIterPtr) -> Self {
-        ObjectIter {
-            ptr,
-            _phantom: PhantomData,
-        }
+    pub fn new(object: &'a Object<'a>) -> Self {
+        let ptr = ffi::object_get_iterator(&object.ptr);
+        ObjectIter { ptr, object }
+    }
+
+    pub fn has_next(&self) -> bool {
+        ffi::object_iterator_has_next(&self.ptr)
+    }
+
+    pub fn key(&self) -> String {
+        ffi::object_iterator_key(&self.ptr)
+    }
+
+    pub fn value(&self) -> Element<'a> {
+        ffi::object_iterator_value(&self.ptr).into()
     }
 }
 
@@ -71,22 +81,21 @@ impl<'a> Iterator for ObjectIter<'a> {
     type Item = (String, Element<'a>);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let kvp = ffi::object_iterator_next(&mut self.ptr);
-        if kvp.value.is_null() {
+        ffi::object_iterator_next(&mut self.ptr);
+        if self.has_next() {
             None
         } else {
-            Some((kvp.key, Element::from(kvp.value)))
+            Some((self.key(), self.value()))
         }
     }
 }
 
-impl<'a> IntoIterator for &Object<'a> {
+impl<'a> IntoIterator for &'a Object<'a> {
     type Item = (String, Element<'a>);
     type IntoIter = ObjectIter<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let ptr = ffi::object_get_iterator(&self.ptr);
-        ObjectIter::new(ptr)
+        ObjectIter::new(self)
     }
 }
 

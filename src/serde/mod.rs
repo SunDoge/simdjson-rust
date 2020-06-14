@@ -20,7 +20,10 @@ mod tests {
         let elm = parser.parse_str(r#"[true, false]"#).unwrap();
 
         let a: Vec<bool> = de::from_element(&elm).unwrap();
+        println!("{:?}", a);
 
+        let elm = parser.parse_str(r#"{"field1": false}"#).unwrap();
+        let a: A = de::from_element(&elm).unwrap();
         println!("{:?}", a);
     }
 }

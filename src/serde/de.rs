@@ -1,9 +1,13 @@
 use crate::dom::array::{Array, ArrayIter};
 use crate::dom::element::{Element, ElementType};
-use crate::dom::object::Object;
+use crate::dom::object::{Object, ObjectIter};
 use crate::dom::parser::Parser;
 use crate::error::SimdJsonError;
-use serde::de::{self, Deserialize, DeserializeSeed, Deserializer, SeqAccess, Visitor};
+use crate::libsimdjson::ffi;
+use serde::de::{
+    self, value::StringDeserializer, Deserialize, DeserializeSeed, Deserializer, IntoDeserializer,
+    MapAccess, SeqAccess, Visitor,
+};
 
 // pub struct ElementVisitor;
 
@@ -260,7 +264,7 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
     where
         V: Visitor<'de>,
     {
-        unimplemented!()
+        visitor.visit_map(ObjectIter::new(&self.get_object()?))
     }
 
     // Structs look just like maps in JSON.
@@ -335,5 +339,29 @@ impl<'de, 'a> SeqAccess<'de> for ArrayIter<'a> {
         } else {
             Ok(None)
         }
+    }
+}
+
+impl<'de, 'a> MapAccess<'de> for ObjectIter<'a> {
+    type Error = SimdJsonError;
+
+    fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Self::Error>
+    where
+        K: DeserializeSeed<'de>,
+    {
+        if self.has_next() {
+            seed.deserialize(self.key().into_deserializer()).map(Some)
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value, Self::Error>
+    where
+        V: DeserializeSeed<'de>,
+    {
+        let result = seed.deserialize(&self.value());
+        ffi::object_iterator_next(&mut self.ptr);
+        result
     }
 }

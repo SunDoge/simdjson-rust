@@ -70,8 +70,8 @@ pub mod ffi {
         type array;
         type object;
 
-        type array_iterator;
-        type object_iterator;
+        // type array_iterator;
+        // type object_iterator;
         type ArrayIterator;
         type ObjectIterator;
 
@@ -114,7 +114,11 @@ pub mod ffi {
         fn array_iterator_next(iter: &mut ArrayIterator) -> UniquePtr<element>;
 
         fn object_get_iterator(obj: &object) -> UniquePtr<ObjectIterator>;
-        fn object_iterator_next(iter: &mut ObjectIterator) -> KeyValuePair;
+        fn object_iterator_next(iter: &mut ObjectIterator);
+        fn object_iterator_has_next(iter: &ObjectIterator) -> bool;
+        fn object_iterator_key(iter: &ObjectIterator) -> String;
+        fn object_iterator_value(iter: &ObjectIterator) -> UniquePtr<element>;
+
 
         fn element_minify(elm: &element) -> &str;
         fn object_minify(obj: &object) -> &str;

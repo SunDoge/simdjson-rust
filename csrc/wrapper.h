@@ -83,7 +83,10 @@ namespace simdjson
         std::unique_ptr<element> array_iterator_next(ArrayIterator &iter);
 
         std::unique_ptr<ObjectIterator> object_get_iterator(const object &obj);
-        KeyValuePair object_iterator_next(ObjectIterator &iter);
+        void object_iterator_next(ObjectIterator &iter);
+        bool object_iterator_has_next(const ObjectIterator &iter);
+        rust::String object_iterator_key(const ObjectIterator &iter);
+        std::unique_ptr<element> object_iterator_value(const ObjectIterator &iter);
 
         rust::Str element_minify(const element &elm);
         rust::Str object_minify(const object &obj);

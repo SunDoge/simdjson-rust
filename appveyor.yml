@@ -5,10 +5,10 @@ environment:
   # - TARGET: x86_64-pc-windows-gnu
 
 image:
-  - Visual Studio 2017
+  - Visual Studio 2019
 
-# platform:
-#   - x64
+platform:
+  - x64
 
 install:
   - curl -sSf -o rustup-init.exe https://win.rustup.rs/

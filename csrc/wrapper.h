@@ -31,12 +31,22 @@ namespace simdjson
         struct ObjectResult;
         // struct NumberResult;
         struct BoolResult;
-        struct ArrayIterator;
-        struct ObjectIterator;
+        // struct ArrayIterator;
+        // struct ObjectIterator;
         struct KeyValuePair;
         struct U64Result;
         struct I64Result;
         struct F64Result;
+
+        struct ArrayIterator {
+            array_iterator begin;
+            array_iterator end;
+        };
+
+        struct ObjectIterator {
+            object_iterator begin;
+            object_iterator end;
+        };
 
         std::unique_ptr<parser> parser_new(size_t max_capacity);
 
@@ -84,11 +94,11 @@ namespace simdjson
 
         ElementResult object_at_key_case_insensitive(const object &obj, rust::Str s);
 
-        ArrayIterator array_get_iterator(const array &arr);
+        std::unique_ptr<ArrayIterator> array_get_iterator(const array &arr);
 
         std::unique_ptr<element> array_iterator_next(ArrayIterator &iter);
 
-        ObjectIterator object_get_iterator(const object &obj);
+        std::unique_ptr<ObjectIterator> object_get_iterator(const object &obj);
 
         KeyValuePair object_iterator_next(ObjectIterator &iter);
 

@@ -50,6 +50,25 @@ pub enum SimdJsonError {
     #[error("Error allocating memory, we're most likely out of memory")]
     MemAlloc,
 
+    #[error("Something went wrong while writing to the tape")]
+    TapeError,
+
+    #[error("The JSON document was too deep (too many nested objects and arrays)")]
+    DepthError,
+
+    #[error("Problem while parsing a string")]
+    StringError,
+
+    #[error("Problem while parsing an atom starting with the letter 't'")]
+    TAtomError,
+
+    #[error("Problem while parsing an atom starting with the letter 'f'")]
+    FAtomError,
+
+
+    #[error("The JSON element does not have the requested type.")]
+    IncorrectType,
+
     #[error("The input is not valid UTF-8")]
     Utf8Error(#[from] Utf8Error),
 }
@@ -61,7 +80,14 @@ impl From<i32> for SimdJsonError {
             1 => panic!("No error and buffer still has more data"),
             2 => SimdJsonError::Capacity,
             3 => SimdJsonError::MemAlloc,
-            _ => unimplemented!(),
+            4 => SimdJsonError::TapeError,
+            5 => SimdJsonError::DepthError,
+            6 => SimdJsonError::StringError,
+            7 => SimdJsonError::TAtomError,
+            8 => SimdJsonError::FAtomError,
+
+            17 => SimdJsonError::IncorrectType,
+            x => panic!("Unknown error code: {}", x),
         }
     }
 }

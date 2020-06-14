@@ -70,7 +70,7 @@ namespace simdjson
 
         StringResult element_get_string(const element &elm)
         {
-            const char * value;
+            const char *value;
             error_code error;
             elm.get<const char *>().tie(value, error);
 
@@ -135,7 +135,6 @@ namespace simdjson
             };
         }
 
-
         F64Result element_get_f64(const element &elm)
         {
             double value;
@@ -198,7 +197,8 @@ namespace simdjson
             };
         }
 
-        int element_get_type(const element &elm) {
+        int element_get_type(const element &elm)
+        {
             return int(elm.type());
         }
 
@@ -261,20 +261,31 @@ namespace simdjson
             };
         }
 
-        ArrayIterator array_get_iterator(const array &arr)
+        std::unique_ptr<ArrayIterator> array_get_iterator(const array &arr)
         {
-            return ArrayIterator{
-                .begin = std::make_unique<array::iterator>(arr.begin()),
-                .end = std::make_unique<array::iterator>(arr.end()),
+            auto iter = ArrayIterator{
+                .begin = arr.begin(),
+                .end = arr.end(),
             };
+            return std::make_unique<ArrayIterator>(iter);
         }
 
         std::unique_ptr<element> array_iterator_next(ArrayIterator &iter)
         {
+            // if (iter.begin != iter.end)
+            // {
+            //     element elm = **(iter.begin);
+            //     ++(*(iter.begin));
+            //     return std::make_unique<element>(elm);
+            // }
+            // else
+            // {
+            //     return nullptr;
+            // }
             if (iter.begin != iter.end)
             {
-                element elm = **iter.begin;
-                ++(*iter.begin);
+                element elm = *iter.begin;
+                ++(iter.begin);
                 return std::make_unique<element>(elm);
             }
             else
@@ -283,29 +294,32 @@ namespace simdjson
             }
         }
 
-        ObjectIterator object_get_iterator(const object &arr)
+        std::unique_ptr<ObjectIterator> object_get_iterator(const object &obj)
         {
-            return ObjectIterator{
-                .begin = std::make_unique<object::iterator>(arr.begin()),
-                .end = std::make_unique<object::iterator>(arr.end()),
+            auto iter = ObjectIterator{
+                .begin = obj.begin(),
+                .end = obj.end(),
             };
+            return std::make_unique<ObjectIterator>(iter);
         }
 
-        KeyValuePair object_iterator_next(ObjectIterator &iter) {
+        KeyValuePair object_iterator_next(ObjectIterator &iter)
+        {
             if (iter.begin != iter.end)
             {
-                key_value_pair kvp = **iter.begin;
-                ++(*iter.begin);
-                return KeyValuePair {
-                    .key=rust::String(kvp.key.data()),
-                    .value=std::make_unique<element>(kvp.value),
+                key_value_pair kvp = *iter.begin;
+                auto out = KeyValuePair{
+                    .key = rust::String(kvp.key.data()),
+                    .value = std::make_unique<element>(kvp.value),
                 };
+                ++(iter.begin);
+                return out;
             }
             else
             {
-                return KeyValuePair {
-                    .key=nullptr,
-                    .value=nullptr,
+                return KeyValuePair{
+                    .key = rust::String(""),
+                    .value = nullptr,
                 };
             }
         }

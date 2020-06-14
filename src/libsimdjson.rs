@@ -50,15 +50,15 @@ pub mod ffi {
         value: UniquePtr<element>,
     }
 
-    struct ArrayIterator {
-        begin: UniquePtr<array_iterator>,
-        end: UniquePtr<array_iterator>,
-    }
+    // struct ArrayIterator {
+    //     begin: UniquePtr<array_iterator>,
+    //     end: UniquePtr<array_iterator>,
+    // }
 
-    struct ObjectIterator {
-        begin: UniquePtr<object_iterator>,
-        end: UniquePtr<object_iterator>,
-    }
+    // struct ObjectIterator {
+    //     begin: UniquePtr<object_iterator>,
+    //     end: UniquePtr<object_iterator>,
+    // }
 
     
 
@@ -74,6 +74,8 @@ pub mod ffi {
 
         type array_iterator;
         type object_iterator;
+        type ArrayIterator;
+        type ObjectIterator;
         
 
         // type simdjson_result;
@@ -111,10 +113,11 @@ pub mod ffi {
         fn object_at_key(obj: &object, key: &str) -> ElementResult;
         fn object_at_key_case_insensitive(obj: &object, key: &str) -> ElementResult;
 
-        fn array_get_iterator(arr: &array) -> ArrayIterator;
-        fn array_iterator_next(arr_iter: &mut ArrayIterator) -> UniquePtr<element>;
+        fn array_get_iterator(arr: &array) -> UniquePtr<ArrayIterator>;
+        fn array_iterator_next(iter: &mut ArrayIterator) -> UniquePtr<element>;
 
-        fn object_get_iterator(obj: &object) -> ObjectIterator;
+        fn object_get_iterator(obj: &object) -> UniquePtr<ObjectIterator>;
+        fn object_iterator_next(iter: &mut ObjectIterator) -> KeyValuePair;
     }
 }
 

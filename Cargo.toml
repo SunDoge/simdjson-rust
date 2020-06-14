@@ -1,6 +1,6 @@
 [package]
 name = "simdjson-rust"
-version = "0.2.0"
+version = "0.2.0-alpha"
 authors = ["SunDoge <384813529@qq.com>"]
 edition = "2018"
 

@@ -75,6 +75,7 @@ pub mod ffi {
         // type object_iterator;
         type ArrayIterator;
         type ObjectIterator;
+        type DocumentStreamIterator;
 
         // type simdjson_result;
 
@@ -125,11 +126,16 @@ pub mod ffi {
         fn object_minify(obj: &object) -> &str;
         fn array_minify(arr: &array) -> &str;
 
-        // fn parser_load_many(p: &mut parser, path: &str, batch_size: usize) -> &document_stream;
+        fn parser_load_many(p: &mut parser, path: &str, batch_size: usize) -> UniquePtr<DocumentStreamIterator>;
+        fn document_stream_iterator_next(iter: &mut DocumentStreamIterator) -> ElementResult;
+
+        fn parser_parse_many(p: &mut parser, s: &str, batch_size: usize) -> UniquePtr<DocumentStreamIterator>;
+        fn parser_parse_many_padded(p: &mut parser, s: &padded_string, batch_size: usize) -> UniquePtr<DocumentStreamIterator>;
     }
 }
 
 pub const SIMDJSON_MAXSIZE_BYTES: usize = 0xFFFFFFFF;
+pub const DEFAULT_BATCH_SIZE: usize = 1000000;
 
 #[cfg(test)]
 mod tests {

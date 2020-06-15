@@ -358,7 +358,10 @@ namespace simdjson
         {
             // std::unique_ptr<document_stream> stream = nullptr;
             auto cpath = std::string(path);
+
             auto stream = p.load_many(cpath, batch_size);
+
+            // return std::make_unique<document_stream>()
             return document_stream_get_iterator(stream);
         }
         std::unique_ptr<DocumentStreamIterator> document_stream_get_iterator(document_stream &stream)
@@ -389,6 +392,19 @@ namespace simdjson
                     .code = 0,
                 };
             }
+        }
+
+        std::unique_ptr<DocumentStreamIterator> parser_parse_many(parser &p, rust::Str s, size_t batch_size)
+        {
+            auto cs = std::string(s);
+            auto stream = p.parse_many(cs, batch_size);
+            return document_stream_get_iterator(stream);
+        }
+
+        std::unique_ptr<DocumentStreamIterator> parser_parse_many_padded(parser &p, const padded_string &s, size_t batch_size)
+        {
+            auto stream = p.parse_many(s, batch_size);
+            return document_stream_get_iterator(stream);
         }
 
     } // namespace ffi

@@ -108,7 +108,7 @@ mod tests {
     #[test]
     fn object_iter() -> Result<(), Box<dyn std::error::Error>> {
         let mut parser = Parser::default();
-        let elm = parser.parse_str(r#"{"a": true, "b": true}"#)?;
+        let elm = parser.parse(r#"{"a": true, "b": true}"#)?;
         let obj = elm.get_object()?;
 
         for (k, v) in &obj {

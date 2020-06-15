@@ -39,17 +39,20 @@ namespace simdjson
         struct I64Result;
         struct F64Result;
 
-        struct ArrayIterator {
+        struct ArrayIterator
+        {
             array_iterator begin;
             array_iterator end;
         };
 
-        struct ObjectIterator {
+        struct ObjectIterator
+        {
             object_iterator begin;
             object_iterator end;
         };
 
-        struct DocumentStreamIterator {
+        struct DocumentStreamIterator
+        {
             document_stream_iterator begin;
             document_stream_iterator end;
         };
@@ -99,11 +102,12 @@ namespace simdjson
         rust::Str object_minify(const object &obj);
         rust::Str array_minify(const array &arr);
 
-    
         // For load many and parse many
         std::unique_ptr<DocumentStreamIterator> parser_load_many(parser &p, rust::Str path, size_t batch_size);
-        std::unique_ptr<DocumentStreamIterator> document_stream_get_iterator(document_stream & stream);
-        ElementResult document_stream_iterator_next(document_stream_iterator &iter);
+        std::unique_ptr<DocumentStreamIterator> document_stream_get_iterator(document_stream &stream);
+        ElementResult document_stream_iterator_next(DocumentStreamIterator &iter);
         
+        std::unique_ptr<DocumentStreamIterator> parser_parse_many(parser &p, rust::Str s, size_t batch_size);
+        std::unique_ptr<DocumentStreamIterator> parser_parse_many_padded(parser &p, const padded_string &s, size_t batch_size);
     } // namespace ffi
 } // namespace simdjson

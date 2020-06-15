@@ -90,7 +90,7 @@ mod tests {
     #[test]
     fn array_iter() -> Result<(), Box<dyn std::error::Error>> {
         let mut parser = Parser::default();
-        let elm = parser.parse_str("[true, true, true, true]")?;
+        let elm = parser.parse("[true, true, true, true]")?;
         let arr = elm.get_array()?;
 
         assert!(arr.at_index(3)?.get_bool()?);

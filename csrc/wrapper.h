@@ -101,9 +101,9 @@ namespace simdjson
 
     
         // For load many and parse many
-        // std::unique_ptr<document_stream> parser_load_many(parser &p, rust::Str path, size_t batch_size);
-        // std::unique_ptr<DocumentStreamIterator> document_stream_get_iterator(document_stream & stream);
-        // ElementResult document_stream_iterator_next(document_stream_iterator &iter);
+        std::unique_ptr<DocumentStreamIterator> parser_load_many(parser &p, rust::Str path, size_t batch_size);
+        std::unique_ptr<DocumentStreamIterator> document_stream_get_iterator(document_stream & stream);
+        ElementResult document_stream_iterator_next(document_stream_iterator &iter);
         
     } // namespace ffi
 } // namespace simdjson

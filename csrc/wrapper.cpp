@@ -354,41 +354,42 @@ namespace simdjson
             return rust::Str(s);
         }
 
-        // std::unique_ptr<document_stream> parser_load_many(parser &p, rust::Str path, size_t batch_size)
-        // {
-        //     auto cpath = std::string(path);
-        //     auto stream = p.load_many(cpath, batch_size);
-        //     return std::make_unique<document_stream>(std::move(stream));
-        // }
-        // std::unique_ptr<DocumentStreamIterator> document_stream_get_iterator(document_stream &stream)
-        // {
-        //     auto iter = DocumentStreamIterator{
-        //         .begin = stream.begin(),
-        //         .end = stream.end(),
-        //     };
-        //     return std::make_unique<DocumentStreamIterator>(iter);
-        // }
-        // ElementResult document_stream_iterator_next(DocumentStreamIterator &iter)
-        // {
-        //     if (iter.begin != iter.end)
-        //     {
-        //         element value;
-        //         error_code error;
-        //         (*iter.begin).tie(value, error);
-        //         ++(iter.begin);
-        //         return ElementResult{
-        //             .value = std::make_unique<element>(value),
-        //             .code = int(error),
-        //         };
-        //     }
-        //     else
-        //     {
-        //         return ElementResult{
-        //             .value = nullptr,
-        //             .code = 0,
-        //         };
-        //     }
-        // }
+        std::unique_ptr<DocumentStreamIterator> parser_load_many(parser &p, rust::Str path, size_t batch_size)
+        {
+            // std::unique_ptr<document_stream> stream = nullptr;
+            auto cpath = std::string(path);
+            auto stream = p.load_many(cpath, batch_size);
+            return document_stream_get_iterator(stream);
+        }
+        std::unique_ptr<DocumentStreamIterator> document_stream_get_iterator(document_stream &stream)
+        {
+            auto iter = DocumentStreamIterator{
+                .begin = stream.begin(),
+                .end = stream.end(),
+            };
+            return std::make_unique<DocumentStreamIterator>(iter);
+        }
+        ElementResult document_stream_iterator_next(DocumentStreamIterator &iter)
+        {
+            if (iter.begin != iter.end)
+            {
+                element value;
+                error_code error;
+                (*iter.begin).tie(value, error);
+                ++(iter.begin);
+                return ElementResult{
+                    .value = std::make_unique<element>(value),
+                    .code = int(error),
+                };
+            }
+            else
+            {
+                return ElementResult{
+                    .value = nullptr,
+                    .code = 0,
+                };
+            }
+        }
 
     } // namespace ffi
 } // namespace simdjson

@@ -66,6 +66,7 @@ pub mod ffi {
         type element;
         type padded_string;
         // // type tape_ref;
+        type document_stream;
 
         type array;
         type object;
@@ -123,6 +124,8 @@ pub mod ffi {
         fn element_minify(elm: &element) -> &str;
         fn object_minify(obj: &object) -> &str;
         fn array_minify(arr: &array) -> &str;
+
+        // fn parser_load_many(p: &mut parser, path: &str, batch_size: usize) -> &document_stream;
     }
 }
 

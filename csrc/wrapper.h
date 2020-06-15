@@ -21,6 +21,7 @@ namespace simdjson
 
         using array_iterator = simdjson::dom::array::iterator;
         using object_iterator = simdjson::dom::object::iterator;
+        using document_stream_iterator = simdjson::dom::document_stream::iterator;
 
         // using simdjson::dom::parser;
         // using simdjson::dom::element;
@@ -46,6 +47,11 @@ namespace simdjson
         struct ObjectIterator {
             object_iterator begin;
             object_iterator end;
+        };
+
+        struct DocumentStreamIterator {
+            document_stream_iterator begin;
+            document_stream_iterator end;
         };
 
         std::unique_ptr<parser> parser_new(size_t max_capacity);
@@ -88,9 +94,16 @@ namespace simdjson
         rust::String object_iterator_key(const ObjectIterator &iter);
         std::unique_ptr<element> object_iterator_value(const ObjectIterator &iter);
 
+        // For display
         rust::Str element_minify(const element &elm);
         rust::Str object_minify(const object &obj);
         rust::Str array_minify(const array &arr);
+
+    
+        // For load many and parse many
+        // std::unique_ptr<document_stream> parser_load_many(parser &p, rust::Str path, size_t batch_size);
+        // std::unique_ptr<DocumentStreamIterator> document_stream_get_iterator(document_stream & stream);
+        // ElementResult document_stream_iterator_next(document_stream_iterator &iter);
         
     } // namespace ffi
 } // namespace simdjson

@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/SunDoge/simdjson-rust.svg?branch=master)](https://travis-ci.org/SunDoge/simdjson-rust)
 [![Build status](https://ci.appveyor.com/api/projects/status/xiwngkkjvg9dbvgs?svg=true)](https://ci.appveyor.com/project/SunDoge/simdjson-rust)
 
-⚠ This crate is currently updating to support `simdjson 0.3.1` on `cxx` branch.
+⚠ This crate is currently updating to support `simdjson 0.3.1`! You can have a try and give feedback.
 
 ## Usage
 
@@ -20,7 +20,7 @@ Then, get started.
 use simdjson_rust::dom;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut parser = dom::parser::Parser::default();
+    let mut parser = dom::Parser::default();
     let tweets = parser.load("json-examples/twitter.json")?;
     println!(
         "{} results.",
@@ -37,7 +37,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 - [x] ParsedJson
 - [x] ParsedJsonIterator
-- [ ] printjson (impl Display)
-- [ ] ci
+- [x] printjson (impl Display)
+- [x] ci
 - [ ] tests
 - [ ] benchmark

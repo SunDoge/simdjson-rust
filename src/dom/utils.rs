@@ -16,7 +16,5 @@ macro_rules! check_result {
         } else {
             Err(SimdJsonError::from($result.code))
         }
-    }
+    };
 }
-
-

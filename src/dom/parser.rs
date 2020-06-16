@@ -23,12 +23,12 @@ impl Parser {
     }
 
     pub fn parse(&mut self, s: &str) -> Result<Element, SimdJsonError> {
-        let result = ffi::parser_parse_string(&mut self.ptr, s);
+        let result = ffi::parser_parse(&mut self.ptr, s);
         check_result!(result, Element)
     }
 
     pub fn parse_padded(&mut self, s: &PaddedString) -> Result<Element, SimdJsonError> {
-        let result = ffi::parser_parse_padded_string(&mut self.ptr, s.as_ptr());
+        let result = ffi::parser_parse_padded(&mut self.ptr, s.as_ptr());
         check_result!(result, Element)
     }
 

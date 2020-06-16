@@ -22,4 +22,3 @@ impl From<&str> for PaddedString {
         PaddedString { ptr }
     }
 }
-

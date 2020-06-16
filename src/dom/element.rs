@@ -136,8 +136,6 @@ impl<'a> Element<'a> {
     }
 }
 
-
-
 // pub trait GetValue<T> {
 //     fn get(&self) -> Result<T, SimdJsonError>;
 // }

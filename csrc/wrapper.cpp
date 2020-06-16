@@ -27,19 +27,21 @@ namespace simdjson
             };
         }
 
-        ElementResult parser_parse_string(parser &p, rust::Str s)
+        ElementResult parser_parse(parser &p, rust::Str s)
         {
-            element value;
+            // element value;
+            auto value = std::make_unique<element>();
             error_code error;
             const std::string &cs = std::string(s);
-            p.parse(cs).tie(value, error);
+            p.parse(cs).tie(*value, error);
             return ElementResult{
-                .value = std::make_unique<element>(value),
+                // .value = std::make_unique<element>(value),
+                .value = std::move(value),
                 .code = int(error),
             };
         }
 
-        ElementResult parser_parse_padded_string(parser &p, const padded_string &s)
+        ElementResult parser_parse_padded(parser &p, const padded_string &s)
         {
             element value;
             error_code error;

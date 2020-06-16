@@ -9,8 +9,6 @@ mod tests {
 
     #[test]
     fn test_element() -> Result<(), Box<dyn std::error::Error>> {
-        
-
         let mut parser = Parser::default();
         let elm = parser.parse(r#"[true, false]"#)?;
         let a: Vec<bool> = de::from_element(&elm)?;

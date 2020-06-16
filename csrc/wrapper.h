@@ -59,8 +59,8 @@ namespace simdjson
 
         std::unique_ptr<parser> parser_new(size_t max_capacity);
         ElementResult parser_load(parser &p, rust::Str path);
-        ElementResult parser_parse_string(parser &p, rust::Str s);
-        ElementResult parser_parse_padded_string(parser &p, const padded_string &s);
+        ElementResult parser_parse(parser &p, rust::Str s);
+        ElementResult parser_parse_padded(parser &p, const padded_string &s);
 
         std::unique_ptr<padded_string> padded_string_from_string(rust::Str s);
 

@@ -1,10 +1,11 @@
 fn main() {
-    cxx_build::bridge("src/libsimdjson.rs")  // returns a cc::Build
+    cxx_build::bridge("src/libsimdjson.rs") // returns a cc::Build
         .file("csrc/wrapper.cpp")
         .file("csrc/simdjson.cpp")
         .flag_if_supported("-std=c++17")
         .flag_if_supported("/std:c++latest") // For windows
         .flag_if_supported("-pthread")
+        .flag_if_supported("-O 3")
         .compile("simdjson-sys");
 
     println!("cargo:rerun-if-changed=src/main.rs");

@@ -3,6 +3,7 @@ use super::parser::Parser;
 use crate::error::{SimdJsonError, SimdJsonResult};
 use crate::libsimdjson::ffi;
 use cxx::UniquePtr;
+use std::fmt;
 use std::marker::PhantomData;
 
 pub type ArrayIterPtr = UniquePtr<ffi::ArrayIterator>;
@@ -31,7 +32,7 @@ impl<'a> Array<'a> {
         check_result!(result, Element)
     }
 
-    pub fn minify(&self) -> &str {
+    pub fn minify(&self) -> String {
         ffi::array_minify(&self.ptr)
     }
 }
@@ -90,7 +91,7 @@ mod tests {
     #[test]
     fn array_iter() -> Result<(), Box<dyn std::error::Error>> {
         let mut parser = Parser::default();
-        let elm = parser.parse_str("[true, true, true, true]")?;
+        let elm = parser.parse("[true, true, true, true]")?;
         let arr = elm.get_array()?;
 
         assert!(arr.at_index(3)?.get_bool()?);
@@ -104,5 +105,11 @@ mod tests {
         }
 
         Ok(())
+    }
+}
+
+impl<'a> fmt::Display for Array<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.minify())
     }
 }

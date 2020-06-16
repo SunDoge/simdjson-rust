@@ -66,6 +66,7 @@ pub mod ffi {
         type element;
         type padded_string;
         // // type tape_ref;
+        type document_stream;
 
         type array;
         type object;
@@ -74,13 +75,14 @@ pub mod ffi {
         // type object_iterator;
         type ArrayIterator;
         type ObjectIterator;
+        type DocumentStreamIterator;
 
         // type simdjson_result;
 
         fn parser_new(max_capacity: usize) -> UniquePtr<parser>;
         fn parser_load(p: &mut parser, path: &str) -> ElementResult;
-        fn parser_parse_string(p: &mut parser, s: &str) -> ElementResult;
-        fn parser_parse_padded_string(p: &mut parser, s: &padded_string) -> ElementResult;
+        fn parser_parse(p: &mut parser, s: &str) -> ElementResult;
+        fn parser_parse_padded(p: &mut parser, s: &padded_string) -> ElementResult;
 
         fn padded_string_from_string(s: &str) -> UniquePtr<padded_string>;
 
@@ -119,14 +121,32 @@ pub mod ffi {
         fn object_iterator_key(iter: &ObjectIterator) -> String;
         fn object_iterator_value(iter: &ObjectIterator) -> UniquePtr<element>;
 
+        fn element_minify(elm: &element) -> String;
+        fn object_minify(obj: &object) -> String;
+        fn array_minify(arr: &array) -> String;
 
-        fn element_minify(elm: &element) -> &str;
-        fn object_minify(obj: &object) -> &str;
-        fn array_minify(arr: &array) -> &str;
+        fn parser_load_many(
+            p: &mut parser,
+            path: &str,
+            batch_size: usize,
+        ) -> UniquePtr<DocumentStreamIterator>;
+        fn document_stream_iterator_next(iter: &mut DocumentStreamIterator) -> ElementResult;
+
+        fn parser_parse_many(
+            p: &mut parser,
+            s: &str,
+            batch_size: usize,
+        ) -> UniquePtr<DocumentStreamIterator>;
+        fn parser_parse_many_padded(
+            p: &mut parser,
+            s: &padded_string,
+            batch_size: usize,
+        ) -> UniquePtr<DocumentStreamIterator>;
     }
 }
 
 pub const SIMDJSON_MAXSIZE_BYTES: usize = 0xFFFFFFFF;
+pub const DEFAULT_BATCH_SIZE: usize = 1000000;
 
 #[cfg(test)]
 mod tests {
@@ -143,7 +163,7 @@ mod tests {
         let result = ffi::parser_load(&mut parser, "json-examples/twitter.json");
         // dbg!(parser.load);
         println!("parse code: {}", result.code);
-        let result = ffi::parser_parse_string(&mut parser, r#""1234""#);
+        let result = ffi::parser_parse(&mut parser, r#""1234""#);
         println!("parse code: {}", result.code);
         println!("value: {:?}", ffi::element_get_string(&result.value).value);
     }

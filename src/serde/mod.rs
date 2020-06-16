@@ -9,10 +9,9 @@ mod tests {
 
     #[test]
     fn test_element() -> Result<(), Box<dyn std::error::Error>> {
-        
-
         let mut parser = Parser::default();
-        let elm = parser.parse_str(r#"[true, false]"#)?;
+        let elm = parser.parse(r#"[true, false]"#)?;
+        println!("{}", elm);
         let a: Vec<bool> = de::from_element(&elm)?;
         assert_eq!(vec![true, false], a);
 
@@ -20,7 +19,8 @@ mod tests {
         struct A {
             field1: bool,
         }
-        let elm = parser.parse_str(r#"{"field1": false}"#)?;
+        let elm = parser.parse(r#"{"field1": false}"#)?;
+        println!("{}", elm);
         let a: A = de::from_element(&elm)?;
         assert_eq!(a.field1, false);
 

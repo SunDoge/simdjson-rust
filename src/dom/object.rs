@@ -3,6 +3,7 @@ use super::parser::Parser;
 use crate::error::{SimdJsonError, SimdJsonResult};
 use crate::libsimdjson::ffi;
 use cxx::UniquePtr;
+use std::fmt;
 use std::marker::PhantomData;
 
 pub type ObjectIterPtr = UniquePtr<ffi::ObjectIterator>;
@@ -42,7 +43,7 @@ impl<'a> Object<'a> {
         check_result!(result, Element)
     }
 
-    pub fn minify(&self) -> &str {
+    pub fn minify(&self) -> String {
         ffi::object_minify(&self.ptr)
     }
 }
@@ -116,5 +117,11 @@ mod tests {
         }
 
         Ok(())
+    }
+}
+
+impl<'a> fmt::Display for Object<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.minify())
     }
 }

@@ -5,6 +5,7 @@ use crate::error::SimdJsonError;
 use crate::libsimdjson::ffi;
 use cxx::UniquePtr;
 use std::borrow::Cow;
+use std::fmt;
 use std::marker::PhantomData;
 use std::mem::transmute;
 use std::str::{self, Utf8Error};
@@ -131,7 +132,7 @@ impl<'a> Element<'a> {
         ffi::element_is_null(&self.ptr)
     }
 
-    pub fn minify(&self) -> &str {
+    pub fn minify(&self) -> String {
         ffi::element_minify(&self.ptr)
     }
 }
@@ -146,3 +147,9 @@ impl<'a> Element<'a> {
 //         check_result!(result)
 //     }
 // }
+
+impl<'a> fmt::Display for Element<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.minify())
+    }
+}

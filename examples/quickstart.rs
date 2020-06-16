@@ -1,7 +1,7 @@
 use simdjson_rust::dom;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut parser = dom::parser::Parser::default();
+    let mut parser = dom::Parser::default();
     let tweets = parser.load("json-examples/twitter.json")?;
     println!(
         "{} results.",

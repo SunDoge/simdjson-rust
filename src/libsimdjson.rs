@@ -121,9 +121,9 @@ pub mod ffi {
         fn object_iterator_key(iter: &ObjectIterator) -> String;
         fn object_iterator_value(iter: &ObjectIterator) -> UniquePtr<element>;
 
-        fn element_minify(elm: &element) -> &str;
-        fn object_minify(obj: &object) -> &str;
-        fn array_minify(arr: &array) -> &str;
+        fn element_minify(elm: &element) -> String;
+        fn object_minify(obj: &object) -> String;
+        fn array_minify(arr: &array) -> String;
 
         fn parser_load_many(
             p: &mut parser,

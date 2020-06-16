@@ -7,6 +7,8 @@ pub mod element;
 pub mod object;
 pub mod parser;
 
+pub use self::parser::Parser;
+
 #[cfg(test)]
 mod tests {
     use super::*;

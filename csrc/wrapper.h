@@ -98,9 +98,9 @@ namespace simdjson
         std::unique_ptr<element> object_iterator_value(const ObjectIterator &iter);
 
         // For display
-        rust::Str element_minify(const element &elm);
-        rust::Str object_minify(const object &obj);
-        rust::Str array_minify(const array &arr);
+        rust::String element_minify(const element &elm);
+        rust::String object_minify(const object &obj);
+        rust::String array_minify(const array &arr);
 
         // For load many and parse many
         std::unique_ptr<DocumentStreamIterator> parser_load_many(parser &p, rust::Str path, size_t batch_size);

@@ -338,22 +338,22 @@ namespace simdjson
             return std::make_unique<element>(iter.begin.value());
         }
 
-        rust::Str element_minify(const element &elm)
+        rust::String element_minify(const element &elm)
         {
             auto s = std::string(minify(elm));
-            return rust::Str(s);
+            return rust::String(s);
         }
 
-        rust::Str object_minify(const object &obj)
+        rust::String object_minify(const object &obj)
         {
             auto s = std::string(minify(obj));
-            return rust::Str(s);
+            return rust::String(s);
         }
 
-        rust::Str array_minify(const array &arr)
+        rust::String array_minify(const array &arr)
         {
             auto s = std::string(minify(arr));
-            return rust::Str(s);
+            return rust::String(s);
         }
 
         std::unique_ptr<DocumentStreamIterator> parser_load_many(parser &p, rust::Str path, size_t batch_size)

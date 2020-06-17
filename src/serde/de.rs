@@ -5,8 +5,8 @@ use crate::dom::parser::Parser;
 use crate::error::SimdJsonError;
 use crate::libsimdjson::ffi;
 use serde::de::{
-    self, value::StringDeserializer, Deserialize, DeserializeSeed, Deserializer, IntoDeserializer,
-    MapAccess, SeqAccess, Visitor,
+    self, Deserialize, DeserializeSeed, Deserializer, EnumAccess, IntoDeserializer, MapAccess,
+    SeqAccess, VariantAccess, Visitor,
 };
 
 // pub struct ElementVisitor;
@@ -35,7 +35,7 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
         match self.get_type() {
             ElementType::NullValue => self.deserialize_unit(visitor),
             ElementType::Bool => self.deserialize_bool(visitor),
-            ElementType::String => self.deserialize_str(visitor),
+            ElementType::String => self.deserialize_string(visitor),
             ElementType::Uint64 => self.deserialize_u64(visitor),
             ElementType::Int64 => self.deserialize_i64(visitor),
             ElementType::Array => self.deserialize_seq(visitor),
@@ -146,6 +146,7 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
     where
         V: Visitor<'de>,
     {
+        // visitor.visit_borrowed_str(&self.get_string()?)
         unimplemented!()
     }
 
@@ -153,7 +154,16 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
     where
         V: Visitor<'de>,
     {
-        visitor.visit_string(self.get_string()?)
+        match self.get_type() {
+            ElementType::Object => {
+                let value = self.get_object()?.into_iter().value().get_string()?;
+                visitor.visit_string(value)
+            }
+            ElementType::String => visitor.visit_string(self.get_string()?),
+            _ => unreachable!(),
+        }
+
+        // self.deserialize_str(visitor)
     }
 
     // The `Serializer` implementation on the previous page serialized byte
@@ -220,7 +230,7 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
     // Deserialization of compound types like sequences and maps happens by
     // passing the visitor an "Access" object that gives it the ability to
     // iterate through the data contained in the sequence.
-    fn deserialize_seq<V>(mut self, visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
@@ -260,7 +270,7 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
     // Much like `deserialize_seq` but calls the visitors `visit_map` method
     // with a `MapAccess` implementation, rather than the visitor's `visit_seq`
     // method with a `SeqAccess` implementation.
-    fn deserialize_map<V>(mut self, visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_map<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
@@ -294,7 +304,11 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
     where
         V: Visitor<'de>,
     {
-        unimplemented!()
+        match self.get_type() {
+            ElementType::String => visitor.visit_enum(self.get_string()?.into_deserializer()),
+            ElementType::Object => visitor.visit_enum(Enum::new(self)),
+            _ => Err(SimdJsonError::Message("Expect Enum".to_string())),
+        }
     }
 
     // An identifier in Serde is the type that identifies a field of a struct or
@@ -305,7 +319,12 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
     where
         V: Visitor<'de>,
     {
-        self.deserialize_str(visitor)
+        // self.deserialize_string(visitor)
+        // self.deserialize_string()
+        let object = self.get_object()?;
+        let key = object.into_iter().key();
+        visitor.visit_string(key)
+        // unimplemented!()
     }
 
     // Like `deserialize_any` but indicates to the `Deserializer` that it makes
@@ -363,5 +382,138 @@ impl<'de, 'a> MapAccess<'de> for ObjectIter<'a> {
         let result = seed.deserialize(&self.value());
         ffi::object_iterator_next(&mut self.ptr);
         result
+    }
+}
+
+struct Enum<'a> {
+    de: &'a Element<'a>,
+}
+
+impl<'a> Enum<'a> {
+    fn new(de: &'a Element<'a>) -> Self {
+        Enum { de }
+    }
+}
+
+// `EnumAccess` is provided to the `Visitor` to give it the ability to determine
+// which variant of the enum is supposed to be deserialized.
+//
+// Note that all enum deserialization methods in Serde refer exclusively to the
+// "externally tagged" enum representation.
+impl<'a, 'de> EnumAccess<'de> for Enum<'a> {
+    type Error = SimdJsonError;
+    type Variant = Self;
+
+    fn variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant), Self::Error>
+    where
+        V: DeserializeSeed<'de>,
+    {
+        // The `deserialize_enum` method parsed a `{` character so we are
+        // currently inside of a map. The seed will be deserializing itself from
+        // the key of the map.
+        let val = seed.deserialize(&*self.de)?;
+        // Parse the colon separating map key from value.
+        // if self.de.next_char()? == ':' {
+        //     Ok((val, self))
+        // } else {
+        //     Err(Error::ExpectedMapColon)
+        // }
+
+        // if self.de.get_type() == ElementType::Object {
+        //     Ok((val, self))
+        // } else {
+        //     Err(SimdJsonError::Message("Expect Object".to_string()))
+        //     // panic!("variant_seed");
+        // }
+        // dbg!(val);
+        let value = self.de.get_object()?.into_iter().value();
+        Ok((val, Enum::new(&value)))
+
+    }
+}
+
+// `VariantAccess` is provided to the `Visitor` to give it the ability to see
+// the content of the single variant that it decided to deserialize.
+impl<'a, 'de> VariantAccess<'de> for Enum<'a> {
+    type Error = SimdJsonError;
+
+    // If the `Visitor` expected this variant to be a unit variant, the input
+    // should have been the plain string case handled in `deserialize_enum`.
+    fn unit_variant(self) -> Result<(), Self::Error> {
+        Err(SimdJsonError::Message("Expect String".to_string()))
+    }
+
+    // Newtype variants are represented in JSON as `{ NAME: VALUE }` so
+    // deserialize the value here.
+    fn newtype_variant_seed<T>(self, seed: T) -> Result<T::Value, Self::Error>
+    where
+        T: DeserializeSeed<'de>,
+    {
+        seed.deserialize(self.de)
+    }
+
+    // Tuple variants are represented in JSON as `{ NAME: [DATA...] }` so
+    // deserialize the sequence of data here.
+    fn tuple_variant<V>(self, _len: usize, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de>,
+    {
+        de::Deserializer::deserialize_seq(self.de, visitor)
+    }
+
+    // Struct variants are represented in JSON as `{ NAME: { K: V, ... } }` so
+    // deserialize the inner map here.
+    fn struct_variant<V>(
+        self,
+        _fields: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de>,
+    {
+        de::Deserializer::deserialize_map(self.de, visitor)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::dom;
+    use serde::Deserialize;
+
+    #[test]
+    fn test_enum() -> Result<(), SimdJsonError> {
+        #[derive(Deserialize, PartialEq, Debug)]
+        enum E {
+            Unit,
+            Newtype(u32),
+            Tuple(u32, u32),
+            Struct { a: u32 },
+        }
+
+        // let mut parser = dom::Parser::default();
+        // let j = r#""Unit""#;
+        // let expected = E::Unit;
+        // let elm = parser.parse(j)?;
+        // assert_eq!(expected, from_element(&elm).unwrap());
+        
+        let mut parser = dom::Parser::default();
+        // let j = r#"{"Newtype":1}"#;
+        // let expected = E::Newtype(1);
+        // let elm = parser.parse(j)?;
+        // println!("{}", elm);
+        // assert_eq!(expected, from_element(&elm).unwrap());
+
+        // let j = r#"{"Tuple":[1,2]}"#;
+        // let expected = E::Tuple(1, 2);
+        // let elm = parser.parse(j)?;
+        // assert_eq!(expected, from_element(&elm).unwrap());
+
+        let j = r#"{"Struct":{"a":1}}"#;
+        let expected = E::Struct { a: 1 };
+        let elm = parser.parse(j)?;
+        assert_eq!(expected, from_element(&elm).unwrap());
+
+        Ok(())
     }
 }

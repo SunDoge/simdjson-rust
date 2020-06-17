@@ -82,11 +82,12 @@ impl<'a> Iterator for ObjectIter<'a> {
     type Item = (String, Element<'a>);
 
     fn next(&mut self) -> Option<Self::Item> {
-        ffi::object_iterator_next(&mut self.ptr);
         if self.has_next() {
-            None
+            let result = Some((self.key(), self.value()));
+            ffi::object_iterator_next(&mut self.ptr);
+            result
         } else {
-            Some((self.key(), self.value()))
+            None
         }
     }
 }

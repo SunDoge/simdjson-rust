@@ -2,11 +2,11 @@ use std::env;
 use std::fs;
 use std::path::PathBuf;
 
-fn copy_header(header: &str, out_dir: &PathBuf) {
-    let mut header_out_path = out_dir.clone();
-    header_out_path.push(header);
-    fs::copy(format!("csrc/{}", &header), &header_out_path).unwrap();
-}
+// fn copy_header(header: &str, out_dir: &PathBuf) {
+//     let mut header_out_path = out_dir.clone();
+//     header_out_path.push(header);
+//     fs::copy(format!("csrc/{}", &header), &header_out_path).unwrap();
+// }
 
 fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();

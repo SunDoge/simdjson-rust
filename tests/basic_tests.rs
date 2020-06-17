@@ -25,9 +25,14 @@ mod number_tests {
         }
     }
 
+    fn double_max_digits10() -> usize {
+        let x = f64::MANTISSA_DIGITS as f32 * 2.0_f32.log10() + 1.;
+        x.ceil() as usize
+    }
+
     #[test]
     fn small_integers() -> Result<(), SimdJsonError> {
-        let mut parser = dom::parser::Parser::default();
+        let mut parser = dom::Parser::default();
 
         for _m in 10..20 {
             for i in -1024..1024 {
@@ -36,6 +41,25 @@ mod number_tests {
 
                 assert_eq!(actual, i);
             }
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn powers_of_two() -> Result<(), SimdJsonError> {
+        let mut parser = dom::Parser::default();
+
+        let mut max_ulp = 0;
+        for i in -1075..1024 {
+            let expected = (i as f64).powi(2);
+            let buf = format!("{:.*e}", double_max_digits10() - 1, expected);
+            let actual = parser.parse(&buf)?.get_f64()?;
+            let ulp = f64_ulp_dist(actual, expected);
+            if ulp > max_ulp {
+                max_ulp = ulp;
+            }
+            assert_eq!(ulp, 0)
         }
 
         Ok(())

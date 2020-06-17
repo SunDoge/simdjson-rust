@@ -103,11 +103,14 @@ namespace simdjson
         rust::String array_minify(const array &arr);
 
         // For load many and parse many
-        std::unique_ptr<DocumentStreamIterator> parser_load_many(parser &p, rust::Str path, size_t batch_size);
+        std::unique_ptr<document_stream> parser_load_many(parser &p, rust::Str path, size_t batch_size);
         std::unique_ptr<DocumentStreamIterator> document_stream_get_iterator(document_stream &stream);
-        ElementResult document_stream_iterator_next(DocumentStreamIterator &iter);
+        void document_stream_iterator_next(DocumentStreamIterator &iter);
+        bool document_stream_iterator_has_next(const DocumentStreamIterator &iter);
+        ElementResult document_stream_iterator_value(DocumentStreamIterator &iter);
+
         
-        std::unique_ptr<DocumentStreamIterator> parser_parse_many(parser &p, rust::Str s, size_t batch_size);
-        std::unique_ptr<DocumentStreamIterator> parser_parse_many_padded(parser &p, const padded_string &s, size_t batch_size);
+        std::unique_ptr<document_stream> parser_parse_many(parser &p, rust::Str s, size_t batch_size);
+        std::unique_ptr<document_stream> parser_parse_many_padded(parser &p, const padded_string &s, size_t batch_size);
     } // namespace ffi
 } // namespace simdjson

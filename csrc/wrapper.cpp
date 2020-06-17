@@ -356,15 +356,15 @@ namespace simdjson
             return rust::String(s);
         }
 
-        std::unique_ptr<DocumentStreamIterator> parser_load_many(parser &p, rust::Str path, size_t batch_size)
+        std::unique_ptr<document_stream> parser_load_many(parser &p, rust::Str path, size_t batch_size)
         {
             // std::unique_ptr<document_stream> stream = nullptr;
             auto cpath = std::string(path);
 
             auto stream = p.load_many(cpath, batch_size);
 
-            // return std::make_unique<document_stream>()
-            return document_stream_get_iterator(stream);
+            return std::make_unique<document_stream>(std::move(stream));
+            // return document_stream_get_iterator(stream);
         }
         std::unique_ptr<DocumentStreamIterator> document_stream_get_iterator(document_stream &stream)
         {
@@ -372,41 +372,60 @@ namespace simdjson
                 .begin = stream.begin(),
                 .end = stream.end(),
             };
-            return std::make_unique<DocumentStreamIterator>(iter);
-        }
-        ElementResult document_stream_iterator_next(DocumentStreamIterator &iter)
-        {
-            if (iter.begin != iter.end)
-            {
-                element value;
-                error_code error;
-                (*iter.begin).tie(value, error);
-                ++(iter.begin);
-                return ElementResult{
-                    .value = std::make_unique<element>(value),
-                    .code = int(error),
-                };
-            }
-            else
-            {
-                return ElementResult{
-                    .value = nullptr,
-                    .code = 0,
-                };
-            }
+            return std::make_unique<DocumentStreamIterator>(std::move(iter));
         }
 
-        std::unique_ptr<DocumentStreamIterator> parser_parse_many(parser &p, rust::Str s, size_t batch_size)
+        void document_stream_iterator_next(DocumentStreamIterator &iter)
+        {
+            // if (iter.begin != iter.end)
+            // {
+            //     element value;
+            //     error_code error;
+            //     (*iter.begin).tie(value, error);
+            //     // ++(iter.begin);
+            //     return ElementResult{
+            //         .value = std::make_unique<element>(std::move(value)),
+            //         .code = int(error),
+            //     };
+            // }
+            // else
+            // {
+            //     return ElementResult{
+            //         .value = nullptr,
+            //         .code = 0,
+            //     };
+            // }
+            ++(iter.begin);
+        }
+
+        bool document_stream_iterator_has_next(const DocumentStreamIterator &iter)
+        {
+            return iter.begin != iter.end;
+        }
+
+        ElementResult document_stream_iterator_value(DocumentStreamIterator &iter)
+        {
+            element value;
+            error_code error;
+            (*iter.begin).tie(value, error);
+            
+            return ElementResult{
+                .value = std::make_unique<element>(std::move(value)),
+                .code = int(error),
+            };
+        }
+
+        std::unique_ptr<document_stream> parser_parse_many(parser &p, rust::Str s, size_t batch_size)
         {
             auto cs = std::string(s);
             auto stream = p.parse_many(cs, batch_size);
-            return document_stream_get_iterator(stream);
+            return std::make_unique<document_stream>(std::move(stream));
         }
 
-        std::unique_ptr<DocumentStreamIterator> parser_parse_many_padded(parser &p, const padded_string &s, size_t batch_size)
+        std::unique_ptr<document_stream> parser_parse_many_padded(parser &p, const padded_string &s, size_t batch_size)
         {
             auto stream = p.parse_many(s, batch_size);
-            return document_stream_get_iterator(stream);
+            return std::make_unique<document_stream>(std::move(stream));
         }
 
     } // namespace ffi

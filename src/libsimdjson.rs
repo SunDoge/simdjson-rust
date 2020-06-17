@@ -129,19 +129,25 @@ pub mod ffi {
             p: &mut parser,
             path: &str,
             batch_size: usize,
-        ) -> UniquePtr<DocumentStreamIterator>;
-        fn document_stream_iterator_next(iter: &mut DocumentStreamIterator) -> ElementResult;
+        ) -> UniquePtr<document_stream>;
+
+        fn document_stream_get_iterator(dc: &mut document_stream) -> UniquePtr<DocumentStreamIterator>;
+
+        fn document_stream_iterator_next(iter: &mut DocumentStreamIterator);
+        fn document_stream_iterator_has_next(iter: &DocumentStreamIterator) -> bool;
+        fn document_stream_iterator_value(iter: &mut DocumentStreamIterator) -> ElementResult;
 
         fn parser_parse_many(
             p: &mut parser,
             s: &str,
             batch_size: usize,
-        ) -> UniquePtr<DocumentStreamIterator>;
+        ) -> UniquePtr<document_stream>;
+
         fn parser_parse_many_padded(
             p: &mut parser,
             s: &padded_string,
             batch_size: usize,
-        ) -> UniquePtr<DocumentStreamIterator>;
+        ) -> UniquePtr<document_stream>;
     }
 }
 

@@ -34,15 +34,15 @@ pub enum ElementType {
 
 impl From<i32> for ElementType {
     fn from(code: i32) -> Self {
-        match code {
-            0 => Self::Array,
-            1 => Self::Object,
-            2 => Self::Int64,
-            3 => Self::Uint64,
-            4 => Self::Double,
-            5 => Self::String,
-            6 => Self::Bool,
-            7 => Self::NullValue,
+        match code as u8 {
+            b'[' => Self::Array,
+            b'{' => Self::Object,
+            b'l' => Self::Int64,
+            b'u' => Self::Uint64,
+            b'd' => Self::Double,
+            b'"' => Self::String,
+            b't' => Self::Bool,
+            b'n' => Self::NullValue,
             _ => unreachable!(),
         }
     }

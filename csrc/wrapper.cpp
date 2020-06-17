@@ -1,6 +1,6 @@
 #include "wrapper.h"
 #include <iostream>
-#include "src/libsimdjson.rs.h"
+#include "libsimdjson.rs.h"
 
 namespace simdjson
 {

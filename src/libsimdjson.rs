@@ -61,7 +61,7 @@ pub mod ffi {
     // }
 
     extern "C" {
-        include!("csrc/wrapper.h");
+        include!("wrapper.h");
         type parser;
         type element;
         type padded_string;

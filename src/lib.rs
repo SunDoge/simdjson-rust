@@ -13,7 +13,7 @@ pub mod dom;
 pub mod error;
 pub mod libsimdjson;
 pub mod padded_string;
-pub mod serde;
+// pub mod serde;
 
 #[cfg(test)]
 mod tests {

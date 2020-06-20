@@ -426,8 +426,8 @@ impl<'a, 'de> EnumAccess<'de> for Enum<'a> {
         //     // panic!("variant_seed");
         // }
         // dbg!(val);
-        let value = self.de.get_object()?.into_iter().value();
-        Ok((val, Enum::new(&value)))
+        // let value = self.de.get_object()?.into_iter().value();
+        Ok((val, self))
 
     }
 }

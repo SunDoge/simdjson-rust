@@ -1,5 +1,5 @@
-use super::array::Array;
-use super::object::Object;
+// use super::array::Array;
+// use super::object::Object;
 use super::parser::Parser;
 use crate::error::SimdJsonError;
 use crate::libsimdjson::ffi;
@@ -48,23 +48,25 @@ impl From<i32> for ElementType {
     }
 }
 
-pub struct Element<'a> {
+pub struct Element<'p> {
     ptr: ElementPtr,
     // ptr: &'a ffi::element,
-    _phantom: PhantomData<&'a Parser>,
+    // _phantom: PhantomData<&'p Parser>,
+    parser: &'p Parser,
 }
 
-impl<'a> From<ElementPtr> for Element<'a> {
-    fn from(ptr: ElementPtr) -> Self {
-        Element::new(ptr)
-    }
-}
+// impl<'p> From<ElementPtr> for Element<'p> {
+//     fn from(ptr: ElementPtr) -> Self {
+//         Element::new(ptr)
+//     }
+// }
 
-impl<'a> Element<'a> {
-    fn new(ptr: ElementPtr) -> Self {
+impl<'p> Element<'p> {
+    pub fn new(ptr: ElementPtr, parser: &'p Parser) -> Self {
         Element {
             ptr,
-            _phantom: PhantomData,
+            // _phantom: PhantomData,
+            parser,
         }
     }
 
@@ -76,17 +78,17 @@ impl<'a> Element<'a> {
         //     Err(SimdJsonError::from(result.code))
         // }
 
-        check_result!(result, Element)
+        check_result!(result, Element, self.parser)
     }
 
     pub fn at_key(&self, key: &str) -> Result<Element, SimdJsonError> {
         let result = ffi::element_at_key(&self.ptr, key);
-        check_result!(result, Element)
+        check_result!(result, Element, self.parser)
     }
 
     pub fn at_index(&self, index: usize) -> Result<Element, SimdJsonError> {
         let result = ffi::element_at_index(&self.ptr, index);
-        check_result!(result, Element)
+        check_result!(result, Element, self.parser)
     }
 
     pub fn get_string(&self) -> Result<String, SimdJsonError> {
@@ -114,15 +116,15 @@ impl<'a> Element<'a> {
         check_result!(result)
     }
 
-    pub fn get_object(&self) -> Result<Object, SimdJsonError> {
-        let result = ffi::element_get_object(&self.ptr);
-        check_result!(result, Object)
-    }
+    // pub fn get_object(&self) -> Result<Object<'p>, SimdJsonError> {
+    //     let result = ffi::element_get_object(&self.ptr);
+    //     check_result!(result, Object)
+    // }
 
-    pub fn get_array(&self) -> Result<Array, SimdJsonError> {
-        let result = ffi::element_get_array(&self.ptr);
-        check_result!(result, Array)
-    }
+    // pub fn get_array(&self) -> Result<Array, SimdJsonError> {
+    //     let result = ffi::element_get_array(&self.ptr);
+    //     check_result!(result, Array)
+    // }
 
     pub fn get_type(&self) -> ElementType {
         ElementType::from(ffi::element_get_type(&self.ptr))

@@ -17,4 +17,12 @@ macro_rules! check_result {
             Err(SimdJsonError::from($result.code))
         }
     };
+    ($result: ident, $element_type: ident, $parser: expr) => {
+        if $result.code < 2 {
+            // Ok($element_type::from(&$result.value))
+            Ok($element_type::new($result.value, $parser))
+        } else {
+            Err(SimdJsonError::from($result.code))
+        }
+    };
 }

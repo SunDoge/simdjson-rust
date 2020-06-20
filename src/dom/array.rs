@@ -80,7 +80,7 @@ impl<'a, 'p> IntoIterator for &'a Array<'p> {
     }
 }
 
-impl<'a> fmt::Display for Array<'a> {
+impl<'p> fmt::Display for Array<'p> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.minify())
     }

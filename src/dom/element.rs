@@ -1,5 +1,5 @@
 use super::array::Array;
-// use super::object::Object;
+use super::object::Object;
 use super::parser::Parser;
 use crate::error::SimdJsonError;
 use crate::libsimdjson::ffi;
@@ -116,10 +116,10 @@ impl<'p> Element<'p> {
         check_result!(result)
     }
 
-    // pub fn get_object(&self) -> Result<Object<'p>, SimdJsonError> {
-    //     let result = ffi::element_get_object(&self.ptr);
-    //     check_result!(result, Object)
-    // }
+    pub fn get_object(&self) -> Result<Object<'p>, SimdJsonError> {
+        let result = ffi::element_get_object(&self.ptr);
+        check_result!(result, Object, self.parser)
+    }
 
     pub fn get_array(&self) -> Result<Array, SimdJsonError> {
         let result = ffi::element_get_array(&self.ptr);

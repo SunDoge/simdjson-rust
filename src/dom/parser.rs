@@ -1,4 +1,4 @@
-// use super::document_stream::DocumentStream;
+use super::document_stream::DocumentStream;
 use super::element::Element;
 use crate::error::SimdJsonError;
 use crate::libsimdjson::{ffi, DEFAULT_BATCH_SIZE, SIMDJSON_MAXSIZE_BYTES};
@@ -22,7 +22,7 @@ impl Parser {
     //     check_result!(result, Element)
     // }
 
-    pub fn parse(& mut self, s: &str) -> Result<Element, SimdJsonError> {
+    pub fn parse(&mut self, s: &str) -> Result<Element, SimdJsonError> {
         let result = ffi::parser_parse(&mut self.ptr, s);
         check_result!(result, Element, self)
         // if result.code < 2 {
@@ -32,61 +32,64 @@ impl Parser {
         // }
     }
 
-    // pub fn parse_padded(&mut self, s: &PaddedString) -> Result<Element, SimdJsonError> {
-    //     let result = ffi::parser_parse_padded(&mut self.ptr, s.as_ptr());
-    //     check_result!(result, Element)
-    // }
+    pub fn parse_padded(&mut self, s: &PaddedString) -> Result<Element, SimdJsonError> {
+        let result = ffi::parser_parse_padded(&mut self.ptr, s.as_ptr());
+        check_result!(result, Element, self)
+    }
 
-    // pub fn load_many<P: AsRef<Path>>(
-    //     &mut self,
-    //     path: P,
-    //     batch_size: usize,
-    // ) -> Result<DocumentStream, SimdJsonError> {
-    //     let iter_ptr = ffi::parser_load_many(
-    //         &mut self.ptr,
-    //         path.as_ref()
-    //             .to_str()
-    //             .ok_or(SimdJsonError::InvalidUriFragment)?,
-    //         batch_size,
-    //     );
-    //     Ok(iter_ptr.into())
-    // }
+    pub fn load_many<P: AsRef<Path>>(
+        &mut self,
+        path: P,
+        batch_size: usize,
+    ) -> Result<DocumentStream, SimdJsonError> {
+        let iter_ptr = ffi::parser_load_many(
+            &mut self.ptr,
+            path.as_ref()
+                .to_str()
+                .ok_or(SimdJsonError::InvalidUriFragment)?,
+            batch_size,
+        );
+        // Ok(iter_ptr.into())
+        Ok(DocumentStream::new(iter_ptr, self))
+    }
 
-    // pub fn load_many_default<P: AsRef<Path>>(
-    //     &mut self,
-    //     path: P,
-    // ) -> Result<DocumentStream, SimdJsonError> {
-    //     self.load_many(path, DEFAULT_BATCH_SIZE)
-    // }
+    pub fn load_many_default<P: AsRef<Path>>(
+        &mut self,
+        path: P,
+    ) -> Result<DocumentStream, SimdJsonError> {
+        self.load_many(path, DEFAULT_BATCH_SIZE)
+    }
 
-    // pub fn parse_many(
-    //     &mut self,
-    //     s: &str,
-    //     batch_size: usize,
-    // ) -> Result<DocumentStream, SimdJsonError> {
-    //     let iter_ptr = ffi::parser_parse_many(&mut self.ptr, s, batch_size);
-    //     Ok(iter_ptr.into())
-    // }
+    pub fn parse_many(
+        &mut self,
+        s: &str,
+        batch_size: usize,
+    ) -> Result<DocumentStream, SimdJsonError> {
+        let iter_ptr = ffi::parser_parse_many(&mut self.ptr, s, batch_size);
+        // Ok(iter_ptr.into())
+        Ok(DocumentStream::new(iter_ptr, self))
+    }
 
-    // pub fn parse_many_padded(
-    //     &mut self,
-    //     s: &PaddedString,
-    //     batch_size: usize,
-    // ) -> Result<DocumentStream, SimdJsonError> {
-    //     let iter_ptr = ffi::parser_parse_many_padded(&mut self.ptr, s.as_ptr(), batch_size);
-    //     Ok(iter_ptr.into())
-    // }
+    pub fn parse_many_padded(
+        &mut self,
+        s: &PaddedString,
+        batch_size: usize,
+    ) -> Result<DocumentStream, SimdJsonError> {
+        let iter_ptr = ffi::parser_parse_many_padded(&mut self.ptr, s.as_ptr(), batch_size);
+        // Ok(iter_ptr.into())
+        Ok(DocumentStream::new(iter_ptr, self))
+    }
 
-    // pub fn parse_many_default(&mut self, s: &str) -> Result<DocumentStream, SimdJsonError> {
-    //     self.parse_many(s, DEFAULT_BATCH_SIZE)
-    // }
+    pub fn parse_many_default(&mut self, s: &str) -> Result<DocumentStream, SimdJsonError> {
+        self.parse_many(s, DEFAULT_BATCH_SIZE)
+    }
 
-    // pub fn parse_many_padded_default(
-    //     &mut self,
-    //     s: &PaddedString,
-    // ) -> Result<DocumentStream, SimdJsonError> {
-    //     self.parse_many_padded(s, DEFAULT_BATCH_SIZE)
-    // }
+    pub fn parse_many_padded_default(
+        &mut self,
+        s: &PaddedString,
+    ) -> Result<DocumentStream, SimdJsonError> {
+        self.parse_many_padded(s, DEFAULT_BATCH_SIZE)
+    }
 }
 
 impl Default for Parser {

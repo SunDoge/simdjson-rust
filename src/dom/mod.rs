@@ -2,7 +2,7 @@
 mod utils;
 
 pub mod array;
-// pub mod document_stream;
+pub mod document_stream;
 pub mod element;
 pub mod object;
 pub mod parser;

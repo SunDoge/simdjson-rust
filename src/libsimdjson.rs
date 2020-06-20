@@ -50,6 +50,11 @@ pub mod ffi {
         value: UniquePtr<element>,
     }
 
+    struct PaddedStringResult {
+        value: UniquePtr<padded_string>,
+        code: i32,
+    }
+
     // struct ArrayIterator {
     //     begin: UniquePtr<array_iterator>,
     //     end: UniquePtr<array_iterator>,
@@ -85,6 +90,7 @@ pub mod ffi {
         fn parser_parse_padded(p: &mut parser, s: &padded_string) -> ElementResult;
 
         fn padded_string_from_string(s: &str) -> UniquePtr<padded_string>;
+        fn padded_string_load(s: &str) -> PaddedStringResult;
 
         // fn tape_ref_type(tr: &tape_ref) -> u8;
         // fn tape_ref_next_tape_value(tr: &tape_ref) -> u64;

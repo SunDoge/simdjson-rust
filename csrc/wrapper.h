@@ -38,6 +38,7 @@ namespace simdjson
         struct U64Result;
         struct I64Result;
         struct F64Result;
+        struct PaddedStringResult;
 
         struct ArrayIterator
         {
@@ -63,6 +64,7 @@ namespace simdjson
         ElementResult parser_parse_padded(parser &p, const padded_string &s);
 
         std::unique_ptr<padded_string> padded_string_from_string(rust::Str s);
+        PaddedStringResult padded_string_load(rust::Str s);
 
         // // uint8_t tape_ref_type(const tape_ref &tr);
 

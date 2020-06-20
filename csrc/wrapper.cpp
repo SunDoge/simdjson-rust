@@ -58,6 +58,16 @@ namespace simdjson
             return std::make_unique<padded_string>(cs);
         }
 
+        PaddedStringResult padded_string_load(rust::Str s)
+        {
+            auto cs = std::string(s);
+            auto [ps, error] = padded_string::load(cs);
+            return PaddedStringResult{
+                .value = std::make_unique<padded_string>(std::move(ps)),
+                .code = int(error),
+            };
+        }
+
         // // uint8_t tape_ref_type(const tape_ref &tr)
         // // {
         // //     auto tape_type = tr.tape_ref_type();
@@ -408,7 +418,7 @@ namespace simdjson
             element value;
             error_code error;
             (*iter.begin).tie(value, error);
-            
+
             return ElementResult{
                 .value = std::make_unique<element>(std::move(value)),
                 .code = int(error),

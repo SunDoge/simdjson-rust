@@ -55,6 +55,12 @@ pub mod ffi {
         code: i32,
     }
 
+    struct SimdJsonVersion {
+        major: i32,
+        minor: i32,
+        revision: i32,
+    }
+
     // struct ArrayIterator {
     //     begin: UniquePtr<array_iterator>,
     //     end: UniquePtr<array_iterator>,
@@ -72,6 +78,7 @@ pub mod ffi {
         type padded_string;
         // // type tape_ref;
         type document_stream;
+        type implementation;
 
         type array;
         type object;
@@ -154,6 +161,11 @@ pub mod ffi {
             s: &padded_string,
             batch_size: usize,
         ) -> UniquePtr<document_stream>;
+
+        // Implementation
+        fn active_implementation_set_by_name(name: &str);
+        fn active_implementation_name() -> String;
+        fn active_implementation_description() -> String;
     }
 }
 

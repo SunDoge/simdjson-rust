@@ -11,6 +11,7 @@ namespace simdjson
         // using simdjson::padded_string;
         // // using simdjson::simdjson_result;
         using simdjson::error_code;
+        using simdjson::implementation;
         // using simdjson::dom::array;
         // using simdjson::dom::element;
         // using simdjson::dom::object;
@@ -39,6 +40,7 @@ namespace simdjson
         struct I64Result;
         struct F64Result;
         struct PaddedStringResult;
+        struct SimdJsonVersion;
 
         struct ArrayIterator
         {
@@ -114,5 +116,15 @@ namespace simdjson
         
         std::unique_ptr<document_stream> parser_parse_many(parser &p, rust::Str s, size_t batch_size);
         std::unique_ptr<document_stream> parser_parse_many_padded(parser &p, const padded_string &s, size_t batch_size);
+
+        /**
+         * Implementation
+         */
+        
+        rust::String active_implementation_name();
+        rust::String active_implementation_description();
+        void active_implementation_set_by_name(rust::Str s);
+        SimdJsonVersion simdjson_version();
+    
     } // namespace ffi
 } // namespace simdjson

@@ -11,9 +11,15 @@
 
 pub mod dom;
 pub mod error;
+pub mod implementation;
 pub mod libsimdjson;
 pub mod padded_string;
 // pub mod serde;
+
+use self::implementation::Implementation;
+// use std::sync::RwLock;
+
+pub static ACTIVE_IMPLEMENTATION: Implementation = Implementation;
 
 #[cfg(test)]
 mod tests {

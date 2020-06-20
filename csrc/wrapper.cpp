@@ -438,5 +438,27 @@ namespace simdjson
             return std::make_unique<document_stream>(std::move(stream));
         }
 
+        rust::String active_implementation_name()
+        {
+            return rust::String(simdjson::active_implementation->name());
+        }
+        rust::String active_implementation_description()
+        {
+            return rust::String(simdjson::active_implementation->description());
+        }
+        void active_implementation_set_by_name(rust::Str s)
+        {
+            auto name = std::string(s);
+            simdjson::active_implementation = simdjson::available_implementations[name];
+        }
+        SimdJsonVersion simdjson_version()
+        {
+            return SimdJsonVersion{
+                .major = int(simdjson::SIMDJSON_VERSION_MAJOR),
+                .minor = int(simdjson::SIMDJSON_VERSION_MINOR),
+                .revision = int(simdjson::SIMDJSON_VERSION_REVISION),
+            };
+        }
+
     } // namespace ffi
 } // namespace simdjson

@@ -17,10 +17,10 @@ impl Parser {
         Parser { ptr: parser }
     }
 
-    // pub fn load<P: AsRef<Path>>(&mut self, path: P) -> Result<Element, SimdJsonError> {
-    //     let result = ffi::parser_load(&mut self.ptr, path.as_ref().to_str().unwrap());
-    //     check_result!(result, Element)
-    // }
+    pub fn load<P: AsRef<Path>>(&mut self, path: P) -> Result<Element, SimdJsonError> {
+        let result = ffi::parser_load(&mut self.ptr, path.as_ref().to_str().unwrap());
+        check_result!(result, Element, self)
+    }
 
     pub fn parse(&mut self, s: &str) -> Result<Element, SimdJsonError> {
         let result = ffi::parser_parse(&mut self.ptr, s);

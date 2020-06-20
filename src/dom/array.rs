@@ -9,27 +9,29 @@ use std::marker::PhantomData;
 pub type ArrayIterPtr = UniquePtr<ffi::ArrayIterator>;
 pub type ArrayPtr = UniquePtr<ffi::array>;
 
-pub struct Array<'a> {
+pub struct Array<'p> {
     ptr: ArrayPtr,
-    _phantom: PhantomData<&'a Parser>,
+    // _phantom: PhantomData<&'a Parser>,
+    parser: &'p Parser,
 }
 
-impl<'a> Array<'a> {
-    pub fn new(ptr: ArrayPtr) -> Self {
+impl<'p> Array<'p> {
+    pub fn new(ptr: ArrayPtr, parser: &'p Parser) -> Self {
         Array {
             ptr,
-            _phantom: PhantomData,
+            // _phantom: PhantomData,
+            parser,
         }
     }
 
     pub fn at(&self, json_pointer: &str) -> SimdJsonResult<Element> {
         let result = ffi::array_at(&self.ptr, json_pointer);
-        check_result!(result, Element)
+        check_result!(result, Element, self.parser)
     }
 
     pub fn at_index(&self, index: usize) -> SimdJsonResult<Element> {
         let result = ffi::array_at_index(&self.ptr, index);
-        check_result!(result, Element)
+        check_result!(result, Element, self.parser)
     }
 
     pub fn minify(&self) -> String {
@@ -37,48 +39,50 @@ impl<'a> Array<'a> {
     }
 }
 
-impl<'a> From<ArrayPtr> for Array<'a> {
-    fn from(ptr: ArrayPtr) -> Self {
-        Array::new(ptr)
-    }
-}
+// impl<'p> From<ArrayPtr> for Array<'a> {
+//     fn from(ptr: ArrayPtr) -> Self {
+//         Array::new(ptr)
+//     }
+// }
 
-pub struct ArrayIter<'a> {
+pub struct ArrayIter<'a, 'p: 'a> {
     ptr: ArrayIterPtr,
     // _phantom: PhantomData<&'a Parser>,
-    array: &'a Array<'a>,
+    array: &'a Array<'p>,
 }
 
-impl<'a> ArrayIter<'a> {
-    pub fn new(array: &'a Array<'a>) -> Self {
+impl<'a, 'p> ArrayIter<'a, 'p> {
+    pub fn new(array: &'a Array<'p>) -> Self {
         let ptr = ffi::array_get_iterator(&array.ptr);
-        ArrayIter {
-            ptr,
-            // _phantom: PhantomData,
-            array,
-        }
+        ArrayIter { ptr, array }
     }
 }
 
-impl<'a> Iterator for ArrayIter<'a> {
-    type Item = Element<'a>;
+impl<'a, 'p> Iterator for ArrayIter<'a, 'p> {
+    type Item = Element<'p>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let next_ptr = ffi::array_iterator_next(&mut self.ptr);
         if next_ptr.is_null() {
             None
         } else {
-            Some(Element::from(next_ptr))
+            Some(Element::new(next_ptr, &self.array.parser))
         }
     }
 }
 
-impl<'a> IntoIterator for &'a Array<'a> {
-    type Item = Element<'a>;
-    type IntoIter = ArrayIter<'a>;
+impl<'a, 'p> IntoIterator for &'a Array<'p> {
+    type Item = Element<'p>;
+    type IntoIter = ArrayIter<'a, 'p>;
 
     fn into_iter(self) -> Self::IntoIter {
         ArrayIter::new(self)
+    }
+}
+
+impl<'a> fmt::Display for Array<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.minify())
     }
 }
 
@@ -105,11 +109,5 @@ mod tests {
         }
 
         Ok(())
-    }
-}
-
-impl<'a> fmt::Display for Array<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.minify())
     }
 }

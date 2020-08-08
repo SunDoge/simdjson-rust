@@ -16,26 +16,24 @@ namespace simdjson
 
         ElementResult parser_load(parser &p, rust::Str path)
         {
-            element value;
+            auto value = std::make_unique<element>();
             error_code error;
             const std::string &cpath = std::string(path);
-            p.load(cpath).tie(value, error);
+            p.load(cpath).tie(*value, error);
 
             return ElementResult{
-                .value = std::make_unique<element>(value),
+                .value = std::move(value),
                 .code = int(error),
             };
         }
 
         ElementResult parser_parse(parser &p, rust::Str s)
         {
-            // element value;
             auto value = std::make_unique<element>();
             error_code error;
             const std::string &cs = std::string(s);
             p.parse(cs).tie(*value, error);
             return ElementResult{
-                // .value = std::make_unique<element>(value),
                 .value = std::move(value),
                 .code = int(error),
             };

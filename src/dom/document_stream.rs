@@ -30,7 +30,7 @@ impl<'a> Iterator for DocumentStreamIter<'a> {
     type Item = Element<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let result = ffi::document_stream_iterator_next(&mut self.ptr);
+        let result = ffi::document_stream_iterator_next(self.ptr.pin_mut());
         if result.value.is_null() {
             None
         } else {

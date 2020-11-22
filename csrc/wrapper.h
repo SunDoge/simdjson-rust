@@ -1,14 +1,14 @@
 #pragma once
 
+#include "rust/cxx.h"
 #include "simdjson.h"
-#include "cxx.h"
 
 namespace simdjson
 {
     namespace ffi
     {
 
-        // using simdjson::padded_string;
+        using simdjson::padded_string;
         // // using simdjson::simdjson_result;
         using simdjson::error_code;
         // using simdjson::dom::array;

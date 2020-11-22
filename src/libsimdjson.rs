@@ -60,8 +60,8 @@ pub mod ffi {
     //     end: UniquePtr<object_iterator>,
     // }
 
-    extern "C" {
-        include!("wrapper.h");
+    unsafe extern "C++" {
+        include!("simdjson-rust/csrc/wrapper.h");
         type parser;
         type element;
         type padded_string;
@@ -80,9 +80,9 @@ pub mod ffi {
         // type simdjson_result;
 
         fn parser_new(max_capacity: usize) -> UniquePtr<parser>;
-        fn parser_load(p: &mut parser, path: &str) -> ElementResult;
-        fn parser_parse(p: &mut parser, s: &str) -> ElementResult;
-        fn parser_parse_padded(p: &mut parser, s: &padded_string) -> ElementResult;
+        fn parser_load(p: Pin<&mut parser>, path: &str) -> ElementResult;
+        fn parser_parse(p: Pin<&mut parser>, s: &str) -> ElementResult;
+        fn parser_parse_padded(p: Pin<&mut parser>, s: &padded_string) -> ElementResult;
 
         fn padded_string_from_string(s: &str) -> UniquePtr<padded_string>;
 
@@ -113,10 +113,10 @@ pub mod ffi {
         fn object_at_key_case_insensitive(obj: &object, key: &str) -> ElementResult;
 
         fn array_get_iterator(arr: &array) -> UniquePtr<ArrayIterator>;
-        fn array_iterator_next(iter: &mut ArrayIterator) -> UniquePtr<element>;
+        fn array_iterator_next(iter: Pin<&mut ArrayIterator>) -> UniquePtr<element>;
 
         fn object_get_iterator(obj: &object) -> UniquePtr<ObjectIterator>;
-        fn object_iterator_next(iter: &mut ObjectIterator);
+        fn object_iterator_next(iter: Pin<&mut ObjectIterator>);
         fn object_iterator_has_next(iter: &ObjectIterator) -> bool;
         fn object_iterator_key(iter: &ObjectIterator) -> String;
         fn object_iterator_value(iter: &ObjectIterator) -> UniquePtr<element>;
@@ -126,19 +126,19 @@ pub mod ffi {
         fn array_minify(arr: &array) -> String;
 
         fn parser_load_many(
-            p: &mut parser,
+            p: Pin<&mut parser>,
             path: &str,
             batch_size: usize,
         ) -> UniquePtr<DocumentStreamIterator>;
-        fn document_stream_iterator_next(iter: &mut DocumentStreamIterator) -> ElementResult;
+        fn document_stream_iterator_next(iter: Pin<&mut DocumentStreamIterator>) -> ElementResult;
 
         fn parser_parse_many(
-            p: &mut parser,
+            p: Pin<&mut parser>,
             s: &str,
             batch_size: usize,
         ) -> UniquePtr<DocumentStreamIterator>;
         fn parser_parse_many_padded(
-            p: &mut parser,
+            p: Pin<&mut parser>,
             s: &padded_string,
             batch_size: usize,
         ) -> UniquePtr<DocumentStreamIterator>;
@@ -160,10 +160,10 @@ mod tests {
     #[test]
     fn get_parser() {
         let mut parser = ffi::parser_new(SIMDJSON_MAXSIZE_BYTES);
-        let result = ffi::parser_load(&mut parser, "json-examples/twitter.json");
+        let result = ffi::parser_load(parser.pin_mut(), "json-examples/twitter.json");
         // dbg!(parser.load);
         println!("parse code: {}", result.code);
-        let result = ffi::parser_parse(&mut parser, r#""1234""#);
+        let result = ffi::parser_parse(parser.pin_mut(), r#""1234""#);
         println!("parse code: {}", result.code);
         println!("value: {:?}", ffi::element_get_string(&result.value).value);
     }

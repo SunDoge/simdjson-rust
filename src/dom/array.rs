@@ -64,7 +64,7 @@ impl<'a> Iterator for ArrayIter<'a> {
     type Item = Element<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let next_ptr = ffi::array_iterator_next(&mut self.ptr);
+        let next_ptr = ffi::array_iterator_next(self.ptr.pin_mut());
         if next_ptr.is_null() {
             None
         } else {

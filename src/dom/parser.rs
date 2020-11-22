@@ -18,17 +18,17 @@ impl Parser {
     }
 
     pub fn load<P: AsRef<Path>>(&mut self, path: P) -> Result<Element, SimdJsonError> {
-        let result = ffi::parser_load(&mut self.ptr, path.as_ref().to_str().unwrap());
+        let result = ffi::parser_load(self.ptr.pin_mut(), path.as_ref().to_str().unwrap());
         check_result!(result, Element)
     }
 
     pub fn parse(&mut self, s: &str) -> Result<Element, SimdJsonError> {
-        let result = ffi::parser_parse(&mut self.ptr, s);
+        let result = ffi::parser_parse(self.ptr.pin_mut(), s);
         check_result!(result, Element)
     }
 
     pub fn parse_padded(&mut self, s: &PaddedString) -> Result<Element, SimdJsonError> {
-        let result = ffi::parser_parse_padded(&mut self.ptr, s.as_ptr());
+        let result = ffi::parser_parse_padded(self.ptr.pin_mut(), s.as_ptr());
         check_result!(result, Element)
     }
 
@@ -38,7 +38,7 @@ impl Parser {
         batch_size: usize,
     ) -> Result<DocumentStreamIter, SimdJsonError> {
         let iter_ptr = ffi::parser_load_many(
-            &mut self.ptr,
+            self.ptr.pin_mut(),
             path.as_ref()
                 .to_str()
                 .ok_or(SimdJsonError::InvalidUriFragment)?,
@@ -59,7 +59,7 @@ impl Parser {
         s: &str,
         batch_size: usize,
     ) -> Result<DocumentStreamIter, SimdJsonError> {
-        let iter_ptr = ffi::parser_parse_many(&mut self.ptr, s, batch_size);
+        let iter_ptr = ffi::parser_parse_many(self.ptr.pin_mut(), s, batch_size);
         Ok(iter_ptr.into())
     }
 
@@ -68,7 +68,7 @@ impl Parser {
         s: &PaddedString,
         batch_size: usize,
     ) -> Result<DocumentStreamIter, SimdJsonError> {
-        let iter_ptr = ffi::parser_parse_many_padded(&mut self.ptr, s.as_ptr(), batch_size);
+        let iter_ptr = ffi::parser_parse_many_padded(self.ptr.pin_mut(), s.as_ptr(), batch_size);
         Ok(iter_ptr.into())
     }
 

@@ -82,7 +82,7 @@ impl<'a> Iterator for ObjectIter<'a> {
     type Item = (String, Element<'a>);
 
     fn next(&mut self) -> Option<Self::Item> {
-        ffi::object_iterator_next(&mut self.ptr);
+        ffi::object_iterator_next(self.ptr.pin_mut());
         if self.has_next() {
             None
         } else {

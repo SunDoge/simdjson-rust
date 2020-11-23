@@ -1,6 +1,6 @@
-#include "wrapper.h"
+#include "simdjson-rust/csrc/wrapper.h"
+#include "simdjson-rust/src/libsimdjson.rs.h"
 #include <iostream>
-#include "libsimdjson.rs.h"
 
 namespace simdjson
 {

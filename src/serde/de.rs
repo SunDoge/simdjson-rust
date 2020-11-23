@@ -361,7 +361,7 @@ impl<'de, 'a> MapAccess<'de> for ObjectIter<'a> {
         V: DeserializeSeed<'de>,
     {
         let result = seed.deserialize(&self.value());
-        ffi::object_iterator_next(&mut self.ptr);
+        ffi::object_iterator_next(self.ptr.pin_mut());
         result
     }
 }

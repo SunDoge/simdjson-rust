@@ -13,7 +13,7 @@ fn main() {
         .flag_if_supported("-std=c++17")
         .flag_if_supported("/std:c++latest") // For windows
         .flag_if_supported("-pthread")
-        .flag_if_supported("-O 3")
+        .flag_if_supported("-O3")
         .compile("simdjson-sys");
 
     println!("cargo:rerun-if-changed=src/main.rs");

@@ -22,13 +22,13 @@ impl<'a> Array<'a> {
         }
     }
 
-    pub fn at(&self, json_pointer: &str) -> SimdJsonResult<Element> {
-        let result = ffi::array_at(&self.ptr, json_pointer);
+    pub fn at_pointer(&self, json_pointer: &str) -> SimdJsonResult<Element> {
+        let result = ffi::array_at_pointer(&self.ptr, json_pointer);
         check_result!(result, Element)
     }
 
-    pub fn at_index(&self, index: usize) -> SimdJsonResult<Element> {
-        let result = ffi::array_at_index(&self.ptr, index);
+    pub fn at(&self, index: usize) -> SimdJsonResult<Element> {
+        let result = ffi::array_at(&self.ptr, index);
         check_result!(result, Element)
     }
 
@@ -94,7 +94,7 @@ mod tests {
         let elm = parser.parse("[true, true, true, true]")?;
         let arr = elm.get_array()?;
 
-        assert!(arr.at_index(3)?.get_bool()?);
+        assert!(arr.at(3)?.get_bool()?);
 
         let mut c = 0;
         for v in &arr {

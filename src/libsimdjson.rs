@@ -104,7 +104,7 @@ pub mod ffi {
 
         fn element_get_bool(elm: &element) -> BoolResult;
         fn element_is_null(elm: &element) -> bool;
-        fn element_at(elm: &element, json_pointer: &str) -> ElementResult;
+        fn element_at_pointer(elm: &element, json_pointer: &str) -> ElementResult;
         fn element_at_index(elm: &element, index: usize) -> ElementResult;
         fn element_at_key(elm: &element, key: &str) -> ElementResult;
 

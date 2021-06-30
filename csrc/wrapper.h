@@ -77,7 +77,7 @@ namespace simdjson
         F64Result element_get_f64(const element &elm);
         BoolResult element_get_bool(const element &elm);
         bool element_is_null(const element &elm);
-        ElementResult element_at(const element &elm, rust::Str s);
+        ElementResult element_at_pointer(const element &elm, rust::Str s);
         ElementResult element_at_index(const element &elm, size_t index);
         ElementResult element_at_key(const element &elm, rust::Str s);
         uint8_t element_get_type(const element &elm);

@@ -68,8 +68,8 @@ impl<'a> Element<'a> {
         }
     }
 
-    pub fn at(&self, json_pointer: &str) -> Result<Element, SimdJsonError> {
-        let result = ffi::element_at(&self.ptr, json_pointer);
+    pub fn at_pointer(&self, json_pointer: &str) -> Result<Element, SimdJsonError> {
+        let result = ffi::element_at_pointer(&self.ptr, json_pointer);
         // if result.code < 2 {
         //     Ok(Element::from(result.value))
         // } else {
@@ -152,4 +152,24 @@ impl<'a> fmt::Display for Element<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.minify())
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn element_at_pointer() {
+        let mut parser = Parser::default();
+        let doc = parser.parse("{\"foo\": 1, \"bar\": 2}").unwrap();
+        let elem = doc.at_pointer("/foo").unwrap();
+        assert_eq!(elem.get_i64().unwrap(), 1);
+        let elem = doc.at_pointer("/bar").unwrap();
+        assert_eq!(elem.get_i64().unwrap(), 2);
+
+        let doc = parser.parse("{\"foo\": [-1, -2, -3]}").unwrap();
+        let elem = doc.at_pointer("/foo/1").unwrap();
+        assert_eq!(elem.get_i64().unwrap(), -2);
+    }
+
 }

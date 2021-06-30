@@ -164,12 +164,12 @@ namespace simdjson
             return elm.is_null();
         }
 
-        ElementResult element_at(const element &elm, rust::Str s)
+        ElementResult element_at_pointer(const element &elm, rust::Str s)
         {
             element value;
             error_code error;
             auto json_pointer = std::string_view(s.data(), s.size());
-            elm.at(json_pointer).tie(value, error);
+            elm.at_pointer(json_pointer).tie(value, error);
             return ElementResult{
                 .value = std::make_unique<element>(value),
                 .code = int(error),

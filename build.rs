@@ -16,7 +16,6 @@ fn main() {
         .flag_if_supported("-O3")
         .compile("simdjson-sys");
 
-    println!("cargo:rerun-if-changed=src/main.rs");
     println!("cargo:rerun-if-changed=csrc/wrapper.cpp");
     println!("cargo:rerun-if-changed=csrc/wrapper.h");
 }

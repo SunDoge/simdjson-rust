@@ -22,8 +22,8 @@ impl<'a> Object<'a> {
         }
     }
 
-    pub fn at(&self, json_pointer: &str) -> Result<Element, SimdJsonError> {
-        let result = ffi::object_at(&self.ptr, json_pointer);
+    pub fn at_pointer(&self, json_pointer: &str) -> Result<Element, SimdJsonError> {
+        let result = ffi::object_at_pointer(&self.ptr, json_pointer);
         // if result.code < 2 {
         //     Ok(Element::from(result.value))
         // } else {

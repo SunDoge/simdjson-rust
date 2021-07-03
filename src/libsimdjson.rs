@@ -45,6 +45,11 @@ pub mod ffi {
         code: i32,
     }
 
+    struct DocumentStreamResult {
+        value: UniquePtr<document_stream>,
+        code: i32,
+    }
+
     struct KeyValuePair {
         key: String,
         value: UniquePtr<element>,
@@ -99,16 +104,16 @@ pub mod ffi {
 
         fn element_get_bool(elm: &element) -> BoolResult;
         fn element_is_null(elm: &element) -> bool;
-        fn element_at(elm: &element, json_pointer: &str) -> ElementResult;
+        fn element_at_pointer(elm: &element, json_pointer: &str) -> ElementResult;
         fn element_at_index(elm: &element, index: usize) -> ElementResult;
         fn element_at_key(elm: &element, key: &str) -> ElementResult;
 
-        fn element_get_type(elm: &element) -> i32;
+        fn element_get_type(elm: &element) -> u8;
 
-        fn array_at(arr: &array, json_pointer: &str) -> ElementResult;
-        fn array_at_index(arr: &array, index: usize) -> ElementResult;
+        fn array_at_pointer(arr: &array, json_pointer: &str) -> ElementResult;
+        fn array_at(arr: &array, index: usize) -> ElementResult;
 
-        fn object_at(obj: &object, json_pointer: &str) -> ElementResult;
+        fn object_at_pointer(obj: &object, json_pointer: &str) -> ElementResult;
         fn object_at_key(obj: &object, key: &str) -> ElementResult;
         fn object_at_key_case_insensitive(obj: &object, key: &str) -> ElementResult;
 
@@ -129,19 +134,21 @@ pub mod ffi {
             p: Pin<&mut parser>,
             path: &str,
             batch_size: usize,
-        ) -> UniquePtr<DocumentStreamIterator>;
-        fn document_stream_iterator_next(iter: Pin<&mut DocumentStreamIterator>) -> ElementResult;
+        ) -> DocumentStreamResult;
+        fn parser_parse_many<'a>(
+            p: Pin<&'a mut parser>,
+            s: &'a str,
+            batch_size: usize,
+        ) -> DocumentStreamResult;
+        fn parser_parse_many_padded<'a>(
+            p: Pin<&'a mut parser>,
+            s: &'a padded_string,
+            batch_size: usize,
+        ) -> DocumentStreamResult;
 
-        fn parser_parse_many(
-            p: Pin<&mut parser>,
-            s: &str,
-            batch_size: usize,
-        ) -> UniquePtr<DocumentStreamIterator>;
-        fn parser_parse_many_padded(
-            p: Pin<&mut parser>,
-            s: &padded_string,
-            batch_size: usize,
-        ) -> UniquePtr<DocumentStreamIterator>;
+        fn document_stream_get_iterator(stream: Pin<&mut document_stream>) -> UniquePtr<DocumentStreamIterator>;
+        fn document_stream_iterator_deref(iter: Pin<&mut DocumentStreamIterator>) -> ElementResult;
+        fn document_stream_iterator_next(iter: Pin<&mut DocumentStreamIterator>) -> ();
     }
 }
 

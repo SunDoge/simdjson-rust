@@ -38,6 +38,7 @@ namespace simdjson
         struct U64Result;
         struct I64Result;
         struct F64Result;
+        struct DocumentStreamResult;
 
         struct ArrayIterator
         {
@@ -76,15 +77,15 @@ namespace simdjson
         F64Result element_get_f64(const element &elm);
         BoolResult element_get_bool(const element &elm);
         bool element_is_null(const element &elm);
-        ElementResult element_at(const element &elm, rust::Str s);
+        ElementResult element_at_pointer(const element &elm, rust::Str s);
         ElementResult element_at_index(const element &elm, size_t index);
         ElementResult element_at_key(const element &elm, rust::Str s);
-        int element_get_type(const element &elm);
+        uint8_t element_get_type(const element &elm);
 
-        ElementResult array_at(const array &arr, rust::Str s);
-        ElementResult array_at_index(const array &arr, size_t index);
+        ElementResult array_at_pointer(const array &arr, rust::Str s);
+        ElementResult array_at(const array &arr, size_t index);
 
-        ElementResult object_at(const object &obj, rust::Str s);
+        ElementResult object_at_pointer(const object &obj, rust::Str s);
         ElementResult object_at_key(const object &obj, rust::Str s);
         ElementResult object_at_key_case_insensitive(const object &obj, rust::Str s);
 
@@ -102,12 +103,14 @@ namespace simdjson
         rust::String object_minify(const object &obj);
         rust::String array_minify(const array &arr);
 
+        DocumentStreamResult parser_load_many(parser &p, rust::Str path, size_t batch_size);
+        DocumentStreamResult parser_parse_many(parser &p, rust::Str s, size_t batch_size);
+        DocumentStreamResult parser_parse_many_padded(parser &p, const padded_string &s, size_t batch_size);
+
         // For load many and parse many
-        std::unique_ptr<DocumentStreamIterator> parser_load_many(parser &p, rust::Str path, size_t batch_size);
         std::unique_ptr<DocumentStreamIterator> document_stream_get_iterator(document_stream &stream);
-        ElementResult document_stream_iterator_next(DocumentStreamIterator &iter);
-        
-        std::unique_ptr<DocumentStreamIterator> parser_parse_many(parser &p, rust::Str s, size_t batch_size);
-        std::unique_ptr<DocumentStreamIterator> parser_parse_many_padded(parser &p, const padded_string &s, size_t batch_size);
+        ElementResult document_stream_iterator_deref(DocumentStreamIterator &iter);
+        void document_stream_iterator_next(DocumentStreamIterator &iter);
+
     } // namespace ffi
 } // namespace simdjson

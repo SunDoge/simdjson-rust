@@ -1,6 +1,6 @@
 use super::element::Element;
 use super::parser::Parser;
-use crate::error::{SimdJsonError, SimdJsonResult};
+use crate::error::SimdJsonError;
 use crate::libsimdjson::ffi;
 use cxx::UniquePtr;
 use std::fmt;

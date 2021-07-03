@@ -4,11 +4,8 @@ use super::parser::Parser;
 use crate::error::SimdJsonError;
 use crate::libsimdjson::ffi;
 use cxx::UniquePtr;
-use std::borrow::Cow;
 use std::fmt;
 use std::marker::PhantomData;
-use std::mem::transmute;
-use std::str::{self, Utf8Error};
 
 pub type ElementPtr = UniquePtr<ffi::element>;
 
@@ -171,5 +168,4 @@ mod tests {
         let elem = doc.at_pointer("/foo/1").unwrap();
         assert_eq!(elem.get_i64().unwrap(), -2);
     }
-
 }

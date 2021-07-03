@@ -146,7 +146,9 @@ pub mod ffi {
             batch_size: usize,
         ) -> DocumentStreamResult;
 
-        fn document_stream_get_iterator(stream: Pin<&mut document_stream>) -> UniquePtr<DocumentStreamIterator>;
+        fn document_stream_get_iterator(
+            stream: Pin<&mut document_stream>,
+        ) -> UniquePtr<DocumentStreamIterator>;
         fn document_stream_iterator_deref(iter: Pin<&mut DocumentStreamIterator>) -> ElementResult;
         fn document_stream_iterator_next(iter: Pin<&mut DocumentStreamIterator>) -> ();
     }

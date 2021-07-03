@@ -1,6 +1,6 @@
 use super::element::Element;
 use super::parser::Parser;
-use crate::error::{SimdJsonError, SimdJsonResult};
+use crate::error::SimdJsonResult;
 use crate::libsimdjson::ffi;
 use cxx::UniquePtr;
 use std::fmt;
@@ -84,7 +84,7 @@ impl<'a> IntoIterator for &'a Array<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    // use super::*;
     use crate::dom::parser::Parser;
     // use super::element::GetValue;
 

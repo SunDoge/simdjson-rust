@@ -1,0 +1,64 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  Test:
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - windows-2022
+          - macos-12
+        rust:
+          - "stable"
+        cpp:
+          - llvm
+          - gcc
+        include:
+          - os: windows-2022
+            rust: stable
+            cpp: msvc
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # Cache
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/
+            ./target/
+          key: "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-${{ hashFiles('./Cargo.toml') }}-Cpp:${{ matrix.cpp }}"
+          restore-keys: |
+            "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-"
+
+      # Setup compilers and tools
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          default: true
+          components: rustfmt, clippy
+
+      - name: Setup Cpp
+        uses: aminya/setup-cpp@v1
+        with:
+          compiler: ${{ matrix.cpp }}
+          vcvarsall: ${{ contains(matrix.os, 'windows') }}
+
+      # Build and Test
+
+      - name: Build
+        run: cargo build
+
+      - name: Test
+        run: cargo test --all-targets

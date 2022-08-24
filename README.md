@@ -1,7 +1,6 @@
 # simdjson-rust
 
-[![Build Status](https://travis-ci.org/SunDoge/simdjson-rust.svg?branch=master)](https://travis-ci.org/SunDoge/simdjson-rust)
-[![Build status](https://ci.appveyor.com/api/projects/status/xiwngkkjvg9dbvgs?svg=true)](https://ci.appveyor.com/project/SunDoge/simdjson-rust)
+[![CI](https://github.com/SunDoge/simdjson-rust/actions/workflows/CI.yml/badge.svg)](https://github.com/SunDoge/simdjson-rust/actions/workflows/CI.yml)
 
 ⚠ This crate is currently updating to support `simdjson 0.3.1`! You can have a try and give feedback.
 

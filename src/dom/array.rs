@@ -84,7 +84,7 @@ impl<'a> IntoIterator for &'a Array<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+
     use crate::dom::parser::Parser;
     // use super::element::GetValue;
 

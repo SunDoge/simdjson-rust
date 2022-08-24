@@ -1,6 +1,6 @@
 use serde::de;
 use std::fmt::Display;
-use std::str::Utf8Error;
+
 use thiserror::Error;
 
 pub type SimdJsonResult<T> = Result<T, SimdJsonError>;

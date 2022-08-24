@@ -1,6 +1,3 @@
-use crate::error::SimdJsonError;
-use crate::libsimdjson::ffi;
-
 macro_rules! check_result {
     ($result: ident) => {
         if $result.code < 2 {

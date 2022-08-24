@@ -1,12 +1,11 @@
-use crate::dom::array::{Array, ArrayIter};
+use crate::dom::array::ArrayIter;
 use crate::dom::element::{Element, ElementType};
-use crate::dom::object::{Object, ObjectIter};
-use crate::dom::parser::Parser;
+use crate::dom::object::ObjectIter;
+
 use crate::error::SimdJsonError;
 use crate::libsimdjson::ffi;
 use serde::de::{
-    self, value::StringDeserializer, Deserialize, DeserializeSeed, Deserializer, IntoDeserializer,
-    MapAccess, SeqAccess, Visitor,
+    Deserialize, DeserializeSeed, Deserializer, IntoDeserializer, MapAccess, SeqAccess, Visitor,
 };
 
 // pub struct ElementVisitor;
@@ -142,7 +141,7 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
 
     // Refer to the "Understanding deserializer lifetimes" page for information
     // about the three deserialization flavors of strings in Serde.
-    fn deserialize_str<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_str<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
@@ -220,7 +219,7 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
     // Deserialization of compound types like sequences and maps happens by
     // passing the visitor an "Access" object that gives it the ability to
     // iterate through the data contained in the sequence.
-    fn deserialize_seq<V>(mut self, visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
@@ -260,7 +259,7 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
     // Much like `deserialize_seq` but calls the visitors `visit_map` method
     // with a `MapAccess` implementation, rather than the visitor's `visit_seq`
     // method with a `SeqAccess` implementation.
-    fn deserialize_map<V>(mut self, visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_map<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
@@ -289,7 +288,7 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
         self,
         _name: &'static str,
         _variants: &'static [&'static str],
-        visitor: V,
+        _visitor: V,
     ) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,

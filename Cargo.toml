@@ -4,6 +4,7 @@ version = "0.2.0-alpha"
 authors = ["SunDoge <384813529@qq.com>"]
 edition = "2018"
 links = "simdjson-rust"
+license = "Apache-2.0"
 
 # [dependencies]
 # simdjson-sys = {path="simdjson-sys"}

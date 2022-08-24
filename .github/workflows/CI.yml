@@ -20,8 +20,10 @@ jobs:
           - "stable"
         cpp:
           - llvm
-          - gcc
         include:
+          - os: ubuntu-22.04
+            rust: stable
+            cpp: gcc
           - os: windows-2022
             rust: stable
             cpp: msvc

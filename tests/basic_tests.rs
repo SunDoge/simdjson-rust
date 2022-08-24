@@ -8,6 +8,7 @@ mod number_tests {
     // Marc B. Reynolds, 2016-2019
     // Public Domain under http://unlicense.org, see link for details.
     // adapted by D. Lemire
+    #[allow(dead_code)]
     fn f64_ulp_dist(a: f64, b: f64) -> u64 {
         // let ua: u64 = transmute(a);
         // let ub: u64 = transmute(b);

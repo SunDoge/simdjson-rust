@@ -56,6 +56,7 @@ impl<'a> From<ObjectPtr> for Object<'a> {
 
 pub struct ObjectIter<'a> {
     pub ptr: ObjectIterPtr,
+    #[allow(dead_code)]
     object: &'a Object<'a>,
 }
 

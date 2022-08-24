@@ -46,6 +46,7 @@ impl<'a> From<ArrayPtr> for Array<'a> {
 pub struct ArrayIter<'a> {
     ptr: ArrayIterPtr,
     // _phantom: PhantomData<&'a Parser>,
+    #[allow(dead_code)]
     array: &'a Array<'a>,
 }
 

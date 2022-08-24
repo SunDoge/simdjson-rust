@@ -104,7 +104,7 @@ mod tests {
             .unwrap()
             .get_bool()
             .unwrap();
-        assert_eq!(value, true);
+        assert!(value);
     }
 
     #[test]

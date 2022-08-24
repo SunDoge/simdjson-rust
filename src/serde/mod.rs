@@ -22,7 +22,7 @@ mod tests {
         let elm = parser.parse(r#"{"field1": false}"#)?;
         println!("{}", elm);
         let a: A = de::from_element(&elm)?;
-        assert_eq!(a.field1, false);
+        assert!(!a.field1);
 
         Ok(())
     }

@@ -19,7 +19,7 @@ mod tests {
         let mut parser = parser::Parser::default();
         let elm = parser.parse("true").unwrap();
         let value: bool = elm.get_bool().unwrap();
-        assert_eq!(value, true);
+        assert!(value);
         assert_eq!(elm.get_type(), element::ElementType::Bool);
     }
 }

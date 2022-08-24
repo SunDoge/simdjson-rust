@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/SunDoge/simdjson-rust/actions/workflows/CI.yml/badge.svg)](https://github.com/SunDoge/simdjson-rust/actions/workflows/CI.yml)
 
-⚠ This crate is currently updating to support `simdjson 0.3.1`! You can have a try and give feedback.
+This crate currently uses `simdjson 2.2.2`. You can have a try and give feedback.
 
 ## Usage
 

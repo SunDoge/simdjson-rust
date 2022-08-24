@@ -123,8 +123,8 @@ mod tests {
     fn borrow_checker() {
         let mut parser = Parser::default();
         let elm = parser.parse_padded(&"true".into()).unwrap();
-        elm.get_bool();
-        let _new_elm = parser.parse("false").unwrap();
-        // elm.get_bool(); // This won't pass
+        assert!(elm.get_bool().unwrap());
+        let new_elm = parser.parse("false").unwrap();
+        assert!(!new_elm.get_bool().unwrap());
     }
 }

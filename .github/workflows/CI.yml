@@ -41,7 +41,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock') }}-Cpp:${{ matrix.cpp }}"
+          key: "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-${{ hashFiles('Cargo.lock') }}-Cpp:${{ matrix.cpp }}"
           restore-keys: |
             "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-"
 

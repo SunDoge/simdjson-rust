@@ -22,8 +22,8 @@ namespace simdjson
             p.load(cpath).tie(value, error);
 
             return ElementResult{
-                .value = std::make_unique<element>(value),
-                .code = int(error),
+                std::make_unique<element>(value),
+                int(error),
             };
         }
 
@@ -36,8 +36,8 @@ namespace simdjson
             p.parse(cs).tie(*value, error);
             return ElementResult{
                 // .value = std::make_unique<element>(value),
-                .value = std::move(value),
-                .code = int(error),
+                std::move(value),
+                int(error),
             };
         }
 
@@ -47,8 +47,8 @@ namespace simdjson
             error_code error;
             p.parse(s).tie(value, error);
             return ElementResult{
-                .value = std::make_unique<element>(value),
-                .code = int(error),
+                std::make_unique<element>(value),
+                int(error),
             };
         }
 
@@ -77,8 +77,8 @@ namespace simdjson
             elm.get<const char *>().tie(value, error);
 
             return StringResult{
-                .value = rust::String(value),
-                .code = int(error),
+                rust::String(value),
+                int(error),
             };
         }
 
@@ -88,8 +88,8 @@ namespace simdjson
             error_code error;
             elm.get<array>().tie(value, error);
             return ArrayResult{
-                .value = std::make_unique<array>(value),
-                .code = int(error),
+                std::make_unique<array>(value),
+                int(error),
             };
         }
 
@@ -99,8 +99,8 @@ namespace simdjson
             error_code error;
             elm.get<object>().tie(value, error);
             return ObjectResult{
-                .value = std::make_unique<object>(value),
-                .code = int(error),
+                std::make_unique<object>(value),
+                int(error),
             };
         }
 
@@ -121,8 +121,8 @@ namespace simdjson
             error_code error;
             elm.get<uint64_t>().tie(value, error);
             return U64Result{
-                .value = value,
-                .code = int(error),
+                value,
+                int(error),
             };
         }
 
@@ -132,8 +132,8 @@ namespace simdjson
             error_code error;
             elm.get<int64_t>().tie(value, error);
             return I64Result{
-                .value = value,
-                .code = int(error),
+                value,
+                int(error),
             };
         }
 
@@ -143,8 +143,8 @@ namespace simdjson
             error_code error;
             elm.get<double>().tie(value, error);
             return F64Result{
-                .value = value,
-                .code = int(error),
+                value,
+                int(error),
             };
         }
 
@@ -154,8 +154,8 @@ namespace simdjson
             error_code error;
             elm.get<bool>().tie(value, error);
             return BoolResult{
-                .value = value,
-                .code = int(error),
+                value,
+                int(error),
             };
         }
 
@@ -171,8 +171,8 @@ namespace simdjson
             auto json_pointer = std::string_view(s.data(), s.size());
             elm.at_pointer(json_pointer).tie(value, error);
             return ElementResult{
-                .value = std::make_unique<element>(value),
-                .code = int(error),
+                std::make_unique<element>(value),
+                int(error),
             };
         }
 
@@ -182,8 +182,8 @@ namespace simdjson
             error_code error;
             elm.at(index).tie(value, error);
             return ElementResult{
-                .value = std::make_unique<element>(value),
-                .code = int(error),
+                std::make_unique<element>(value),
+                int(error),
             };
         }
 
@@ -194,14 +194,14 @@ namespace simdjson
             auto key = std::string_view(s.data(), s.size());
             elm.at_key(key).tie(value, error);
             return ElementResult{
-                .value = std::make_unique<element>(value),
-                .code = int(error),
+                std::make_unique<element>(value),
+                int(error),
             };
         }
 
         uint8_t element_get_type(const element &elm)
         {
-          return (uint8_t) elm.type();
+            return (uint8_t)elm.type();
         }
 
         ElementResult array_at_pointer(const array &arr, rust::Str s)
@@ -211,8 +211,8 @@ namespace simdjson
             auto json_pointer = std::string_view(s.data(), s.size());
             arr.at_pointer(json_pointer).tie(value, error);
             return ElementResult{
-                .value = std::make_unique<element>(value),
-                .code = int(error),
+                std::make_unique<element>(value),
+                int(error),
             };
         }
 
@@ -222,8 +222,8 @@ namespace simdjson
             error_code error;
             arr.at(index).tie(value, error);
             return ElementResult{
-                .value = std::make_unique<element>(value),
-                .code = int(error),
+                std::make_unique<element>(value),
+                int(error),
             };
         }
 
@@ -234,8 +234,8 @@ namespace simdjson
             auto json_pointer = std::string_view(s.data(), s.size());
             obj.at_pointer(json_pointer).tie(value, error);
             return ElementResult{
-                .value = std::make_unique<element>(value),
-                .code = int(error),
+                std::make_unique<element>(value),
+                int(error),
             };
         }
 
@@ -246,8 +246,8 @@ namespace simdjson
             auto key = std::string_view(s.data(), s.size());
             obj.at_key(key).tie(value, error);
             return ElementResult{
-                .value = std::make_unique<element>(value),
-                .code = int(error),
+                std::make_unique<element>(value),
+                int(error),
             };
         }
 
@@ -258,16 +258,16 @@ namespace simdjson
             auto key = std::string_view(s.data(), s.size());
             obj.at_key_case_insensitive(key).tie(value, error);
             return ElementResult{
-                .value = std::make_unique<element>(value),
-                .code = int(error),
+                std::make_unique<element>(value),
+                int(error),
             };
         }
 
         std::unique_ptr<ArrayIterator> array_get_iterator(const array &arr)
         {
             auto iter = ArrayIterator{
-                .begin = arr.begin(),
-                .end = arr.end(),
+                arr.begin(),
+                arr.end(),
             };
             return std::make_unique<ArrayIterator>(iter);
         }
@@ -299,8 +299,8 @@ namespace simdjson
         std::unique_ptr<ObjectIterator> object_get_iterator(const object &obj)
         {
             auto iter = ObjectIterator{
-                .begin = obj.begin(),
-                .end = obj.end(),
+                obj.begin(),
+                obj.end(),
             };
             return std::make_unique<ObjectIterator>(iter);
         }
@@ -362,8 +362,8 @@ namespace simdjson
             auto stream = std::make_unique<document_stream>();
             auto error = p.load_many(cpath, batch_size).get(*stream);
             return DocumentStreamResult{
-                .value = error ? nullptr : std::move(stream),
-                .code = int(error),
+                error ? nullptr : std::move(stream),
+                int(error),
             };
         }
 
@@ -373,8 +373,8 @@ namespace simdjson
             auto error = p.parse_many(s.data(), s.length(), batch_size).get(*stream);
 
             return DocumentStreamResult{
-                .value = error ? nullptr : std::move(stream),
-                .code = int(error),
+                error ? nullptr : std::move(stream),
+                int(error),
             };
         }
 
@@ -384,16 +384,16 @@ namespace simdjson
             auto error = p.parse_many(s, batch_size).get(*stream);
 
             return DocumentStreamResult{
-                .value = error ? nullptr : std::move(stream),
-                .code = int(error),
+                error ? nullptr : std::move(stream),
+                int(error),
             };
         }
 
         std::unique_ptr<DocumentStreamIterator> document_stream_get_iterator(document_stream &stream)
         {
             auto iter = DocumentStreamIterator{
-                .begin = stream.begin(),
-                .end = stream.end(),
+                stream.begin(),
+                stream.end(),
             };
             return std::make_unique<DocumentStreamIterator>(iter);
         }
@@ -406,15 +406,15 @@ namespace simdjson
                 error_code error;
                 (*iter.begin).tie(value, error);
                 return ElementResult{
-                    .value = error ? nullptr : std::make_unique<element>(value),
-                    .code = int(error),
+                    error ? nullptr : std::make_unique<element>(value),
+                    int(error),
                 };
             }
             else
             {
                 return ElementResult{
-                    .value = nullptr,
-                    .code = 0,
+                    nullptr,
+                    0,
                 };
             }
         }

@@ -3,16 +3,16 @@ mod number_tests {
 
     use simdjson_rust::dom;
     use simdjson_rust::error::SimdJsonError;
-    use std::mem::transmute;
 
     // ulp distance
     // Marc B. Reynolds, 2016-2019
     // Public Domain under http://unlicense.org, see link for details.
     // adapted by D. Lemire
+    #[allow(dead_code)]
     fn f64_ulp_dist(a: f64, b: f64) -> u64 {
         // let ua: u64 = transmute(a);
         // let ub: u64 = transmute(b);
-        let (ua, ub): (u64, u64) = unsafe { (transmute(a), transmute(b)) };
+        let (ua, ub): (u64, u64) = (a.to_bits(), b.to_bits());
 
         if (ub ^ ua) as i64 >= 0 {
             if (ua - ub) as i64 >= 0 {

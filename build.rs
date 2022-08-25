@@ -11,7 +11,7 @@ fn main() {
         .file("csrc/wrapper.cpp")
         .file("csrc/simdjson/simdjson.cpp")
         .flag_if_supported("-std=c++20")
-        .flag_if_supported("/std=c++latest")
+        .flag_if_supported("/std=c++20")
         .flag_if_supported("-pthread")
         .flag_if_supported("-O3")
         .compile("simdjson-sys");

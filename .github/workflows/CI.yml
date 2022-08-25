@@ -32,16 +32,8 @@ jobs:
       - uses: actions/checkout@v3
 
       # Cache
-      # - name: Cache
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: |
-      #       ~/.cargo/
-      #       ./target/
-      #     key: "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-${{ hashFiles('./Cargo.toml') }}-Cpp:${{ matrix.cpp }}"
-      #     restore-keys: |
-      #       "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-"
-      - uses: actions/cache@v3
+      - name: Cache
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/bin/
@@ -49,7 +41,9 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-${{ hashFiles('**/Cargo.lock') }}-Cpp:${{ matrix.cpp }}"
+          restore-keys: |
+            "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-"
 
       # Setup compilers and tools
 

@@ -36,9 +36,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-            ~/.cargo/
-            ./target/
-          key: "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-${{ hashFiles('./Cargo.toml') }}-Cpp:${{ matrix.cpp }}"
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/registry/src/
+            ~/.cargo/git/db/
+            # target/
+          key: "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-${{ hashFiles('Cargo.toml') }}-Cpp:${{ matrix.cpp }}"
           restore-keys: |
             "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-"
 

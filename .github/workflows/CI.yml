@@ -41,7 +41,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
-            # target/
+            target/
           key: "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-${{ hashFiles('Cargo.toml') }}-Cpp:${{ matrix.cpp }}"
           restore-keys: |
             "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-"

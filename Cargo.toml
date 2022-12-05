@@ -23,6 +23,7 @@ serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
 
 [build-dependencies]
+cmake = "0.1.49"
 cxx-build = "1.0.74"
 
 

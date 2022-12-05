@@ -1,22 +1,19 @@
-use serde::de;
-use std::fmt::Display;
-
 use thiserror::Error;
 
-pub type SimdJsonResult<T> = Result<T, SimdJsonError>;
+pub type Result<T> = std::result::Result<T, SimdJsonError>;
+use crate::bridge::ffi::ErrorCode;
+
+
 
 #[derive(Debug, Error)]
 pub enum SimdJsonError {
-    #[error("Message: {0}")]
-    Message(String),
-
     #[error("This parser can't support a document that big")]
     Capacity,
 
     #[error("Error allocating memory, we're most likely out of memory")]
-    MemAlloc,
+    Memalloc,
 
-    #[error("Something went wrong while writing to the tape")]
+    #[error("The JSON document has an improper structure: missing or superfluous commas, braces, missing keys, etc.")]
     TapeError,
 
     #[error("The JSON document was too deep (too many nested objects and arrays)")]
@@ -80,46 +77,64 @@ pub enum SimdJsonError {
         "Unexpected error, consider reporting this problem as you may have found a bug in simdjson"
     )]
     UnexpectedError,
+
+    #[error("todo")]
+    ParserInUse,
+
+    #[error("todo")]
+    OutOfOrderIteration,
+
+    #[error("todo")]
+    InsufficientPadding,
+
+    #[error("todo")]
+    IncompleteArrayOrObject,
+
+    #[error("todo")]
+    ScalarDocumentAsValue,
+
+    #[error("todo")]
+    OutOfBounds,
+
+    #[error("todo")]
+    TrailingContent,
 }
 
-impl From<i32> for SimdJsonError {
-    fn from(error_code: i32) -> Self {
+impl From<ErrorCode> for SimdJsonError {
+    fn from(error_code: ErrorCode) -> Self {
         match error_code {
-            0 => panic!("No error"),
-            1 => panic!("No error and buffer still has more data"),
-            2 => SimdJsonError::Capacity,
-            3 => SimdJsonError::MemAlloc,
-            4 => SimdJsonError::TapeError,
-            5 => SimdJsonError::DepthError,
-            6 => SimdJsonError::StringError,
-            7 => SimdJsonError::TAtomError,
-            8 => SimdJsonError::FAtomError,
-            9 => SimdJsonError::NAtomError,
-            10 => SimdJsonError::NumberError,
-            11 => SimdJsonError::Utf8Error,
-            12 => SimdJsonError::Uninitialized,
-            13 => SimdJsonError::Empty,
-            14 => SimdJsonError::UnescapedChars,
-            15 => SimdJsonError::UnclosedString,
-            16 => SimdJsonError::UnsupportedArchitecture,
-            17 => SimdJsonError::IncorrectType,
-            18 => SimdJsonError::NumberOutOfRange,
-            19 => SimdJsonError::IndexOutOfBounds,
-            20 => SimdJsonError::NoSuchField,
-            21 => SimdJsonError::IoError,
-            22 => SimdJsonError::InvalidJsonPointer,
-            23 => SimdJsonError::InvalidUriFragment,
-            24 => SimdJsonError::UnexpectedError,
-            x => panic!("Unknown error code: {}", x),
+            ErrorCode::SUCCESS => panic!("No error"),
+            ErrorCode::CAPACITY => Self::Capacity,
+            ErrorCode::MEMALLOC => Self::Memalloc,
+            ErrorCode::TAPE_ERROR => Self::TapeError,
+            ErrorCode::DEPTH_ERROR => Self::DepthError,
+            ErrorCode::STRING_ERROR => Self::StringError,
+            ErrorCode::T_ATOM_ERROR => Self::TAtomError,
+            ErrorCode::F_ATOM_ERROR => Self::FAtomError,
+            ErrorCode::N_ATOM_ERROR => Self::NAtomError,
+            ErrorCode::NUMBER_ERROR => Self::NumberError,
+            ErrorCode::UTF8_ERROR => Self::Utf8Error,
+            ErrorCode::UNINITIALIZED => Self::Uninitialized,
+            ErrorCode::EMPTY => Self::Empty,
+            ErrorCode::UNESCAPED_CHARS => Self::UnescapedChars,
+            ErrorCode::UNCLOSED_STRING => Self::UnclosedString,
+            ErrorCode::UNSUPPORTED_ARCHITECTURE => Self::UnsupportedArchitecture,
+            ErrorCode::INCORRECT_TYPE => Self::IncorrectType,
+            ErrorCode::NUMBER_OUT_OF_RANGE => Self::NumberOutOfRange,
+            ErrorCode::INDEX_OUT_OF_BOUNDS => Self::IndexOutOfBounds,
+            ErrorCode::NO_SUCH_FIELD => Self::NoSuchField,
+            ErrorCode::IO_ERROR => Self::IoError,
+            ErrorCode::INVALID_JSON_POINTER => Self::InvalidJsonPointer,
+            ErrorCode::INVALID_URI_FRAGMENT => Self::InvalidUriFragment,
+            ErrorCode::UNEXPECTED_ERROR => Self::UnexpectedError,
+            ErrorCode::PARSER_IN_USE => Self::ParserInUse,
+            ErrorCode::OUT_OF_ORDER_ITERATION => Self::OutOfOrderIteration,
+            ErrorCode::INSUFFICIENT_PADDING => Self::InsufficientPadding,
+            ErrorCode::INCOMPLETE_ARRAY_OR_OBJECT => Self::IncompleteArrayOrObject,
+            ErrorCode::SCALAR_DOCUMENT_AS_VALUE => Self::ScalarDocumentAsValue,
+            ErrorCode::OUT_OF_BOUNDS => Self::OutOfBounds,
+            ErrorCode::TRAILING_CONTENT => Self::TrailingContent,
+            x => panic!("Unknown error code: {:?}", x),
         }
-    }
-}
-
-impl de::Error for SimdJsonError {
-    fn custom<T>(msg: T) -> Self
-    where
-        T: Display,
-    {
-        Self::Message(msg.to_string())
     }
 }

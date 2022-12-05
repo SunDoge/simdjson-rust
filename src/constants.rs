@@ -1,0 +1,1 @@
+pub const SIMDJSON_MAXSIZE_BYTES: usize = 0xFFFFFFFF;

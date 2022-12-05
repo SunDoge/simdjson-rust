@@ -10,11 +10,13 @@
 // pub use parsed_json_iterator::ParsedJsonIterator;
 
 // pub mod dom;
-// pub mod error;
+pub mod error;
 // pub mod libsimdjson;
-// pub mod padded_string;
+pub mod padded_string;
 // pub mod serde;
 pub mod bridge;
+pub mod ondemand;
+pub mod constants;
 
 #[cfg(test)]
 mod tests {

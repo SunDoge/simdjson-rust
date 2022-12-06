@@ -23,7 +23,7 @@
 //     }
 // }
 
-use std::{fmt::Debug, ops::Deref, os::unix::prelude::OsStrExt, path::Path};
+use std::{fmt::Debug, ops::Deref, path::Path};
 
 use cxx::{let_cxx_string, UniquePtr};
 

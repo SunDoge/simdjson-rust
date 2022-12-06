@@ -40,7 +40,9 @@ impl PaddedString {
         P: AsRef<Path>,
     {
         let mut code = ErrorCode::SUCCESS;
-        let_cxx_string!(filename_cxx = filename.as_ref().as_os_str().as_bytes());
+
+        // TODO: this is not optimal but I use to temporarily fix windows ci
+        let_cxx_string!(filename_cxx = filename.as_ref().as_os_str().to_str().unwrap());
         let ps = ffi::padded_string_load(&filename_cxx, &mut code);
         if code == ErrorCode::SUCCESS {
             Ok(Self(ps))

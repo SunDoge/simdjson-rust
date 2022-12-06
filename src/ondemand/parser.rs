@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use cxx::UniquePtr;
 
 use crate::{
+    bridge::check,
     bridge::ffi::{self, ErrorCode},
     constants::SIMDJSON_MAXSIZE_BYTES,
     error::Result,
@@ -19,13 +20,20 @@ impl Parser {
     }
 
     pub fn iterate(&mut self, padded_string: &PaddedString) -> Result<Document> {
-        let mut code = ErrorCode::SUCCESS;
-        let doc = ffi::ondemand_parser_iterate(self.0.pin_mut(), &padded_string, &mut code);
-        if code == ErrorCode::SUCCESS {
-            Ok(Document(doc))
-        } else {
-            Err(code.into())
-        }
+        // let mut code = ErrorCode::SUCCESS;
+        // let doc = ffi::ondemand_parser_iterate(self.0.pin_mut(), &padded_string, &mut code);
+        // if code == ErrorCode::SUCCESS {
+        //     Ok(Document(doc))
+        // } else {
+        //     Err(code.into())
+        // }
+
+        check!(
+            ffi::ondemand_parser_iterate,
+            self.0.pin_mut(),
+            &padded_string
+        )
+        .map(Document)
     }
 }
 

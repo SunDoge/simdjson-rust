@@ -85,6 +85,15 @@ pub(crate) mod ffi {
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandDocument>;
 
+        type OndemandValue;
+        fn ondemand_document_at_pointer(
+            doc: Pin<&mut OndemandDocument>,
+            json_pointer: &CxxString,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandValue>;
+
+        fn ondemand_value_get_uint64(value: Pin<&mut OndemandValue>, code: &mut ErrorCode) -> u64;
+
         type PaddedString;
         fn padded_string_load(
             filename: &CxxString,
@@ -92,6 +101,26 @@ pub(crate) mod ffi {
         ) -> UniquePtr<PaddedString>;
     }
 }
+
+macro_rules! check {
+    ($func:expr, $($x:expr), + $(,)?) => {
+        {   
+            use crate::bridge::ffi::ErrorCode;
+
+            let mut code = ErrorCode::SUCCESS;
+
+            let res = $func($($x),+, &mut code);
+
+            if code == ErrorCode::SUCCESS {
+                Ok(res)
+            } else {
+                Err(code.into())
+            }
+        }
+    };
+}
+
+pub(crate) use check;
 
 #[cfg(test)]
 mod tests {

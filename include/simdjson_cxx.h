@@ -9,6 +9,7 @@ namespace ffi
     using PaddedString = simdjson::padded_string;
     using ErrorCode = simdjson::error_code;
     using OndemandDocument = simdjson::ondemand::document;
+    using PaddedStringResult = simdjson::simdjson_result<PaddedString>;
 
     int get_int();
 

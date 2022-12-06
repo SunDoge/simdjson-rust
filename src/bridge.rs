@@ -1,5 +1,5 @@
 #[cxx::bridge(namespace = ffi)]
-pub mod ffi {
+pub(crate) mod ffi {
 
     #[derive(Debug)]
     #[repr(i32)]

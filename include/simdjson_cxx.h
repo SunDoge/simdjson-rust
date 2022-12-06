@@ -13,6 +13,8 @@ namespace ffi
     using OndemandValue = simdjson::ondemand::value;
     using OndemandArray = simdjson::ondemand::array;
     using OndemandArrayIterator = simdjson::ondemand::array_iterator;
+    using OndemandField = simdjson::ondemand::field;
+    using OndemandObjectIterator = simdjson::ondemand::object_iterator;
 
     int get_int();
 
@@ -27,9 +29,15 @@ namespace ffi
     // ondemand::value
     uint64_t ondemand_value_get_uint64(OndemandValue &value, ErrorCode &code);
     std::unique_ptr<OndemandArray> ondemand_value_get_array(OndemandValue &value, ErrorCode &code);
-
+    std::unique_ptr<OndemandObject> ondemand_value_get_object(OndemandValue &value, ErrorCode &code);
     // ondemand::object
     std::unique_ptr<OndemandValue> ondemand_object_at_pointer(OndemandObject &obj, const rust::Str json_pointer, ErrorCode &code);
+    std::unique_ptr<OndemandObjectIterator> ondemand_object_begin(OndemandObject &obj, ErrorCode &code);
+    std::unique_ptr<OndemandObjectIterator> ondemand_object_end(OndemandObject &obj, ErrorCode &code);
+
+    // ondemand::object_iterator
+    bool ondemand_object_iterator_not_equal(const OndemandObjectIterator &lhs, const OndemandObjectIterator &rhs);
+    std::unique_ptr<OndemandField> ondemand_object_iterator_next(OndemandObjectIterator &iter);
 
     // ondemand::array
     std::unique_ptr<OndemandArrayIterator> ondemand_array_begin(OndemandArray &arr, ErrorCode &code);
@@ -40,6 +48,8 @@ namespace ffi
     bool ondemand_array_iterator_not_equal(const OndemandArrayIterator &lhs, const OndemandArrayIterator &rhs);
     std::unique_ptr<OndemandValue> ondemand_array_iterator_next(OndemandArrayIterator &iter);
 
+    // ondemand::field
+    rust::Str ondemand_field_unescaped_key(OndemandField &field, ErrorCode &code);
 
     // padded_string
     std::unique_ptr<PaddedString> padded_string_load(const std::string &filename, ErrorCode &code);

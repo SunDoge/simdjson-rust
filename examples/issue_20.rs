@@ -17,8 +17,25 @@ fn main() {
         .get_array()
         .unwrap();
 
-    for item in arr.iter().unwrap() {
-        
+    let mut arr_begin = arr.begin().unwrap();
+    let arr_end = arr.end().unwrap();
+
+    let mut index = 0;
+    while arr_begin.not_equal(&arr_end) {
+        dbg!(index);
+        let mut value = arr_begin.next();
+
+        let mut object = value.get_object().unwrap();
+
+        let mut object_begin = object.begin().unwrap();
+        let object_end = object.end().unwrap();
+
+        while object_begin.not_equal(&object_end) {
+            let mut field = object_begin.next();
+
+            println!("{}-{}", index, field.unescaped_key().unwrap());
+        }
+
+        index += 1;
     }
-    
 }

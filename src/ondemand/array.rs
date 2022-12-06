@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, marker::PhantomData};
 
 use cxx::UniquePtr;
 
@@ -20,12 +20,12 @@ impl Array {
         check!(ffi::ondemand_array_end, self.0.pin_mut()).map(ArrayIterator)
     }
 
-    pub fn iter(&mut self) -> Result<Iter> {
-        Ok(Iter {
-            begin: self.begin()?,
-            end: self.end()?,
-        })
-    }
+    // pub fn iter(&mut self) -> Result<IterMut> {
+    //     Ok(IterMut {
+    //         begin: self.begin()?,
+    //         end: self.end()?,
+    //     })
+    // }
 }
 
 impl Debug for Array {
@@ -34,19 +34,20 @@ impl Debug for Array {
     }
 }
 
-pub struct Iter {
-    pub begin: ArrayIterator,
-    pub end: ArrayIterator,
-}
+// pub struct IterMut {
+//     pub begin: ArrayIterator,
+//     pub end: ArrayIterator,
+   
+// }
 
-impl Iterator for Iter {
-    type Item = Value;
+// impl Iterator for IterMut {
+//     type Item = &mut Value;
 
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.begin.not_equal(&self.end) {
-            Some(self.begin.next())
-        } else {
-            None
-        }
-    }
-}
+//     fn next(&mut self) -> Option<Self::Item> {
+//         if self.begin.not_equal(&self.end) {
+//             Some(&mut self.begin.next())
+//         } else {
+//             None
+//         }
+//     }
+// }

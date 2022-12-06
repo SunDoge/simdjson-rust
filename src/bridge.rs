@@ -82,6 +82,8 @@ pub(crate) mod ffi {
         type OndemandObject;
         type OndemandArray;
         type OndemandArrayIterator;
+        type OndemandField;
+        type OndemandObjectIterator;
 
         type PaddedString;
 
@@ -110,6 +112,10 @@ pub(crate) mod ffi {
             value: Pin<&mut OndemandValue>,
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandArray>;
+        fn ondemand_value_get_object(
+            value: Pin<&mut OndemandValue>,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandObject>;
 
         // ondemand::object
         fn ondemand_object_at_pointer(
@@ -117,6 +123,23 @@ pub(crate) mod ffi {
             json_pointer: &str,
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandValue>;
+        fn ondemand_object_begin(
+            arr: Pin<&mut OndemandObject>,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandObjectIterator>;
+        fn ondemand_object_end(
+            arr: Pin<&mut OndemandObject>,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandObjectIterator>;
+
+        // ondemand::object_iterator
+        fn ondemand_object_iterator_not_equal(
+            lhs: &OndemandObjectIterator,
+            rhs: &OndemandObjectIterator,
+        ) -> bool;
+        fn ondemand_object_iterator_next(
+            iter: Pin<&mut OndemandObjectIterator>,
+        ) -> UniquePtr<OndemandField>;
 
         // ondemand::array
         fn ondemand_array_begin(
@@ -140,6 +163,12 @@ pub(crate) mod ffi {
         fn ondemand_array_iterator_next(
             iter: Pin<&mut OndemandArrayIterator>,
         ) -> UniquePtr<OndemandValue>;
+
+        // ondemand::field
+        fn ondemand_field_unescaped_key<'a>(
+            field: Pin<&mut OndemandField>,
+            code: &mut ErrorCode,
+        ) -> &'a str;
 
         // padded_string
         fn padded_string_load(

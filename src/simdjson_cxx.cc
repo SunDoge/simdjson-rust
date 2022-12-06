@@ -48,6 +48,12 @@ namespace ffi
         value.get_array().tie(arr, code);
         return std::make_unique<OndemandArray>(std::move(arr));
     }
+    std::unique_ptr<OndemandObject> ondemand_value_get_object(OndemandValue &value, ErrorCode &code)
+    {
+        OndemandObject obj;
+        value.get_object().tie(obj, code);
+        return std::make_unique<OndemandObject>(std::move(obj));
+    }
 
     // ondemand::object
     std::unique_ptr<OndemandValue> ondemand_object_at_pointer(OndemandObject &obj, const rust::Str json_pointer, ErrorCode &code)
@@ -55,6 +61,32 @@ namespace ffi
         OndemandValue v;
         obj.at_pointer(std::string_view(json_pointer.data(), json_pointer.size())).tie(v, code);
         return std::make_unique<OndemandValue>(std::move(v));
+    }
+
+    std::unique_ptr<OndemandObjectIterator> ondemand_object_begin(OndemandObject &arr, ErrorCode &code)
+    {
+        OndemandObjectIterator iter;
+        arr.begin().tie(iter, code);
+        return std::make_unique<OndemandObjectIterator>(std::move(iter));
+    }
+
+    std::unique_ptr<OndemandObjectIterator> ondemand_object_end(OndemandObject &arr, ErrorCode &code)
+    {
+        OndemandObjectIterator iter;
+        arr.end().tie(iter, code);
+        return std::make_unique<OndemandObjectIterator>(std::move(iter));
+    }
+
+    // ondemand::object_iterator
+    bool ondemand_object_iterator_not_equal(const OndemandObjectIterator &lhs, const OndemandObjectIterator &rhs)
+    {
+        return lhs != rhs;
+    }
+    std::unique_ptr<OndemandField> ondemand_object_iterator_next(OndemandObjectIterator &iter)
+    {
+        auto v = std::make_unique<OndemandField>(std::move(*iter));
+        ++iter;
+        return v;
     }
 
     // ondemand::array
@@ -84,6 +116,14 @@ namespace ffi
         auto v = std::make_unique<OndemandValue>(std::move(*iter));
         ++iter;
         return v;
+    }
+
+    // ondemand::field
+    rust::Str ondemand_field_unescaped_key(OndemandField &field, ErrorCode &code)
+    {
+        std::string_view sv;
+        field.unescaped_key().tie(sv, code);
+        return rust::Str(sv.data(), sv.size());
     }
 
     // padded_string

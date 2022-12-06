@@ -7,7 +7,7 @@ use crate::{
     error::Result,
 };
 
-use super::array::Array;
+use super::{array::Array, object::Object};
 
 pub struct Value(pub UniquePtr<ffi::OndemandValue>);
 
@@ -18,6 +18,10 @@ impl Value {
 
     pub fn get_array(&mut self) -> Result<Array> {
         check!(ffi::ondemand_value_get_array, self.0.pin_mut()).map(Array)
+    }
+
+    pub fn get_object(&mut self) -> Result<Object> {
+        check!(ffi::ondemand_value_get_object, self.0.pin_mut()).map(Object)
     }
 }
 

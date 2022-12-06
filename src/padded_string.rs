@@ -28,27 +28,29 @@ use std::{fmt::Debug, ops::Deref, path::Path};
 use cxx::{let_cxx_string, UniquePtr};
 
 use crate::{
-    bridge::ffi::{self, ErrorCode},
+    bridge::{
+        check,
+        ffi::{self, ErrorCode},
+    },
     error::Result,
 };
 
-pub struct PaddedString(UniquePtr<ffi::PaddedString>);
+pub struct PaddedString(pub UniquePtr<ffi::PaddedString>);
 
 impl PaddedString {
     pub fn load<P>(filename: P) -> Result<Self>
     where
         P: AsRef<Path>,
     {
-        let mut code = ErrorCode::SUCCESS;
-
         // TODO: this is not optimal but I use to temporarily fix windows ci
         let_cxx_string!(filename_cxx = filename.as_ref().as_os_str().to_str().unwrap());
-        let ps = ffi::padded_string_load(&filename_cxx, &mut code);
-        if code == ErrorCode::SUCCESS {
-            Ok(Self(ps))
-        } else {
-            Err(code.into())
-        }
+        // let ps = ffi::padded_string_load(&filename_cxx, &mut code);
+        // if code == ErrorCode::SUCCESS {
+        //     Ok(Self(ps))
+        // } else {
+        //     Err(code.into())
+        // }
+        check!(ffi::padded_string_load, &filename_cxx).map(PaddedString)
     }
 }
 
@@ -63,6 +65,12 @@ impl Deref for PaddedString {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl From<&str> for PaddedString {
+    fn from(s: &str) -> Self {
+        Self(ffi::padded_string_from_str(&s))
     }
 }
 

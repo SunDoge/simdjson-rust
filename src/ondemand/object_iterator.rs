@@ -20,8 +20,13 @@ impl ObjectIterator {
         ffi::ondemand_object_iterator_not_equal(self, rhs)
     }
 
-    pub fn next(&mut self) -> Field {
-        Field(ffi::ondemand_object_iterator_next(self.0.pin_mut()))
+    pub fn next(&mut self) -> &mut Self {
+        ffi::ondemand_object_iterator_next(self.0.pin_mut());
+        self
+    }
+
+    pub fn get(&mut self) -> Result<Field> {
+        check!(ffi::ondemand_object_iterator_get, self.0.pin_mut()).map(Field)
     }
 }
 

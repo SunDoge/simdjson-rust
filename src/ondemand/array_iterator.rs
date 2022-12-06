@@ -20,8 +20,13 @@ impl ArrayIterator {
         ffi::ondemand_array_iterator_not_equal(self, rhs)
     }
 
-    pub fn next(&mut self) -> Value {
-        Value(ffi::ondemand_array_iterator_next(self.0.pin_mut()))
+    pub fn next(&mut self) -> &mut Self {
+        ffi::ondemand_array_iterator_next(self.0.pin_mut());
+        self
+    }
+
+    pub fn get(&mut self) -> Result<Value> {
+        check!(ffi::ondemand_array_iterator_get, self.0.pin_mut()).map(Value)
     }
 }
 

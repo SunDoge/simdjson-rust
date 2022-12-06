@@ -37,7 +37,8 @@ namespace ffi
 
     // ondemand::object_iterator
     bool ondemand_object_iterator_not_equal(const OndemandObjectIterator &lhs, const OndemandObjectIterator &rhs);
-    std::unique_ptr<OndemandField> ondemand_object_iterator_next(OndemandObjectIterator &iter);
+    OndemandObjectIterator &ondemand_object_iterator_next(OndemandObjectIterator &iter);
+    std::unique_ptr<OndemandField> ondemand_object_iterator_get(OndemandObjectIterator &iter, ErrorCode &code);
 
     // ondemand::array
     std::unique_ptr<OndemandArrayIterator> ondemand_array_begin(OndemandArray &arr, ErrorCode &code);
@@ -46,7 +47,8 @@ namespace ffi
     // ondemand::array_iterator
     bool ondemand_array_iterator_equal(const OndemandArrayIterator &lhs, const OndemandArrayIterator &rhs);
     bool ondemand_array_iterator_not_equal(const OndemandArrayIterator &lhs, const OndemandArrayIterator &rhs);
-    std::unique_ptr<OndemandValue> ondemand_array_iterator_next(OndemandArrayIterator &iter);
+    OndemandArrayIterator &ondemand_array_iterator_next(OndemandArrayIterator &iter);
+    std::unique_ptr<OndemandValue> ondemand_array_iterator_get(OndemandArrayIterator &iter, ErrorCode &code);
 
     // ondemand::field
     rust::Str ondemand_field_unescaped_key(OndemandField &field, ErrorCode &code);

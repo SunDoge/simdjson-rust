@@ -139,6 +139,10 @@ pub(crate) mod ffi {
         ) -> bool;
         fn ondemand_object_iterator_next(
             iter: Pin<&mut OndemandObjectIterator>,
+        ) -> Pin<&mut OndemandObjectIterator>;
+        fn ondemand_object_iterator_get(
+            iter: Pin<&mut OndemandObjectIterator>,
+            code: &mut ErrorCode,
         ) -> UniquePtr<OndemandField>;
 
         // ondemand::array
@@ -162,6 +166,10 @@ pub(crate) mod ffi {
         ) -> bool;
         fn ondemand_array_iterator_next(
             iter: Pin<&mut OndemandArrayIterator>,
+        ) -> Pin<&mut OndemandArrayIterator>;
+        fn ondemand_array_iterator_get(
+            iter: Pin<&mut OndemandArrayIterator>,
+            code: &mut ErrorCode,
         ) -> UniquePtr<OndemandValue>;
 
         // ondemand::field

@@ -23,19 +23,22 @@ fn main() {
     let mut index = 0;
     while arr_begin.not_equal(&arr_end) {
         dbg!(index);
-        let mut value = arr_begin.next();
 
+        let mut value = arr_begin.get().unwrap();
         let mut object = value.get_object().unwrap();
 
         let mut object_begin = object.begin().unwrap();
         let object_end = object.end().unwrap();
 
         while object_begin.not_equal(&object_end) {
-            let mut field = object_begin.next();
+            let mut field = object_begin.get().unwrap();
 
             println!("{}-{}", index, field.unescaped_key().unwrap());
+
+            object_begin.next();
         }
 
+        arr_begin.next();
         index += 1;
     }
 }

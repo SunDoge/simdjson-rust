@@ -12,7 +12,7 @@ use crate::{
 
 use super::document::Document;
 
-pub struct Parser(UniquePtr<ffi::OndemandParser>);
+pub struct Parser(pub UniquePtr<ffi::OndemandParser>);
 
 impl Parser {
     pub fn new(max_capacity: usize) -> Self {

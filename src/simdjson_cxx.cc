@@ -82,11 +82,15 @@ namespace ffi
     {
         return lhs != rhs;
     }
-    std::unique_ptr<OndemandField> ondemand_object_iterator_next(OndemandObjectIterator &iter)
+    OndemandObjectIterator &ondemand_object_iterator_next(OndemandObjectIterator &iter)
     {
-        auto v = std::make_unique<OndemandField>(std::move(*iter));
-        ++iter;
-        return v;
+        return ++iter;
+    }
+    std::unique_ptr<OndemandField> ondemand_object_iterator_get(OndemandObjectIterator &iter, ErrorCode &code)
+    {
+        OndemandField field;
+        (*iter).tie(field, code);
+        return std::make_unique<OndemandField>(std::move(field));
     }
 
     // ondemand::array
@@ -103,6 +107,7 @@ namespace ffi
         return std::make_unique<OndemandArrayIterator>(std::move(iter));
     }
 
+    // ondemand::array_iterator
     bool ondemand_array_iterator_equal(const OndemandArrayIterator &lhs, const OndemandArrayIterator &rhs)
     {
         return lhs == rhs;
@@ -111,11 +116,15 @@ namespace ffi
     {
         return lhs != rhs;
     }
-    std::unique_ptr<OndemandValue> ondemand_array_iterator_next(OndemandArrayIterator &iter)
+    OndemandArrayIterator &ondemand_array_iterator_next(OndemandArrayIterator &iter)
     {
-        auto v = std::make_unique<OndemandValue>(std::move(*iter));
-        ++iter;
-        return v;
+        return ++iter;
+    }
+    std::unique_ptr<OndemandValue> ondemand_array_iterator_get(OndemandArrayIterator &iter, ErrorCode &code)
+    {
+        OndemandValue v;
+        (*iter).tie(v, code);
+        return std::make_unique<OndemandValue>(std::move(v));
     }
 
     // ondemand::field

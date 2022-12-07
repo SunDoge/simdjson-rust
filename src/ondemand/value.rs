@@ -46,3 +46,17 @@ impl Debug for Value {
         f.debug_struct("Value").finish()
     }
 }
+
+// impl Index<&str> for Value {
+//     type Output = Self;
+//     fn index(&self, index: &str) -> &Self::Output {
+//         panic!("can't do this");
+//     }
+// }
+
+// We need lifetime to do this
+// impl IndexMut<&str> for Value {
+//     fn index_mut(&mut self, index: &str) -> &mut Self::Output {
+//         self.find_field_unordered(index).as_mut().unwrap()
+//     }
+// }

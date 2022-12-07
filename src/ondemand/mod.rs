@@ -6,3 +6,4 @@ pub mod object_iterator;
 pub mod parser;
 pub mod value;
 pub mod field;
+pub mod iter_mut;

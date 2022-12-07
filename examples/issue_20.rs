@@ -17,14 +17,20 @@ fn main() {
         .get_array()
         .unwrap();
 
-    let mut arr_begin = arr.begin().unwrap();
-    let arr_end = arr.end().unwrap();
+    // let mut arr_begin = arr.begin().unwrap();
+    // let arr_end = arr.end().unwrap();
+
+    let arr_iter = simdjson_rust::ondemand::array_iterator::Iter::new(
+        arr.begin().unwrap(),
+        arr.end().unwrap(),
+    );
 
     let mut index = 0;
-    while arr_begin.not_equal(&arr_end) {
+    for item in arr_iter {
         dbg!(index);
 
-        let mut value = arr_begin.get().unwrap();
+        // let mut value = arr_begin.get().unwrap();
+        let mut value = item.unwrap();
         let mut object = value.get_object().unwrap();
 
         let mut object_begin = object.begin().unwrap();
@@ -37,8 +43,6 @@ fn main() {
 
             object_begin.next();
         }
-
-        arr_begin.next();
         index += 1;
     }
 }

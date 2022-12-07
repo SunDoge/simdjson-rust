@@ -12,6 +12,10 @@ use super::{array_iterator::ArrayIterator, value::Value};
 pub struct Array(pub UniquePtr<ffi::OndemandArray>);
 
 impl Array {
+    // pub fn new(ptr: UniquePtr<ffi::OndemandArray>) -> Self {
+    //     Self(ptr)
+    // }
+
     pub fn begin(&mut self) -> Result<ArrayIterator> {
         check!(ffi::ondemand_array_begin, self.0.pin_mut()).map(ArrayIterator)
     }
@@ -37,7 +41,7 @@ impl Debug for Array {
 // pub struct IterMut {
 //     pub begin: ArrayIterator,
 //     pub end: ArrayIterator,
-   
+
 // }
 
 // impl Iterator for IterMut {

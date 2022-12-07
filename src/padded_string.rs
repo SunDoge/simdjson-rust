@@ -43,13 +43,8 @@ impl PaddedString {
         P: AsRef<Path>,
     {
         // TODO: this is not optimal but I use to temporarily fix windows ci
+        // TODO: maybe use &str instead?
         let_cxx_string!(filename_cxx = filename.as_ref().as_os_str().to_str().unwrap());
-        // let ps = ffi::padded_string_load(&filename_cxx, &mut code);
-        // if code == ErrorCode::SUCCESS {
-        //     Ok(Self(ps))
-        // } else {
-        //     Err(code.into())
-        // }
         check!(ffi::padded_string_load, &filename_cxx).map(PaddedString)
     }
 }
@@ -71,6 +66,16 @@ impl Deref for PaddedString {
 impl From<&str> for PaddedString {
     fn from(s: &str) -> Self {
         Self(ffi::padded_string_from_str(&s))
+    }
+}
+
+pub trait ToPaddedString {
+    fn to_padded(&self) -> PaddedString;
+}
+
+impl ToPaddedString for str {
+    fn to_padded(&self) -> PaddedString {
+        self.into()
     }
 }
 

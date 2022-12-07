@@ -1,4 +1,4 @@
-use std::{fmt::Debug, ops::Deref};
+use std::{fmt::Debug, marker::PhantomData, ops::Deref};
 
 use cxx::UniquePtr;
 
@@ -7,7 +7,7 @@ use crate::{
     error::Result,
 };
 
-use super::value::Value;
+use super::{array::Array, value::Value};
 
 pub struct ArrayIterator(pub UniquePtr<ffi::OndemandArrayIterator>);
 
@@ -41,5 +41,39 @@ impl Deref for ArrayIterator {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+pub struct Iter {
+    begin: ArrayIterator,
+    end: ArrayIterator,
+    started: bool,
+}
+
+impl Iter {
+    pub fn new(begin: ArrayIterator, end: ArrayIterator) -> Self {
+        Self {
+            begin,
+            end,
+            started: false,
+        }
+    }
+}
+
+impl Iterator for Iter {
+    type Item = Result<Value>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.started {
+            self.begin.next();
+        }
+
+        if self.begin.not_equal(&self.end) {
+            self.started = true;
+            Some(self.begin.get())
+        } else {
+            self.started = false;
+            None
+        }
     }
 }

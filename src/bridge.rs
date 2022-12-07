@@ -69,10 +69,29 @@ pub(crate) mod ffi {
         NUM_ERROR_CODES,
     }
 
+    #[derive(Debug)]
+    #[repr(i32)]
+    enum OndemandJsonType {
+        // // Start at 1 to catch uninitialized / default values more easily
+        // array=1, ///< A JSON array   ( [ 1, 2, 3 ... ] )
+        // object,  ///< A JSON object  ( { "a": 1, "b" 2, ... } )
+        // number,  ///< A JSON number  ( 1 or -2.3 or 4.5e6 ...)
+        // string,  ///< A JSON string  ( "a" or "hello world\n" ...)
+        // boolean, ///< A JSON boolean (true or false)
+        // null,     ///< A JSON null    (null)
+        array = 1,
+        object,
+        number,
+        string,
+        boolean,
+        null,
+    }
+
     unsafe extern "C++" {
         include!("include/simdjson_cxx.h");
 
         type ErrorCode;
+        type OndemandJsonType;
 
         fn get_int() -> i32;
 
@@ -120,6 +139,48 @@ pub(crate) mod ffi {
             doc: Pin<&mut OndemandDocument>,
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandArray>;
+        fn ondemand_document_get_uint64(
+            doc: Pin<&mut OndemandDocument>,
+            code: &mut ErrorCode,
+        ) -> u64;
+        fn ondemand_document_get_uint64_in_string(
+            doc: Pin<&mut OndemandDocument>,
+            code: &mut ErrorCode,
+        ) -> u64;
+        fn ondemand_document_get_int64(
+            doc: Pin<&mut OndemandDocument>,
+            code: &mut ErrorCode,
+        ) -> i64;
+        fn ondemand_document_get_int64_in_string(
+            doc: Pin<&mut OndemandDocument>,
+            code: &mut ErrorCode,
+        ) -> i64;
+        fn ondemand_document_get_double(
+            doc: Pin<&mut OndemandDocument>,
+            code: &mut ErrorCode,
+        ) -> f64;
+        fn ondemand_document_get_double_in_string(
+            doc: Pin<&mut OndemandDocument>,
+            code: &mut ErrorCode,
+        ) -> f64;
+        fn ondemand_document_get_string<'a>(
+            doc: Pin<&mut OndemandDocument>,
+            code: &mut ErrorCode,
+        ) -> &'a str;
+        fn ondemand_document_get_bool(
+            doc: Pin<&mut OndemandDocument>,
+            code: &mut ErrorCode,
+        ) -> bool;
+        fn ondemand_document_get_raw_json_string(
+            doc: Pin<&mut OndemandDocument>,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandRawJsonString>;
+        fn ondemand_document_is_null(doc: Pin<&mut OndemandDocument>, code: &mut ErrorCode)
+            -> bool;
+        fn ondemand_document_type(
+            doc: Pin<&mut OndemandDocument>,
+            code: &mut ErrorCode,
+        ) -> OndemandJsonType;
 
         // ondemand::value
         fn ondemand_value_get_uint64(value: Pin<&mut OndemandValue>, code: &mut ErrorCode) -> u64;
@@ -141,6 +202,16 @@ pub(crate) mod ffi {
             key: &str,
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandValue>;
+        // fn ondemand_document_get_uint64(doc: Pin<&mut OndemandValue>, code: &mut ErrorCode) -> u64;
+        // fn ondemand_document_get_uint64_in_string(
+        //     doc: Pin<&mut OndemandValue>,
+        //     code: &mut ErrorCode,
+        // ) -> u64;
+        // fn ondemand_document_get_int64(doc: Pin<&mut OndemandValue>, code: &mut ErrorCode) -> i64;
+        // fn ondemand_document_get_int64_in_string(
+        //     doc: Pin<&mut OndemandValue>,
+        //     code: &mut ErrorCode,
+        // ) -> i64;
 
         // ondemand::object
         fn ondemand_object_at_pointer(

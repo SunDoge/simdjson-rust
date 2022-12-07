@@ -52,6 +52,72 @@ namespace ffi
         doc.get_array().tie(arr, code);
         return std::make_unique<OndemandArray>(std::move(arr));
     }
+    uint64_t ondemand_document_get_uint64(OndemandDocument &doc, ErrorCode &code)
+    {
+        uint64_t v;
+        doc.get_uint64().tie(v, code);
+        return v;
+    }
+    uint64_t ondemand_document_get_uint64_in_string(OndemandDocument &doc, ErrorCode &code)
+    {
+        uint64_t v;
+        doc.get_uint64_in_string().tie(v, code);
+        return v;
+    }
+    int64_t ondemand_document_get_int64(OndemandDocument &doc, ErrorCode &code)
+    {
+        int64_t v;
+        doc.get_int64().tie(v, code);
+        return v;
+    }
+    int64_t ondemand_document_get_int64_in_string(OndemandDocument &doc, ErrorCode &code)
+    {
+        int64_t v;
+        doc.get_int64_in_string().tie(v, code);
+        return v;
+    }
+    double ondemand_document_get_double(OndemandDocument &doc, ErrorCode &code)
+    {
+        double v;
+        doc.get_double().tie(v, code);
+        return v;
+    }
+    double ondemand_document_get_double_in_string(OndemandDocument &doc, ErrorCode &code)
+    {
+        double v;
+        doc.get_double_in_string().tie(v, code);
+        return v;
+    }
+    rust::Str ondemand_document_get_string(OndemandDocument &doc, ErrorCode &code)
+    {
+        std::string_view sv;
+        doc.get_string().tie(sv, code);
+        return rust::Str(sv.data(), sv.size());
+    }
+    bool ondemand_document_get_bool(OndemandDocument &doc, ErrorCode &code)
+    {
+        bool v;
+        doc.get_bool().tie(v, code);
+        return v;
+    }
+    std::unique_ptr<OndemandRawJsonString> ondemand_document_get_raw_json_string(OndemandDocument &doc, ErrorCode &code)
+    {
+        OndemandRawJsonString rjs;
+        doc.get_raw_json_string().tie(rjs, code);
+        return std::make_unique<OndemandRawJsonString>(std::move(rjs));
+    }
+    bool ondemand_document_is_null(OndemandDocument &doc, ErrorCode &code)
+    {
+        bool v;
+        doc.is_null().tie(v, code);
+        return v;
+    }
+    OndemandJsonType ondemand_document_type(OndemandDocument &doc, ErrorCode &code)
+    {
+        OndemandJsonType jt;
+        doc.type().tie(jt, code);
+        return jt;
+    }
 
     // ondemand::value
     uint64_t ondemand_value_get_uint64(OndemandValue &value, ErrorCode &code)

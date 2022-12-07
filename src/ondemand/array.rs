@@ -1,4 +1,4 @@
-use std::{fmt::Debug};
+use std::fmt::Debug;
 
 use cxx::UniquePtr;
 
@@ -7,7 +7,7 @@ use crate::{
     error::Result,
 };
 
-use super::{array_iterator::ArrayIterator, iterator::Iterate};
+use super::{array_iterator::ArrayIterator, iterator::Iterate, value::Value};
 
 pub struct Array(pub UniquePtr<ffi::OndemandArray>);
 
@@ -33,6 +33,10 @@ impl Array {
 
     pub fn iterate(&mut self) -> Result<Iterate<ArrayIterator>> {
         Ok(Iterate::new(self.begin()?, self.end()?))
+    }
+
+    pub fn at(&mut self, index: usize) -> Result<Value> {
+        check!(ffi::ondemand_array_at, self.0.pin_mut(), index).map(Value)
     }
 }
 

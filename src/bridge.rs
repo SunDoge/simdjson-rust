@@ -84,6 +84,7 @@ pub(crate) mod ffi {
         type OndemandArrayIterator;
         type OndemandField;
         type OndemandObjectIterator;
+        type OndemandRawJsonString;
 
         type PaddedString;
 
@@ -124,13 +125,17 @@ pub(crate) mod ffi {
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandValue>;
         fn ondemand_object_begin(
-            arr: Pin<&mut OndemandObject>,
+            obj: Pin<&mut OndemandObject>,
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandObjectIterator>;
         fn ondemand_object_end(
-            arr: Pin<&mut OndemandObject>,
+            obj: Pin<&mut OndemandObject>,
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandObjectIterator>;
+        fn ondemand_object_raw_json<'a>(
+            obj: Pin<&mut OndemandObject>,
+            code: &mut ErrorCode,
+        ) -> &'a str;
 
         // ondemand::object_iterator
         fn ondemand_object_iterator_not_equal(
@@ -142,6 +147,7 @@ pub(crate) mod ffi {
         ) -> Pin<&mut OndemandObjectIterator>;
         fn ondemand_object_iterator_get(
             iter: Pin<&mut OndemandObjectIterator>,
+            // key: Pin<&mut OndemandRawJsonString>,
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandField>;
 
@@ -154,6 +160,11 @@ pub(crate) mod ffi {
             arr: Pin<&mut OndemandArray>,
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandArrayIterator>;
+        fn ondemand_array_at(
+            arr: Pin<&mut OndemandArray>,
+            index: usize,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandValue>;
 
         // ondemand::array_iterator
         fn ondemand_array_iterator_equal(
@@ -177,6 +188,14 @@ pub(crate) mod ffi {
             field: Pin<&mut OndemandField>,
             code: &mut ErrorCode,
         ) -> &'a str;
+        fn ondemand_field_value(field: Pin<&mut OndemandField>) -> UniquePtr<OndemandValue>;
+        fn ondemand_field_key(field: &OndemandField) -> UniquePtr<OndemandRawJsonString>;
+
+        // ondemand::raw_json_string
+        // fn ondemand_raw_json_string_unescape<'a>(
+        //     rjs: &OndemandRawJsonString,
+        //     value: Pin<&mut OndemandValue>,
+        // ) -> &'a str;
 
         // padded_string
         fn padded_string_load(
@@ -214,7 +233,6 @@ pub(crate) use check;
 
 #[cfg(test)]
 mod tests {
-    
 
     use super::*;
 

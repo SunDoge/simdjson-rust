@@ -7,7 +7,7 @@ use crate::{
     error::Result,
 };
 
-use super::{field::Field, iterator::CxxIterator};
+use super::{field::Field, iterator::CxxIterator, value::Value};
 
 pub struct ObjectIterator(pub UniquePtr<ffi::OndemandObjectIterator>);
 
@@ -29,7 +29,15 @@ impl CxxIterator for ObjectIterator {
         self
     }
 
-    fn get(&mut self) -> Result<Field> {
+    fn get(&mut self) -> Self::Item {
+        // let mut key = UniquePtr::null();
+        // let value = check!(
+        //     ffi::ondemand_object_iterator_get,
+        //     self.0.pin_mut(),
+        //     key.pin_mut()
+        // )
+        // .map(Value);
+        // (RawJsonString(key), value)
         check!(ffi::ondemand_object_iterator_get, self.0.pin_mut()).map(Field)
     }
 }

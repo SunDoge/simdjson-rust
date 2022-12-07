@@ -32,6 +32,10 @@ impl Object {
     pub fn iterate(&mut self) -> Result<Iterate<ObjectIterator>> {
         Ok(Iterate::new(self.begin()?, self.end()?))
     }
+
+    pub fn raw_json(&mut self) -> Result<&str> {
+        check!(ffi::ondemand_object_raw_json, self.0.pin_mut())
+    }
 }
 
 impl Debug for Object {

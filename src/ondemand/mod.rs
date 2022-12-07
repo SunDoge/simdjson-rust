@@ -7,3 +7,4 @@ pub mod parser;
 pub mod value;
 pub mod field;
 pub mod iterator;
+pub mod raw_json_string;

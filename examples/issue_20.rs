@@ -14,8 +14,10 @@ fn main() -> Result<()> {
 
         for field in object.iterate()? {
             let mut field = field?;
+
+            let mut value = field.value();
             let key = field.unescaped_key()?;
-            println!("key: {}", key);
+            println!("key: {} | value: {}", key, value.get_object()?.raw_json()?);
         }
     }
 

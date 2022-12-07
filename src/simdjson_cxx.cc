@@ -76,6 +76,12 @@ namespace ffi
         arr.end().tie(iter, code);
         return std::make_unique<OndemandObjectIterator>(std::move(iter));
     }
+    rust::Str ondemand_object_raw_json(OndemandObject &obj, ErrorCode &code)
+    {
+        std::string_view rv;
+        obj.raw_json().tie(rv, code);
+        return rust::Str(rv.data(), rv.size());
+    }
 
     // ondemand::object_iterator
     bool ondemand_object_iterator_not_equal(const OndemandObjectIterator &lhs, const OndemandObjectIterator &rhs)
@@ -90,6 +96,8 @@ namespace ffi
     {
         OndemandField field;
         (*iter).tie(field, code);
+        // OndemandValue value;
+        // std::tie(key, value) = field;
         return std::make_unique<OndemandField>(std::move(field));
     }
 
@@ -105,6 +113,12 @@ namespace ffi
         OndemandArrayIterator iter;
         arr.end().tie(iter, code);
         return std::make_unique<OndemandArrayIterator>(std::move(iter));
+    }
+    std::unique_ptr<OndemandValue> ondemand_array_at(OndemandArray &arr, size_t index, ErrorCode &code)
+    {
+        OndemandValue v;
+        arr.at(index).tie(v, code);
+        return std::make_unique<OndemandValue>(std::move(v));
     }
 
     // ondemand::array_iterator
@@ -134,6 +148,20 @@ namespace ffi
         field.unescaped_key().tie(sv, code);
         return rust::Str(sv.data(), sv.size());
     }
+    std::unique_ptr<OndemandValue> ondemand_field_value(OndemandField &field)
+    {
+        return std::make_unique<OndemandValue>(std::move(field.value()));
+    }
+
+    std::unique_ptr<OndemandRawJsonString> ondemand_field_key(const OndemandField &field)
+    {
+        return std::make_unique<OndemandRawJsonString>(std::move(field.key()));
+    }
+
+    // ondemand::raw_json_string
+    // rust::Str ondemand_raw_json_string_unescape(const OndemandRawJsonString &rjs, OndemandValue v, ErrorCode &code) {
+    //     auto sv = rjs.unesacpe
+    // }
 
     // padded_string
     std::unique_ptr<PaddedString> padded_string_load(const std::string &filename, ErrorCode &code)

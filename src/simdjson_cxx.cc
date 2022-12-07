@@ -144,6 +144,24 @@ namespace ffi
         arr.at(index).tie(v, code);
         return std::make_unique<OndemandValue>(std::move(v));
     }
+    size_t ondemand_array_count_elements(OndemandArray &arr, ErrorCode &code)
+    {
+        size_t n;
+        arr.count_elements().tie(n, code);
+        return n;
+    }
+    bool ondemand_array_is_empty(OndemandArray &arr, ErrorCode &code)
+    {
+        bool res;
+        arr.is_empty().tie(res, code);
+        return res;
+    }
+    std::unique_ptr<OndemandValue> ondemand_array_at_pointer(OndemandArray &arr, const rust::Str json_pointer, ErrorCode &code)
+    {
+        OndemandValue v;
+        arr.at_pointer(std::string_view(json_pointer.data(), json_pointer.size())).tie(v, code);
+        return std::make_unique<OndemandValue>(std::move(v));
+    }
 
     // ondemand::array_iterator
     bool ondemand_array_iterator_equal(const OndemandArrayIterator &lhs, const OndemandArrayIterator &rhs)

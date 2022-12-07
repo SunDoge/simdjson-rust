@@ -185,6 +185,16 @@ pub(crate) mod ffi {
             index: usize,
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandValue>;
+        fn ondemand_array_count_elements(
+            arr: Pin<&mut OndemandArray>,
+            code: &mut ErrorCode,
+        ) -> usize;
+        fn ondemand_array_is_empty(arr: Pin<&mut OndemandArray>, code: &mut ErrorCode) -> bool;
+        fn ondemand_array_at_pointer(
+            arr: Pin<&mut OndemandArray>,
+            json_pointer: &str,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandValue>;
 
         // ondemand::array_iterator
         fn ondemand_array_iterator_equal(

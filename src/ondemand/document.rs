@@ -7,14 +7,18 @@ use crate::{
     error::Result,
 };
 
-use super::value::Value;
+use super::{object::Object, value::Value};
 
 pub struct Document(pub UniquePtr<ffi::OndemandDocument>);
 
 impl Document {
     pub fn at_pointer(&mut self, json_pointer: &str) -> Result<Value> {
-        let_cxx_string!(p = json_pointer);
-        check!(ffi::ondemand_document_at_pointer, self.0.pin_mut(), &p).map(Value)
+        // let_cxx_string!(p = json_pointer);
+        check!(ffi::ondemand_document_at_pointer, self.0.pin_mut(), json_pointer).map(Value)
+    }
+
+    pub fn get_object(&mut self) -> Result<Object> {
+        check!(ffi::ondemand_document_get_object, self.0.pin_mut()).map(Object)
     }
 }
 

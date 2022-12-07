@@ -78,43 +78,133 @@ pub(crate) mod ffi {
 
         type OndemandParser;
         type OndemandDocument;
-        fn new_ondemand_parser(max_capacity: usize) -> UniquePtr<OndemandParser>;
+        type OndemandValue;
+        type OndemandObject;
+        type OndemandArray;
+        type OndemandArrayIterator;
+        type OndemandField;
+        type OndemandObjectIterator;
+
+        type PaddedString;
+
+        // ondemand::parser
+        fn ondemand_parser_new(max_capacity: usize) -> UniquePtr<OndemandParser>;
         fn ondemand_parser_iterate(
             p: Pin<&mut OndemandParser>,
             ps: &PaddedString,
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandDocument>;
 
-        type OndemandValue;
+        // ondemand::document
         fn ondemand_document_at_pointer(
             doc: Pin<&mut OndemandDocument>,
-            json_pointer: &CxxString,
+            json_pointer: &str,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandValue>;
+        fn ondemand_document_get_object(
+            doc: Pin<&mut OndemandDocument>,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandObject>;
+
+        // ondemand::value
+        fn ondemand_value_get_uint64(value: Pin<&mut OndemandValue>, code: &mut ErrorCode) -> u64;
+        fn ondemand_value_get_array(
+            value: Pin<&mut OndemandValue>,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandArray>;
+        fn ondemand_value_get_object(
+            value: Pin<&mut OndemandValue>,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandObject>;
+
+        // ondemand::object
+        fn ondemand_object_at_pointer(
+            obj: Pin<&mut OndemandObject>,
+            json_pointer: &str,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandValue>;
+        fn ondemand_object_begin(
+            arr: Pin<&mut OndemandObject>,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandObjectIterator>;
+        fn ondemand_object_end(
+            arr: Pin<&mut OndemandObject>,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandObjectIterator>;
+
+        // ondemand::object_iterator
+        fn ondemand_object_iterator_not_equal(
+            lhs: &OndemandObjectIterator,
+            rhs: &OndemandObjectIterator,
+        ) -> bool;
+        fn ondemand_object_iterator_next(
+            iter: Pin<&mut OndemandObjectIterator>,
+        ) -> Pin<&mut OndemandObjectIterator>;
+        fn ondemand_object_iterator_get(
+            iter: Pin<&mut OndemandObjectIterator>,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandField>;
+
+        // ondemand::array
+        fn ondemand_array_begin(
+            arr: Pin<&mut OndemandArray>,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandArrayIterator>;
+        fn ondemand_array_end(
+            arr: Pin<&mut OndemandArray>,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandArrayIterator>;
+
+        // ondemand::array_iterator
+        fn ondemand_array_iterator_equal(
+            lhs: &OndemandArrayIterator,
+            rhs: &OndemandArrayIterator,
+        ) -> bool;
+        fn ondemand_array_iterator_not_equal(
+            lhs: &OndemandArrayIterator,
+            rhs: &OndemandArrayIterator,
+        ) -> bool;
+        fn ondemand_array_iterator_next(
+            iter: Pin<&mut OndemandArrayIterator>,
+        ) -> Pin<&mut OndemandArrayIterator>;
+        fn ondemand_array_iterator_get(
+            iter: Pin<&mut OndemandArrayIterator>,
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandValue>;
 
-        fn ondemand_value_get_uint64(value: Pin<&mut OndemandValue>, code: &mut ErrorCode) -> u64;
+        // ondemand::field
+        fn ondemand_field_unescaped_key<'a>(
+            field: Pin<&mut OndemandField>,
+            code: &mut ErrorCode,
+        ) -> &'a str;
 
-        type PaddedString;
+        // padded_string
         fn padded_string_load(
             filename: &CxxString,
             code: &mut ErrorCode,
         ) -> UniquePtr<PaddedString>;
+        fn padded_string_from_str(s: &str) -> UniquePtr<PaddedString>;
+
     }
 }
 
 macro_rules! check {
     ($func:expr, $($x:expr), + $(,)?) => {
-        {   
+        {
             use crate::bridge::ffi::ErrorCode;
 
             let mut code = ErrorCode::SUCCESS;
 
             let res = $func($($x),+, &mut code);
 
-            if code == ErrorCode::SUCCESS {
-                Ok(res)
-            } else {
-                Err(code.into())
+            // if code == ErrorCode::SUCCESS {
+            //     Ok(res)
+            // } else {
+            //     Err(code.into())
+            // }
+            match code {
+                ErrorCode::SUCCESS => Ok(res),
+                _ => Err(code.into())
             }
         }
     };
@@ -135,6 +225,6 @@ mod tests {
 
     #[test]
     fn new_parser() {
-        let parser = ffi::new_ondemand_parser(1024);
+        let parser = ffi::ondemand_parser_new(1024);
     }
 }

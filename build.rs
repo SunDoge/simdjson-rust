@@ -31,7 +31,9 @@ fn main() {
 
     let dst = Config::new(".").build().join("lib");
 
+    println!("cargo:rerun-if-changed=include/simdjson_cxx.h");
+    println!("cargo:rerun-if-changed=src/simdjson_cxx.cc");
     println!("cargo:rerun-if-changed=src/bridge.rs");
     println!("cargo:rustc-link-search=native={}", dst.display());
-    println!("cargo:rustc-link-lib=simdjson_cxx");
+    println!("cargo:rustc-link-lib=dylib=simdjson_cxx");
 }

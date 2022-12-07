@@ -12,11 +12,11 @@ use crate::{
 
 use super::document::Document;
 
-pub struct Parser(UniquePtr<ffi::OndemandParser>);
+pub struct Parser(pub UniquePtr<ffi::OndemandParser>);
 
 impl Parser {
     pub fn new(max_capacity: usize) -> Self {
-        Self(ffi::new_ondemand_parser(max_capacity))
+        Self(ffi::ondemand_parser_new(max_capacity))
     }
 
     pub fn iterate(&mut self, padded_string: &PaddedString) -> Result<Document> {

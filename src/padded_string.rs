@@ -30,7 +30,7 @@ use cxx::{let_cxx_string, UniquePtr};
 use crate::{
     bridge::{
         check,
-        ffi::{self, ErrorCode},
+        ffi::{self},
     },
     error::Result,
 };
@@ -65,7 +65,7 @@ impl Deref for PaddedString {
 
 impl From<&str> for PaddedString {
     fn from(s: &str) -> Self {
-        Self(ffi::padded_string_from_str(&s))
+        Self(ffi::padded_string_from_str(s))
     }
 }
 
@@ -82,7 +82,7 @@ impl ToPaddedString for str {
 #[cfg(test)]
 mod tests {
 
-    use crate::error::SimdJsonError;
+    
 
     use super::*;
 

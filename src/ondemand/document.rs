@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-use cxx::{let_cxx_string, UniquePtr};
+use cxx::{UniquePtr};
 
 use crate::{
     bridge::{check, ffi},

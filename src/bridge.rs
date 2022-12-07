@@ -214,7 +214,7 @@ pub(crate) use check;
 
 #[cfg(test)]
 mod tests {
-    use cxx::let_cxx_string;
+    
 
     use super::*;
 
@@ -225,6 +225,6 @@ mod tests {
 
     #[test]
     fn new_parser() {
-        let parser = ffi::ondemand_parser_new(1024);
+        let _parser = ffi::ondemand_parser_new(1024);
     }
 }

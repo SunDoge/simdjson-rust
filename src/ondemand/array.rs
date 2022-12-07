@@ -1,4 +1,4 @@
-use std::{fmt::Debug, marker::PhantomData};
+use std::{fmt::Debug};
 
 use cxx::UniquePtr;
 
@@ -7,7 +7,7 @@ use crate::{
     error::Result,
 };
 
-use super::{array_iterator::ArrayIterator, iterator::Iterate, value::Value};
+use super::{array_iterator::ArrayIterator, iterator::Iterate};
 
 pub struct Array(pub UniquePtr<ffi::OndemandArray>);
 

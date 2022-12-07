@@ -4,7 +4,7 @@ use cxx::UniquePtr;
 
 use crate::{
     bridge::check,
-    bridge::ffi::{self, ErrorCode},
+    bridge::ffi::{self},
     constants::SIMDJSON_MAXSIZE_BYTES,
     error::Result,
     padded_string::PaddedString,
@@ -31,7 +31,7 @@ impl Parser {
         check!(
             ffi::ondemand_parser_iterate,
             self.0.pin_mut(),
-            &padded_string
+            padded_string
         )
         .map(Document)
     }

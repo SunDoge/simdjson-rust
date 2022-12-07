@@ -116,6 +116,10 @@ pub(crate) mod ffi {
             key: &str,
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandValue>;
+        fn ondemand_document_get_array(
+            doc: Pin<&mut OndemandDocument>,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandArray>;
 
         // ondemand::value
         fn ondemand_value_get_uint64(value: Pin<&mut OndemandValue>, code: &mut ErrorCode) -> u64;

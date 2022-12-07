@@ -46,6 +46,12 @@ namespace ffi
         doc.find_field_unordered(std::string_view(key.data(), key.size())).tie(value, code);
         return std::make_unique<OndemandValue>(std::move(value));
     }
+    std::unique_ptr<OndemandArray> ondemand_document_get_array(OndemandDocument &doc, ErrorCode &code)
+    {
+        OndemandArray arr;
+        doc.get_array().tie(arr, code);
+        return std::make_unique<OndemandArray>(std::move(arr));
+    }
 
     // ondemand::value
     uint64_t ondemand_value_get_uint64(OndemandValue &value, ErrorCode &code)

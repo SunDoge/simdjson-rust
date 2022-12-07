@@ -7,7 +7,7 @@ use crate::{
     error::Result,
 };
 
-use super::{object::Object, value::Value};
+use super::{array::Array, object::Object, value::Value};
 
 pub struct Document(pub UniquePtr<ffi::OndemandDocument>);
 
@@ -24,6 +24,10 @@ impl Document {
 
     pub fn get_object(&mut self) -> Result<Object> {
         check!(ffi::ondemand_document_get_object, self.0.pin_mut()).map(Object)
+    }
+
+    pub fn get_array(&mut self) -> Result<Array> {
+        check!(ffi::ondemand_document_get_array, self.0.pin_mut()).map(Array)
     }
 
     pub fn find_field(&mut self, key: &str) -> Result<Value> {

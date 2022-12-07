@@ -28,6 +28,7 @@ namespace ffi
     std::unique_ptr<OndemandValue> ondemand_document_at_pointer(OndemandDocument &doc, const rust::Str json_pointer, ErrorCode &code);
     std::unique_ptr<OndemandValue> ondemand_document_find_field(OndemandDocument &doc, const rust::Str key, ErrorCode &code);
     std::unique_ptr<OndemandValue> ondemand_document_find_field_unordered(OndemandDocument &doc, const rust::Str key, ErrorCode &code);
+    std::unique_ptr<OndemandArray> ondemand_document_get_array(OndemandDocument &doc, ErrorCode &code);
 
     // ondemand::value
     uint64_t ondemand_value_get_uint64(OndemandValue &value, ErrorCode &code);

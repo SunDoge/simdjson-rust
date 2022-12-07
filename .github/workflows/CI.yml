@@ -19,7 +19,7 @@ jobs:
         rust:
           - "stable"
         cpp:
-          - llvm-15.0.2
+          - llvm
         include:
           - os: ubuntu-22.04
             rust: stable

@@ -7,7 +7,7 @@ use crate::{
     error::Result,
 };
 
-use super::{object_iterator::ObjectIterator, value::Value};
+use super::{iterator::Iterate, object_iterator::ObjectIterator, value::Value};
 
 pub struct Object(pub UniquePtr<ffi::OndemandObject>);
 
@@ -27,6 +27,10 @@ impl Object {
 
     pub fn end(&mut self) -> Result<ObjectIterator> {
         check!(ffi::ondemand_object_end, self.0.pin_mut()).map(ObjectIterator)
+    }
+
+    pub fn iterate(&mut self) -> Result<Iterate<ObjectIterator>> {
+        Ok(Iterate::new(self.begin()?, self.end()?))
     }
 }
 

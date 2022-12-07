@@ -7,7 +7,7 @@ use crate::{
     error::Result,
 };
 
-use super::{field::Field, value::Value};
+use super::{field::Field, iterator::CxxIterator, value::Value};
 
 pub struct ObjectIterator(pub UniquePtr<ffi::OndemandObjectIterator>);
 
@@ -15,17 +15,21 @@ impl ObjectIterator {
     // pub fn equal(&self, rhs: &Self) -> bool {
     //     ffi::ondemand_object_iterator_equal(self, rhs)
     // }
+}
 
-    pub fn not_equal(&self, rhs: &Self) -> bool {
+impl CxxIterator for ObjectIterator {
+    type Item = Result<Field>;
+
+    fn not_equal(&self, rhs: &Self) -> bool {
         ffi::ondemand_object_iterator_not_equal(self, rhs)
     }
 
-    pub fn next(&mut self) -> &mut Self {
+    fn next(&mut self) -> &mut Self {
         ffi::ondemand_object_iterator_next(self.0.pin_mut());
         self
     }
 
-    pub fn get(&mut self) -> Result<Field> {
+    fn get(&mut self) -> Result<Field> {
         check!(ffi::ondemand_object_iterator_get, self.0.pin_mut()).map(Field)
     }
 }

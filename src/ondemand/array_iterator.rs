@@ -7,7 +7,7 @@ use crate::{
     error::Result,
 };
 
-use super::{array::Array, value::Value};
+use super::{array::Array, iterator::{CxxIterator, Iterate}, value::Value};
 
 pub struct ArrayIterator(pub UniquePtr<ffi::OndemandArrayIterator>);
 
@@ -15,17 +15,21 @@ impl ArrayIterator {
     pub fn equal(&self, rhs: &Self) -> bool {
         ffi::ondemand_array_iterator_equal(self, rhs)
     }
+}
 
-    pub fn not_equal(&self, rhs: &Self) -> bool {
+impl CxxIterator for ArrayIterator {
+    type Item = Result<Value>;
+
+    fn not_equal(&self, rhs: &Self) -> bool {
         ffi::ondemand_array_iterator_not_equal(self, rhs)
     }
 
-    pub fn next(&mut self) -> &mut Self {
+    fn next(&mut self) -> &mut Self {
         ffi::ondemand_array_iterator_next(self.0.pin_mut());
         self
     }
 
-    pub fn get(&mut self) -> Result<Value> {
+    fn get(&mut self) -> Self::Item {
         check!(ffi::ondemand_array_iterator_get, self.0.pin_mut()).map(Value)
     }
 }

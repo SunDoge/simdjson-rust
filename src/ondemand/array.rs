@@ -7,7 +7,7 @@ use crate::{
     error::Result,
 };
 
-use super::{array_iterator::ArrayIterator, value::Value};
+use super::{array_iterator::ArrayIterator, iterator::Iterate, value::Value};
 
 pub struct Array(pub UniquePtr<ffi::OndemandArray>);
 
@@ -30,6 +30,10 @@ impl Array {
     //         end: self.end()?,
     //     })
     // }
+
+    pub fn iterate(&mut self) -> Result<Iterate<ArrayIterator>> {
+        Ok(Iterate::new(self.begin()?, self.end()?))
+    }
 }
 
 impl Debug for Array {

@@ -106,6 +106,16 @@ pub(crate) mod ffi {
             doc: Pin<&mut OndemandDocument>,
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandObject>;
+        fn ondemand_document_find_field(
+            doc: Pin<&mut OndemandDocument>,
+            key: &str,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandValue>;
+        fn ondemand_document_find_field_unordered(
+            doc: Pin<&mut OndemandDocument>,
+            key: &str,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandValue>;
 
         // ondemand::value
         fn ondemand_value_get_uint64(value: Pin<&mut OndemandValue>, code: &mut ErrorCode) -> u64;
@@ -117,6 +127,16 @@ pub(crate) mod ffi {
             value: Pin<&mut OndemandValue>,
             code: &mut ErrorCode,
         ) -> UniquePtr<OndemandObject>;
+        fn ondemand_value_find_field(
+            doc: Pin<&mut OndemandValue>,
+            key: &str,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandValue>;
+        fn ondemand_value_find_field_unordered(
+            doc: Pin<&mut OndemandValue>,
+            key: &str,
+            code: &mut ErrorCode,
+        ) -> UniquePtr<OndemandValue>;
 
         // ondemand::object
         fn ondemand_object_at_pointer(

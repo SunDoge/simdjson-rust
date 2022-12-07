@@ -34,6 +34,18 @@ namespace ffi
         doc.at_pointer(std::string_view(json_pointer.data(), json_pointer.size())).tie(value, code);
         return std::make_unique<OndemandValue>(std::move(value));
     }
+    std::unique_ptr<OndemandValue> ondemand_document_find_field(OndemandDocument &doc, const rust::Str key, ErrorCode &code)
+    {
+        OndemandValue value;
+        doc.find_field(std::string_view(key.data(), key.size())).tie(value, code);
+        return std::make_unique<OndemandValue>(std::move(value));
+    }
+    std::unique_ptr<OndemandValue> ondemand_document_find_field_unordered(OndemandDocument &doc, const rust::Str key, ErrorCode &code)
+    {
+        OndemandValue value;
+        doc.find_field_unordered(std::string_view(key.data(), key.size())).tie(value, code);
+        return std::make_unique<OndemandValue>(std::move(value));
+    }
 
     // ondemand::value
     uint64_t ondemand_value_get_uint64(OndemandValue &value, ErrorCode &code)
@@ -53,6 +65,18 @@ namespace ffi
         OndemandObject obj;
         value.get_object().tie(obj, code);
         return std::make_unique<OndemandObject>(std::move(obj));
+    }
+    std::unique_ptr<OndemandValue> ondemand_value_find_field(OndemandValue &value, const rust::Str key, ErrorCode &code)
+    {
+        OndemandValue v;
+        value.find_field(std::string_view(key.data(), key.size())).tie(v, code);
+        return std::make_unique<OndemandValue>(std::move(v));
+    }
+    std::unique_ptr<OndemandValue> ondemand_value_find_field_unordered(OndemandValue &value, const rust::Str key, ErrorCode &code)
+    {
+        OndemandValue v;
+        value.find_field_unordered(std::string_view(key.data(), key.size())).tie(value, code);
+        return std::make_unique<OndemandValue>(std::move(v));
     }
 
     // ondemand::object

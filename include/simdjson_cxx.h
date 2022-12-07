@@ -26,11 +26,16 @@ namespace ffi
     // ondemand::document
     std::unique_ptr<OndemandObject> ondemand_document_get_object(OndemandDocument &doc, ErrorCode &code);
     std::unique_ptr<OndemandValue> ondemand_document_at_pointer(OndemandDocument &doc, const rust::Str json_pointer, ErrorCode &code);
+    std::unique_ptr<OndemandValue> ondemand_document_find_field(OndemandDocument &doc, const rust::Str key, ErrorCode &code);
+    std::unique_ptr<OndemandValue> ondemand_document_find_field_unordered(OndemandDocument &doc, const rust::Str key, ErrorCode &code);
 
     // ondemand::value
     uint64_t ondemand_value_get_uint64(OndemandValue &value, ErrorCode &code);
     std::unique_ptr<OndemandArray> ondemand_value_get_array(OndemandValue &value, ErrorCode &code);
     std::unique_ptr<OndemandObject> ondemand_value_get_object(OndemandValue &value, ErrorCode &code);
+    std::unique_ptr<OndemandValue> ondemand_value_find_field(OndemandValue &value, const rust::Str key, ErrorCode &code);
+    std::unique_ptr<OndemandValue> ondemand_value_find_field_unordered(OndemandValue &value, const rust::Str key, ErrorCode &code);
+
     // ondemand::object
     std::unique_ptr<OndemandValue> ondemand_object_at_pointer(OndemandObject &obj, const rust::Str json_pointer, ErrorCode &code);
     std::unique_ptr<OndemandObjectIterator> ondemand_object_begin(OndemandObject &obj, ErrorCode &code);

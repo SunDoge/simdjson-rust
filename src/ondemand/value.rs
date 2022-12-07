@@ -1,4 +1,7 @@
-use std::fmt::Debug;
+use std::{
+    fmt::Debug,
+    ops::{Index, IndexMut},
+};
 
 use cxx::UniquePtr;
 
@@ -22,6 +25,19 @@ impl Value {
 
     pub fn get_object(&mut self) -> Result<Object> {
         check!(ffi::ondemand_value_get_object, self.0.pin_mut()).map(Object)
+    }
+
+    pub fn find_field(&mut self, key: &str) -> Result<Value> {
+        check!(ffi::ondemand_value_find_field, self.0.pin_mut(), key).map(Value)
+    }
+
+    pub fn find_field_unordered(&mut self, key: &str) -> Result<Value> {
+        check!(
+            ffi::ondemand_value_find_field_unordered,
+            self.0.pin_mut(),
+            key
+        )
+        .map(Value)
     }
 }
 

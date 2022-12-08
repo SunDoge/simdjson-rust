@@ -41,6 +41,9 @@ namespace ffi
     std::unique_ptr<OndemandRawJsonString> ondemand_document_get_raw_json_string(OndemandDocument &doc, ErrorCode &code);
     bool ondemand_document_is_null(OndemandDocument &doc, ErrorCode &code);
     OndemandJsonType ondemand_document_type(OndemandDocument &doc, ErrorCode &code);
+    bool ondemand_document_is_scalar(OndemandDocument &doc, ErrorCode &code);
+    bool ondemand_document_is_negative(OndemandDocument &doc);
+    bool ondemand_document_is_integer(OndemandDocument &doc, ErrorCode &code);
 
     // ondemand::value
     uint64_t ondemand_value_get_uint64(OndemandValue &value, ErrorCode &code);

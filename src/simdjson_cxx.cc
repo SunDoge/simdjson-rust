@@ -6,9 +6,8 @@ namespace ffi
     {
         return 1;
     }
-
     template <typename Output, typename Func>
-    Output check(Func func, ErrorCode &code)
+    auto check(Func func, ErrorCode &code)
     {
         Output output;
         func().tie(output, code);
@@ -21,6 +20,16 @@ namespace ffi
         Output output;
         func().tie(output, code);
         return std::make_unique<Output>(std::move(output));
+    }
+
+    rust::Str string_view_to_rust_str(std::string_view sv)
+    {
+        return rust::Str(sv.data(), sv.size());
+    }
+
+    std::string_view rust_str_to_string_view(rust::Str s)
+    {
+        return std::string_view(s.data(), s.size());
     }
 
     // ondemand::parser
@@ -54,7 +63,7 @@ namespace ffi
         // doc.at_pointer(std::string_view(json_pointer.data(), json_pointer.size())).tie(value, code);
         // return std::make_unique<OndemandValue>(std::move(value));
         return check_unique_ptr<OndemandValue>([&]
-                                               { return doc.at_pointer(std::string_view(json_pointer.data(), json_pointer.size())); },
+                                               { return doc.at_pointer(rust_str_to_string_view(json_pointer)); },
                                                code);
     }
     std::unique_ptr<OndemandValue> ondemand_document_find_field(OndemandDocument &doc, const rust::Str key, ErrorCode &code)
@@ -140,6 +149,22 @@ namespace ffi
         OndemandJsonType jt;
         doc.type().tie(jt, code);
         return jt;
+    }
+    bool ondemand_document_is_scalar(OndemandDocument &doc, ErrorCode &code)
+    {
+        return check<bool>([&]
+                           { return doc.is_scalar(); },
+                           code);
+    }
+    bool ondemand_document_is_negative(OndemandDocument &doc)
+    {
+        return doc.is_negative();
+    }
+    bool ondemand_document_is_integer(OndemandDocument &doc, ErrorCode &code)
+    {
+        return check<bool>([&]
+                           { return doc.is_integer(); },
+                           code);
     }
 
     // ondemand::value

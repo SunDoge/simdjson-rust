@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use cxx::UniquePtr;
 
 use crate::{
-    bridge::{check, ffi},
+    bridge::{check, check_result, ffi},
     error::Result,
 };
 
@@ -89,6 +89,17 @@ impl Document {
 
     pub fn get_type(&mut self) -> Result<JsonType> {
         check!(ffi::ondemand_document_type, self.0.pin_mut()).map(|x| x.into())
+    }
+
+    pub fn is_negative(&mut self) -> bool {
+        ffi::ondemand_document_is_negative(self.0.pin_mut())
+    }
+
+    pub fn is_scalar(&mut self) -> Result<bool> {
+        check_result(|code| ffi::ondemand_document_is_scalar(self.0.pin_mut(), code))
+    }
+    pub fn is_integer(&mut self) -> Result<bool> {
+        check_result(|code| ffi::ondemand_document_is_integer(self.0.pin_mut(), code))
     }
 }
 

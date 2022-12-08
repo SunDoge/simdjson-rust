@@ -181,6 +181,15 @@ pub(crate) mod ffi {
             doc: Pin<&mut OndemandDocument>,
             code: &mut ErrorCode,
         ) -> OndemandJsonType;
+        fn ondemand_document_is_scalar(
+            doc: Pin<&mut OndemandDocument>,
+            code: &mut ErrorCode,
+        ) -> bool;
+        fn ondemand_document_is_negative(doc: Pin<&mut OndemandDocument>) -> bool;
+        fn ondemand_document_is_integer(
+            doc: Pin<&mut OndemandDocument>,
+            code: &mut ErrorCode,
+        ) -> bool;
 
         // ondemand::value
         fn ondemand_value_get_uint64(value: Pin<&mut OndemandValue>, code: &mut ErrorCode) -> u64;
@@ -334,7 +343,22 @@ macro_rules! check {
     };
 }
 
+use crate::error::Result;
+pub fn check_result<T, F>(func: F) -> Result<T>
+where
+    F: FnOnce(&mut ErrorCode) -> T,
+{
+    let mut code = ErrorCode::SUCCESS;
+    let res = func(&mut code);
+    match code {
+        ErrorCode::SUCCESS => Ok(res),
+        _ => Err(code.into()),
+    }
+}
+
 pub(crate) use check;
+
+use self::ffi::ErrorCode;
 
 #[cfg(test)]
 mod tests {

@@ -7,6 +7,22 @@ namespace ffi
         return 1;
     }
 
+    template <typename Output, typename Func>
+    Output check(Func func, ErrorCode &code)
+    {
+        Output output;
+        func().tie(output, code);
+        return output;
+    }
+
+    template <typename Output, typename Func>
+    std::unique_ptr<Output> check_unique_ptr(Func func, ErrorCode &code)
+    {
+        Output output;
+        func().tie(output, code);
+        return std::make_unique<Output>(std::move(output));
+    }
+
     // ondemand::parser
     std::unique_ptr<OndemandParser> ondemand_parser_new(size_t max_capacity)
     {
@@ -15,24 +31,31 @@ namespace ffi
 
     std::unique_ptr<OndemandDocument> ondemand_parser_iterate(OndemandParser &p, const PaddedString &ps, ErrorCode &code)
     {
-        OndemandDocument doc;
-        p.iterate(ps).tie(doc, code);
-        return std::make_unique<OndemandDocument>(std::move(doc));
+        return check_unique_ptr<OndemandDocument>(
+            [&]
+            { return p.iterate(ps); },
+            code);
     }
 
     // ondemand::document
     std::unique_ptr<OndemandObject> ondemand_document_get_object(OndemandDocument &doc, ErrorCode &code)
     {
-        OndemandObject obj;
-        doc.get_object().tie(obj, code);
-        return std::make_unique<OndemandObject>(std::move(obj));
+        // OndemandObject obj;
+        // doc.get_object().tie(obj, code);
+        // return std::make_unique<OndemandObject>(std::move(obj));
+        return check_unique_ptr<OndemandObject>([&]
+                                                { return doc.get_object(); },
+                                                code);
     }
 
     std::unique_ptr<OndemandValue> ondemand_document_at_pointer(OndemandDocument &doc, const rust::Str json_pointer, ErrorCode &code)
     {
-        OndemandValue value;
-        doc.at_pointer(std::string_view(json_pointer.data(), json_pointer.size())).tie(value, code);
-        return std::make_unique<OndemandValue>(std::move(value));
+        // OndemandValue value;
+        // doc.at_pointer(std::string_view(json_pointer.data(), json_pointer.size())).tie(value, code);
+        // return std::make_unique<OndemandValue>(std::move(value));
+        return check_unique_ptr<OndemandValue>([&]
+                                               { return doc.at_pointer(std::string_view(json_pointer.data(), json_pointer.size())); },
+                                               code);
     }
     std::unique_ptr<OndemandValue> ondemand_document_find_field(OndemandDocument &doc, const rust::Str key, ErrorCode &code)
     {

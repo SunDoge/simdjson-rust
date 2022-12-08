@@ -7,7 +7,9 @@ use crate::{
     error::Result,
 };
 
-use super::{object::Object, value::Value};
+use super::{
+    array::Array, object::Object, raw_json_string::RawJsonString, types::JsonType, value::Value,
+};
 
 pub struct Document(pub UniquePtr<ffi::OndemandDocument>);
 
@@ -26,6 +28,10 @@ impl Document {
         check!(ffi::ondemand_document_get_object, self.0.pin_mut()).map(Object)
     }
 
+    pub fn get_array(&mut self) -> Result<Array> {
+        check!(ffi::ondemand_document_get_array, self.0.pin_mut()).map(Array)
+    }
+
     pub fn find_field(&mut self, key: &str) -> Result<Value> {
         check!(ffi::ondemand_document_find_field, self.0.pin_mut(), key).map(Value)
     }
@@ -37,6 +43,52 @@ impl Document {
             key
         )
         .map(Value)
+    }
+
+    pub fn get_u64(&mut self) -> Result<u64> {
+        check!(ffi::ondemand_document_get_uint64, self.0.pin_mut())
+    }
+
+    pub fn get_u64_in_string(&mut self) -> Result<u64> {
+        check!(
+            ffi::ondemand_document_get_uint64_in_string,
+            self.0.pin_mut()
+        )
+    }
+
+    pub fn get_i64(&mut self) -> Result<i64> {
+        check!(ffi::ondemand_document_get_int64, self.0.pin_mut())
+    }
+
+    pub fn get_i64_in_string(&mut self) -> Result<i64> {
+        check!(ffi::ondemand_document_get_int64_in_string, self.0.pin_mut())
+    }
+
+    pub fn get_f64(&mut self) -> Result<f64> {
+        check!(ffi::ondemand_document_get_double, self.0.pin_mut())
+    }
+
+    pub fn get_f64_in_string(&mut self) -> Result<f64> {
+        check!(
+            ffi::ondemand_document_get_double_in_string,
+            self.0.pin_mut()
+        )
+    }
+    pub fn get_string(&mut self) -> Result<&str> {
+        check!(ffi::ondemand_document_get_string, self.0.pin_mut())
+    }
+    pub fn get_bool(&mut self) -> Result<bool> {
+        check!(ffi::ondemand_document_get_bool, self.0.pin_mut())
+    }
+    pub fn get_raw_json_string(&mut self) -> Result<RawJsonString> {
+        check!(ffi::ondemand_document_get_raw_json_string, self.0.pin_mut()).map(RawJsonString)
+    }
+    pub fn is_null(&mut self) -> Result<bool> {
+        check!(ffi::ondemand_document_is_null, self.0.pin_mut())
+    }
+
+    pub fn get_type(&mut self) -> Result<JsonType> {
+        check!(ffi::ondemand_document_type, self.0.pin_mut()).map(|x| x.into())
     }
 }
 

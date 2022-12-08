@@ -24,19 +24,29 @@ impl Array {
         check!(ffi::ondemand_array_end, self.0.pin_mut()).map(ArrayIterator)
     }
 
-    // pub fn iter(&mut self) -> Result<IterMut> {
-    //     Ok(IterMut {
-    //         begin: self.begin()?,
-    //         end: self.end()?,
-    //     })
-    // }
-
     pub fn iterate(&mut self) -> Result<Iterate<ArrayIterator>> {
         Ok(Iterate::new(self.begin()?, self.end()?))
     }
 
     pub fn at(&mut self, index: usize) -> Result<Value> {
         check!(ffi::ondemand_array_at, self.0.pin_mut(), index).map(Value)
+    }
+
+    pub fn count_elements(&mut self) -> Result<usize> {
+        check!(ffi::ondemand_array_count_elements, self.0.pin_mut())
+    }
+
+    pub fn is_empty(&mut self) -> Result<bool> {
+        check!(ffi::ondemand_array_is_empty, self.0.pin_mut())
+    }
+
+    pub fn at_pointer(&mut self, json_pointer: &str) -> Result<Value> {
+        check!(
+            ffi::ondemand_array_at_pointer,
+            self.0.pin_mut(),
+            json_pointer
+        )
+        .map(Value)
     }
 }
 

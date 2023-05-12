@@ -11,6 +11,8 @@ use super::{
     array::Array, object::Object, raw_json_string::RawJsonString, types::JsonType, value::Value,
 };
 
+// TODO: we may use transparent
+// #[repr(transparent)]
 pub struct Document(pub UniquePtr<ffi::OndemandDocument>);
 
 impl Document {

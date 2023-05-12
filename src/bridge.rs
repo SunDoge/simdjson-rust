@@ -91,6 +91,7 @@ pub(crate) mod ffi {
         value: UniquePtr<OndemandDocument>,
         code: ErrorCode,
     }
+    impl UniquePtr<OndemandDocument> {}
 
     struct OndemandObjectResult {
         value: UniquePtr<OndemandObject>,
@@ -150,16 +151,6 @@ pub(crate) mod ffi {
         type OndemandObjectIterator;
         type OndemandRawJsonString;
 
-        type OndemandDocumentResult;
-        type OndemandArrayResult;
-        type OndemandObjectResult;
-        type OndemandF64Result;
-        type OndemandI64Result;
-        type OndemandU64Result;
-        type OndemandBoolResult;
-        type OndemandStringResult;
-        type OndemandStrResult;
-
         type PaddedString;
 
         // ondemand::parser
@@ -167,8 +158,7 @@ pub(crate) mod ffi {
         fn ondemand_parser_iterate(
             p: Pin<&mut OndemandParser>,
             ps: &PaddedString,
-            code: &mut ErrorCode,
-        ) -> UniquePtr<OndemandDocument>;
+        ) -> OndemandDocumentResult;
 
         // ondemand::document
         fn ondemand_document_at_pointer(
@@ -398,6 +388,16 @@ macro_rules! check {
     };
 }
 
+macro_rules! into_result {
+    ($res:expr) => {{
+        use crate::bridge::ffi::ErrorCode;
+        match $res.code {
+            ErrorCode::SUCCESS => Ok($res.value),
+            _ => Err($res.code.into()),
+        }
+    }};
+}
+
 use crate::error::Result;
 pub fn check_result<T, F>(func: F) -> Result<T>
 where
@@ -412,6 +412,7 @@ where
 }
 
 pub(crate) use check;
+pub(crate) use into_result;
 
 use self::ffi::ErrorCode;
 

@@ -3,8 +3,10 @@ use std::fmt::Debug;
 use cxx::UniquePtr;
 
 use crate::{
-    bridge::check,
-    bridge::ffi::{self},
+    bridge::{
+        ffi::{self},
+        into_result,
+    },
     constants::SIMDJSON_MAXSIZE_BYTES,
     error::Result,
     padded_string::PaddedString,
@@ -28,12 +30,15 @@ impl Parser {
         //     Err(code.into())
         // }
 
-        check!(
-            ffi::ondemand_parser_iterate,
-            self.0.pin_mut(),
-            padded_string
-        )
-        .map(Document)
+        // check!(
+        //     ffi::ondemand_parser_iterate,
+        //     self.0.pin_mut(),
+        //     padded_string
+        // )
+        // .map(Document)
+
+        let res = ffi::ondemand_parser_iterate(self.0.pin_mut(), padded_string);
+        into_result!(res).map(Document)
     }
 }
 

@@ -2,7 +2,6 @@
 
 #include "rust/cxx.h"
 #include "simdjson.h"
-#include "simdjson/error.h"
 
 namespace ffi {
 using OndemandParser = simdjson::ondemand::parser;
@@ -18,13 +17,14 @@ using OndemandObjectIterator = simdjson::ondemand::object_iterator;
 using OndemandRawJsonString = simdjson::ondemand::raw_json_string;
 using OndemandJsonType = simdjson::ondemand::json_type;
 
+struct OndemandDocumentResult;
+
 int get_int();
 
 // ondemand::parser
 std::unique_ptr<OndemandParser> ondemand_parser_new(size_t max_capacity);
-std::unique_ptr<OndemandDocument>
-ondemand_parser_iterate(OndemandParser &self, const PaddedString &ps,
-                        ErrorCode &code);
+OndemandDocumentResult ondemand_parser_iterate(OndemandParser &self,
+                                               const PaddedString &ps);
 
 // ondemand::document
 std::unique_ptr<OndemandObject>

@@ -87,6 +87,51 @@ pub(crate) mod ffi {
         null,
     }
 
+    struct OndemandDocumentResult {
+        value: UniquePtr<OndemandDocument>,
+        code: ErrorCode,
+    }
+
+    struct OndemandObjectResult {
+        value: UniquePtr<OndemandObject>,
+        code: ErrorCode,
+    }
+
+    struct OndemandArrayResult {
+        value: UniquePtr<OndemandArray>,
+        code: ErrorCode,
+    }
+
+    struct OndemandF64Result {
+        value: f64,
+        code: ErrorCode,
+    }
+
+    struct OndemandI64Result {
+        value: i64,
+        code: ErrorCode,
+    }
+
+    struct OndemandU64Result {
+        value: u64,
+        code: ErrorCode,
+    }
+
+    struct OndemandStringResult {
+        value: String,
+        code: ErrorCode,
+    }
+
+    struct OndemandStrResult<'a> {
+        value: &'a str,
+        code: ErrorCode,
+    }
+
+    struct OndemandBoolResult {
+        value: bool,
+        code: ErrorCode,
+    }
+
     unsafe extern "C++" {
         include!("include/simdjson_cxx.h");
 
@@ -104,6 +149,16 @@ pub(crate) mod ffi {
         type OndemandField;
         type OndemandObjectIterator;
         type OndemandRawJsonString;
+
+        type OndemandDocumentResult;
+        type OndemandArrayResult;
+        type OndemandObjectResult;
+        type OndemandF64Result;
+        type OndemandI64Result;
+        type OndemandU64Result;
+        type OndemandBoolResult;
+        type OndemandStringResult;
+        type OndemandStrResult;
 
         type PaddedString;
 

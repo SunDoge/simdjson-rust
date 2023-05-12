@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use cxx::UniquePtr;
 
 use crate::{
-    bridge::{check, check_result, ffi},
+    bridge::{check, check_result, ffi, into_result},
     error::Result,
 };
 
@@ -18,11 +18,16 @@ pub struct Document(pub UniquePtr<ffi::OndemandDocument>);
 impl Document {
     pub fn at_pointer(&mut self, json_pointer: &str) -> Result<Value> {
         // let_cxx_string!(p = json_pointer);
-        check!(
-            ffi::ondemand_document_at_pointer,
+        // check!(
+        //     ffi::ondemand_document_at_pointer,
+        //     self.0.pin_mut(),
+        //     json_pointer
+        // )
+
+        into_result!(ffi::ondemand_document_at_pointer(
             self.0.pin_mut(),
             json_pointer
-        )
+        ))
         .map(Value)
     }
 

@@ -1,5 +1,6 @@
 #include "include/simdjson_cxx.h"
 #include "simdjson-rust/src/bridge.rs.h"
+#include "simdjson/error.h"
 
 namespace ffi {
 int get_int() { return 1; }
@@ -15,6 +16,27 @@ std::unique_ptr<Output> check_unique_ptr(Func func, ErrorCode &code) {
   Output output;
   func().tie(output, code);
   return std::make_unique<Output>(std::move(output));
+}
+
+template <typename Result, typename Output>
+Result
+into_unique_ptr_result(simdjson::simdjson_result<Output> &&output_result) {
+  Output output;
+  auto code = std::move(output_result).get(output);
+  return Result{
+      .value = std::make_unique<Output>(std::move(output)),
+      .code = code,
+  };
+}
+
+template <typename Result, typename Output>
+Result into_result(simdjson::simdjson_result<Output> &&output_result) {
+  Output output;
+  auto code = std::move(output_result).get(output);
+  return Result{
+      .value = output,
+      .code = code,
+  };
 }
 
 rust::Str string_view_to_rust_str(std::string_view sv) {
@@ -34,13 +56,13 @@ OndemandDocumentResult ondemand_parser_iterate(OndemandParser &p,
                                                const PaddedString &ps) {
   //   return check_unique_ptr<OndemandDocument>([&] { return p.iterate(ps); },
   //                                             code);
-  OndemandDocument value;
-  ErrorCode code;
-  p.iterate(ps).tie(value, code);
-  return OndemandDocumentResult{
-      .value = std::make_unique<OndemandDocument>(std::move(value)),
-      .code = code,
-  };
+  // OndemandDocument value;
+  // auto code = p.iterate(ps).get(value);
+  // return OndemandDocumentResult{
+  //     .value = std::make_unique<OndemandDocument>(std::move(value)),
+  //     .code = code,
+  // };
+  return into_unique_ptr_result<OndemandDocumentResult>(p.iterate(ps));
 }
 
 // ondemand::document
@@ -53,16 +75,18 @@ ondemand_document_get_object(OndemandDocument &doc, ErrorCode &code) {
                                           code);
 }
 
-std::unique_ptr<OndemandValue>
-ondemand_document_at_pointer(OndemandDocument &doc,
-                             const rust::Str json_pointer, ErrorCode &code) {
+OndemandValueResult ondemand_document_at_pointer(OndemandDocument &doc,
+                                                 const rust::Str json_pointer) {
   // OndemandValue value;
   // doc.at_pointer(std::string_view(json_pointer.data(),
   // json_pointer.size())).tie(value, code); return
   // std::make_unique<OndemandValue>(std::move(value));
-  return check_unique_ptr<OndemandValue>(
-      [&] { return doc.at_pointer(rust_str_to_string_view(json_pointer)); },
-      code);
+  // return check_unique_ptr<OndemandValue>(
+  //     [&] { return doc.at_pointer(rust_str_to_string_view(json_pointer)); },
+  //     code);
+
+  return into_unique_ptr_result<OndemandValueResult>(
+      doc.at_pointer(rust_str_to_string_view(json_pointer)));
 }
 std::unique_ptr<OndemandValue>
 ondemand_document_find_field(OndemandDocument &doc, const rust::Str key,

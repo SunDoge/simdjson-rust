@@ -18,6 +18,7 @@ using OndemandRawJsonString = simdjson::ondemand::raw_json_string;
 using OndemandJsonType = simdjson::ondemand::json_type;
 
 struct OndemandDocumentResult;
+struct OndemandValueResult;
 
 int get_int();
 
@@ -29,9 +30,8 @@ OndemandDocumentResult ondemand_parser_iterate(OndemandParser &self,
 // ondemand::document
 std::unique_ptr<OndemandObject>
 ondemand_document_get_object(OndemandDocument &doc, ErrorCode &code);
-std::unique_ptr<OndemandValue>
-ondemand_document_at_pointer(OndemandDocument &doc,
-                             const rust::Str json_pointer, ErrorCode &code);
+OndemandValueResult ondemand_document_at_pointer(OndemandDocument &doc,
+                                                 const rust::Str json_pointer);
 std::unique_ptr<OndemandValue>
 ondemand_document_find_field(OndemandDocument &doc, const rust::Str key,
                              ErrorCode &code);

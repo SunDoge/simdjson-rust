@@ -93,6 +93,11 @@ pub(crate) mod ffi {
     }
     impl UniquePtr<OndemandDocument> {}
 
+    struct OndemandValueResult {
+        value: UniquePtr<OndemandValue>,
+        code: ErrorCode,
+    }
+
     struct OndemandObjectResult {
         value: UniquePtr<OndemandObject>,
         code: ErrorCode,
@@ -164,8 +169,7 @@ pub(crate) mod ffi {
         fn ondemand_document_at_pointer(
             doc: Pin<&mut OndemandDocument>,
             json_pointer: &str,
-            code: &mut ErrorCode,
-        ) -> UniquePtr<OndemandValue>;
+        ) -> OndemandValueResult;
         fn ondemand_document_get_object(
             doc: Pin<&mut OndemandDocument>,
             code: &mut ErrorCode,

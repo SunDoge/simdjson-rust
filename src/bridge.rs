@@ -170,10 +170,7 @@ pub(crate) mod ffi {
             doc: Pin<&mut OndemandDocument>,
             json_pointer: &str,
         ) -> OndemandValueResult;
-        fn ondemand_document_get_object(
-            doc: Pin<&mut OndemandDocument>,
-            code: &mut ErrorCode,
-        ) -> UniquePtr<OndemandObject>;
+        fn ondemand_document_get_object(doc: Pin<&mut OndemandDocument>) -> OndemandObjectResult;
         fn ondemand_document_find_field(
             doc: Pin<&mut OndemandDocument>,
             key: &str,

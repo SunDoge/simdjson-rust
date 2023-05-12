@@ -66,13 +66,13 @@ OndemandDocumentResult ondemand_parser_iterate(OndemandParser &p,
 }
 
 // ondemand::document
-std::unique_ptr<OndemandObject>
-ondemand_document_get_object(OndemandDocument &doc, ErrorCode &code) {
+OndemandObjectResult ondemand_document_get_object(OndemandDocument &doc) {
   // OndemandObject obj;
   // doc.get_object().tie(obj, code);
   // return std::make_unique<OndemandObject>(std::move(obj));
-  return check_unique_ptr<OndemandObject>([&] { return doc.get_object(); },
-                                          code);
+  // return check_unique_ptr<OndemandObject>([&] { return doc.get_object(); },
+  //                                         code);
+  return into_unique_ptr_result<OndemandObjectResult>(doc.get_object());
 }
 
 OndemandValueResult ondemand_document_at_pointer(OndemandDocument &doc,

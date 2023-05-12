@@ -19,6 +19,7 @@ using OndemandJsonType = simdjson::ondemand::json_type;
 
 struct OndemandDocumentResult;
 struct OndemandValueResult;
+struct OndemandObjectResult;
 
 int get_int();
 
@@ -28,8 +29,7 @@ OndemandDocumentResult ondemand_parser_iterate(OndemandParser &self,
                                                const PaddedString &ps);
 
 // ondemand::document
-std::unique_ptr<OndemandObject>
-ondemand_document_get_object(OndemandDocument &doc, ErrorCode &code);
+OndemandObjectResult ondemand_document_get_object(OndemandDocument &doc);
 OndemandValueResult ondemand_document_at_pointer(OndemandDocument &doc,
                                                  const rust::Str json_pointer);
 std::unique_ptr<OndemandValue>

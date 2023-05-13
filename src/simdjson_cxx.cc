@@ -75,6 +75,10 @@ OndemandObjectResult ondemand_document_get_object(OndemandDocument &doc) {
   return into_unique_ptr_result<OndemandObjectResult>(doc.get_object());
 }
 
+OndemandValueResult ondemand_document_get_value(OndemandDocument &doc) {
+  return into_unique_ptr_result<OndemandValueResult>(doc.get_value());
+}
+
 OndemandValueResult ondemand_document_at_pointer(OndemandDocument &doc,
                                                  const rust::Str json_pointer) {
   // OndemandValue value;
@@ -319,11 +323,11 @@ ondemand_array_iterator_get(OndemandArrayIterator &iter, ErrorCode &code) {
 }
 
 // ondemand::field
-rust::Str ondemand_field_unescaped_key(OndemandField &field, ErrorCode &code) {
-  std::string_view sv;
-  field.unescaped_key().tie(sv, code);
-  return rust::Str(sv.data(), sv.size());
-}
+// rust::Str ondemand_field_unescaped_key(OndemandField &field, ErrorCode &code) {
+//   std::string_view sv;
+//   field.unescaped_key().tie(sv, code);
+//   return rust::Str(sv.data(), sv.size());
+// }
 std::unique_ptr<OndemandValue> ondemand_field_value(OndemandField &field) {
   return std::make_unique<OndemandValue>(std::move(field.value()));
 }

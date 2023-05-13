@@ -35,6 +35,10 @@ impl Document {
         into_result!(ffi::ondemand_document_get_object(self.0.pin_mut())).map(Object)
     }
 
+    pub fn get_value(&mut self) -> Result<Value> {
+        into_result!(ffi::ondemand_document_get_value(self.0.pin_mut())).map(Value)
+    }
+
     pub fn get_array(&mut self) -> Result<Array> {
         check!(ffi::ondemand_document_get_array, self.0.pin_mut()).map(Array)
     }

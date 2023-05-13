@@ -171,6 +171,7 @@ pub(crate) mod ffi {
             json_pointer: &str,
         ) -> OndemandValueResult;
         fn ondemand_document_get_object(doc: Pin<&mut OndemandDocument>) -> OndemandObjectResult;
+        fn ondemand_document_get_value(doc: Pin<&mut OndemandDocument>) -> OndemandValueResult;
         fn ondemand_document_find_field(
             doc: Pin<&mut OndemandDocument>,
             key: &str,
@@ -344,10 +345,10 @@ pub(crate) mod ffi {
         ) -> UniquePtr<OndemandValue>;
 
         // ondemand::field
-        fn ondemand_field_unescaped_key<'a>(
-            field: Pin<&mut OndemandField>,
-            code: &mut ErrorCode,
-        ) -> &'a str;
+        // fn ondemand_field_unescaped_key<'a>(
+        //     field: Pin<&mut OndemandField>,
+        //     code: &mut ErrorCode,
+        // ) -> &'a str;
         fn ondemand_field_value(field: Pin<&mut OndemandField>) -> UniquePtr<OndemandValue>;
         fn ondemand_field_key(field: &OndemandField) -> UniquePtr<OndemandRawJsonString>;
 

@@ -32,6 +32,7 @@ OndemandDocumentResult ondemand_parser_iterate(OndemandParser &self,
 OndemandObjectResult ondemand_document_get_object(OndemandDocument &doc);
 OndemandValueResult ondemand_document_at_pointer(OndemandDocument &doc,
                                                  const rust::Str json_pointer);
+OndemandValueResult ondemand_document_get_value(OndemandDocument &doc);
 std::unique_ptr<OndemandValue>
 ondemand_document_find_field(OndemandDocument &doc, const rust::Str key,
                              ErrorCode &code);
@@ -114,7 +115,7 @@ std::unique_ptr<OndemandValue>
 ondemand_array_iterator_get(OndemandArrayIterator &iter, ErrorCode &code);
 
 // ondemand::field
-rust::Str ondemand_field_unescaped_key(OndemandField &field, ErrorCode &code);
+// rust::Str ondemand_field_unescaped_key(OndemandField &field, ErrorCode &code);
 std::unique_ptr<OndemandValue> ondemand_field_value(OndemandField &field);
 std::unique_ptr<OndemandRawJsonString>
 ondemand_field_key(const OndemandField &field);

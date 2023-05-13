@@ -14,9 +14,13 @@ pub struct Field(pub UniquePtr<ffi::OndemandField>);
 impl Field {
     // If you want value, you must get value first, than get the key
     // Yes, it's really wired.
-    // pub fn unescaped_key(&mut self) -> Result<&str> {
-    //     check!(ffi::ondemand_field_unescaped_key, self.0.pin_mut())
-    // }
+    pub fn unescaped_key(&mut self, allow_replacement: bool) -> Result<&str> {
+        check!(
+            ffi::ondemand_field_unescaped_key,
+            self.0.pin_mut(),
+            allow_replacement
+        )
+    }
 
     pub fn value(&mut self) -> Value {
         Value(ffi::ondemand_field_value(self.0.pin_mut()))

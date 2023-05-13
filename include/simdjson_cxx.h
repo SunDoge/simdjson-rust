@@ -127,8 +127,8 @@ std::unique_ptr<OndemandValue>
 ondemand_array_iterator_get(OndemandArrayIterator &iter, ErrorCode &code);
 
 // ondemand::field
-// rust::Str ondemand_field_unescaped_key(OndemandField &field, ErrorCode
-// &code);
+rust::Str ondemand_field_unescaped_key(OndemandField &field,
+                                       bool allow_replacement, ErrorCode &code);
 std::unique_ptr<OndemandValue> ondemand_field_value(OndemandField &field);
 std::unique_ptr<OndemandRawJsonString>
 ondemand_field_key(const OndemandField &field);

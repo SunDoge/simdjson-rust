@@ -344,10 +344,11 @@ pub(crate) mod ffi {
         ) -> UniquePtr<OndemandValue>;
 
         // ondemand::field
-        // fn ondemand_field_unescaped_key<'a>(
-        //     field: Pin<&mut OndemandField>,
-        //     code: &mut ErrorCode,
-        // ) -> &'a str;
+        fn ondemand_field_unescaped_key<'a>(
+            field: Pin<&mut OndemandField>,
+            allow_replacement: bool,
+            code: &mut ErrorCode,
+        ) -> &'a str;
         fn ondemand_field_value(field: Pin<&mut OndemandField>) -> UniquePtr<OndemandValue>;
         fn ondemand_field_key(field: &OndemandField) -> UniquePtr<OndemandRawJsonString>;
 

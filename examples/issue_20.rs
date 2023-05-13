@@ -16,8 +16,8 @@ fn main() -> Result<()> {
             let mut field = field?;
 
             let mut value = field.value();
-            // let key = field.unescaped_key()?;
-            // println!("key: {} | value: {}", key, value.get_object()?.raw_json()?);
+            let key = field.unescaped_key(true)?;
+            println!("key: {} | value: {}", key, value.get_object()?.raw_json()?);
         }
     }
 

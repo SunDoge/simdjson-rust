@@ -165,6 +165,7 @@ pub(crate) mod ffi {
 
         type ErrorCode;
         type JsonType;
+        type NumberType;
 
         fn get_int() -> i32;
 
@@ -398,10 +399,10 @@ pub(crate) mod ffi {
         fn padded_string_from_str(s: &str) -> UniquePtr<PaddedString>;
 
         // number
-        fn ondemand_number_get_u64(number: Pin<&mut OndemandNumber>) -> u64;
-        fn ondemand_number_get_i64(number: Pin<&mut OndemandNumber>) -> i64;
-        fn ondemand_number_get_f64(number: Pin<&mut OndemandNumber>) -> f64;
-
+        fn get_uint64(self: &OndemandNumber) -> u64;
+        fn get_int64(self: &OndemandNumber) -> i64;
+        fn get_double(self: &OndemandNumber) -> f64;
+        fn get_number_type(self: &OndemandNumber) -> NumberType;
     }
 }
 

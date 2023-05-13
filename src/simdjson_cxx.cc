@@ -204,6 +204,10 @@ std::unique_ptr<OndemandObject> ondemand_value_get_object(OndemandValue &value,
   return std::make_unique<OndemandObject>(std::move(obj));
 }
 
+OndemandNumberResult ondemand_value_get_number(OndemandValue &value) {
+  return into_unique_ptr_result<OndemandNumberResult>(value.get_number());
+}
+
 OndemandBoolResult ondemand_value_get_bool(OndemandValue &value) {
   return into_result<OndemandBoolResult>(value.get_bool());
 }
@@ -376,18 +380,5 @@ std::unique_ptr<PaddedString> padded_string_from_str(const rust::Str s) {
 }
 
 // ondemand number
-OndemandNumberResult ondemand_value_get_number(OndemandValue &value) {
-  return into_unique_ptr_result<OndemandNumberResult>(value.get_number());
-}
-
-uint64_t ondemand_number_get_u64(OndemandNumber &number) {
-  return number.get_uint64();
-}
-int64_t ondemand_number_get_i64(OndemandNumber &number) {
-  return number.get_int64();
-}
-double ondemand_number_get_f64(OndemandNumber &number) {
-  return number.get_double();
-}
 
 } // namespace ffi

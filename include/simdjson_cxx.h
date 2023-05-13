@@ -17,6 +17,7 @@ using OndemandField = simdjson::ondemand::field;
 using OndemandObjectIterator = simdjson::ondemand::object_iterator;
 using OndemandRawJsonString = simdjson::ondemand::raw_json_string;
 using JsonType = simdjson::ondemand::json_type;
+using NumberType = simdjson::ondemand::number_type;
 using OndemandNumber = simdjson::ondemand::number;
 
 struct OndemandDocumentResult;
@@ -147,8 +148,5 @@ std::unique_ptr<PaddedString> padded_string_load(const std::string &filename,
 std::unique_ptr<PaddedString> padded_string_from_str(const rust::Str s);
 
 // ondemand::number
-uint64_t ondemand_number_get_u64(OndemandNumber &number);
-int64_t ondemand_number_get_i64(OndemandNumber &number);
-double ondemand_number_get_f64(OndemandNumber &number);
 
 } // namespace ffi

@@ -93,6 +93,17 @@ pub(crate) mod ffi {
         Null,
     }
 
+    #[derive(Debug)]
+    #[repr(i32)]
+    enum NumberType {
+        #[cxx_name = "floating_point_number"]
+        FloatingPointNumber = 1,
+        #[cxx_name = "signed_integer"]
+        SignedInteger,
+        #[cxx_name = "unsigned_integer"]
+        UnsignedInteger,
+    }
+
     struct OndemandDocumentResult {
         value: UniquePtr<OndemandDocument>,
         code: ErrorCode,
@@ -131,6 +142,21 @@ pub(crate) mod ffi {
 
     struct OndemandBoolResult {
         value: bool,
+        code: ErrorCode,
+    }
+
+    struct U64Result {
+        value: u64,
+        code: ErrorCode,
+    }
+
+    struct I64Result {
+        value: i64,
+        code: ErrorCode,
+    }
+
+    struct F64Result {
+        value: f64,
         code: ErrorCode,
     }
 
@@ -370,6 +396,11 @@ pub(crate) mod ffi {
             code: &mut ErrorCode,
         ) -> UniquePtr<PaddedString>;
         fn padded_string_from_str(s: &str) -> UniquePtr<PaddedString>;
+
+        // number
+        fn ondemand_number_get_u64(number: Pin<&mut OndemandNumber>) -> u64;
+        fn ondemand_number_get_i64(number: Pin<&mut OndemandNumber>) -> i64;
+        fn ondemand_number_get_f64(number: Pin<&mut OndemandNumber>) -> f64;
 
     }
 }

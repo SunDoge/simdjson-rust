@@ -2,6 +2,7 @@
 
 #include "rust/cxx.h"
 #include "simdjson.h"
+#include <cstdint>
 
 namespace ffi {
 using OndemandParser = simdjson::ondemand::parser;
@@ -24,6 +25,9 @@ struct OndemandObjectResult;
 struct OndemandNumberResult;
 struct OndemandBoolResult;
 struct OndemandStrResult;
+struct U64Result;
+struct I64Result;
+struct F64Result;
 
 int get_int();
 
@@ -143,5 +147,8 @@ std::unique_ptr<PaddedString> padded_string_load(const std::string &filename,
 std::unique_ptr<PaddedString> padded_string_from_str(const rust::Str s);
 
 // ondemand::number
+uint64_t ondemand_number_get_u64(OndemandNumber &number);
+int64_t ondemand_number_get_i64(OndemandNumber &number);
+double ondemand_number_get_f64(OndemandNumber &number);
 
 } // namespace ffi

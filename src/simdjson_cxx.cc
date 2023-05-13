@@ -2,6 +2,7 @@
 #include "rust/cxx.h"
 #include "simdjson-rust/src/bridge.rs.h"
 #include "simdjson/error.h"
+#include <cstdint>
 #include <string_view>
 
 namespace ffi {
@@ -377,6 +378,16 @@ std::unique_ptr<PaddedString> padded_string_from_str(const rust::Str s) {
 // ondemand number
 OndemandNumberResult ondemand_value_get_number(OndemandValue &value) {
   return into_unique_ptr_result<OndemandNumberResult>(value.get_number());
+}
+
+uint64_t ondemand_number_get_u64(OndemandNumber &number) {
+  return number.get_uint64();
+}
+int64_t ondemand_number_get_i64(OndemandNumber &number) {
+  return number.get_int64();
+}
+double ondemand_number_get_f64(OndemandNumber &number) {
+  return number.get_double();
 }
 
 } // namespace ffi

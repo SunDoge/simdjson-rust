@@ -169,9 +169,8 @@ bool ondemand_document_is_null(OndemandDocument &doc, ErrorCode &code) {
   doc.is_null().tie(v, code);
   return v;
 }
-OndemandJsonType ondemand_document_type(OndemandDocument &doc,
-                                        ErrorCode &code) {
-  OndemandJsonType jt;
+JsonType ondemand_document_type(OndemandDocument &doc, ErrorCode &code) {
+  JsonType jt;
   doc.type().tie(jt, code);
   return jt;
 }

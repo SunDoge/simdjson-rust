@@ -7,9 +7,9 @@ use crate::{
     error::Result,
 };
 
-use super::{
-    array::Array, object::Object, raw_json_string::RawJsonString, types::JsonType, value::Value,
-};
+use crate::bridge::ffi::JsonType;
+
+use super::{array::Array, object::Object, raw_json_string::RawJsonString, value::Value};
 
 // TODO: we may use transparent
 // #[repr(transparent)]
@@ -99,7 +99,7 @@ impl Document {
     }
 
     pub fn get_type(&mut self) -> Result<JsonType> {
-        check!(ffi::ondemand_document_type, self.0.pin_mut()).map(|x| x.into())
+        check!(ffi::ondemand_document_type, self.0.pin_mut())
     }
 
     pub fn is_negative(&mut self) -> bool {

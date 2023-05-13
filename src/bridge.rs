@@ -71,7 +71,7 @@ pub(crate) mod ffi {
 
     #[derive(Debug)]
     #[repr(i32)]
-    enum OndemandJsonType {
+    enum JsonType {
         // // Start at 1 to catch uninitialized / default values more easily
         // array=1, ///< A JSON array   ( [ 1, 2, 3 ... ] )
         // object,  ///< A JSON object  ( { "a": 1, "b" 2, ... } )
@@ -79,12 +79,18 @@ pub(crate) mod ffi {
         // string,  ///< A JSON string  ( "a" or "hello world\n" ...)
         // boolean, ///< A JSON boolean (true or false)
         // null,     ///< A JSON null    (null)
-        array = 1,
-        object,
-        number,
-        string,
-        boolean,
-        null,
+        #[cxx_name = "array"]
+        Array = 1,
+        #[cxx_name = "object"]
+        Object,
+        #[cxx_name = "number"]
+        Number,
+        #[cxx_name = "string"]
+        String,
+        #[cxx_name = "boolean"]
+        Bool,
+        #[cxx_name = "null"]
+        Null,
     }
 
     struct OndemandDocumentResult {
@@ -132,7 +138,7 @@ pub(crate) mod ffi {
         include!("include/simdjson_cxx.h");
 
         type ErrorCode;
-        type OndemandJsonType;
+        type JsonType;
 
         fn get_int() -> i32;
 
@@ -219,7 +225,7 @@ pub(crate) mod ffi {
         fn ondemand_document_type(
             doc: Pin<&mut OndemandDocument>,
             code: &mut ErrorCode,
-        ) -> OndemandJsonType;
+        ) -> JsonType;
         fn ondemand_document_is_scalar(
             doc: Pin<&mut OndemandDocument>,
             code: &mut ErrorCode,

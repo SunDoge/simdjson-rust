@@ -15,7 +15,7 @@ using OndemandArrayIterator = simdjson::ondemand::array_iterator;
 using OndemandField = simdjson::ondemand::field;
 using OndemandObjectIterator = simdjson::ondemand::object_iterator;
 using OndemandRawJsonString = simdjson::ondemand::raw_json_string;
-using OndemandJsonType = simdjson::ondemand::json_type;
+using JsonType = simdjson::ondemand::json_type;
 using OndemandNumber = simdjson::ondemand::number;
 
 struct OndemandDocumentResult;
@@ -59,7 +59,7 @@ bool ondemand_document_get_bool(OndemandDocument &doc, ErrorCode &code);
 std::unique_ptr<OndemandRawJsonString>
 ondemand_document_get_raw_json_string(OndemandDocument &doc, ErrorCode &code);
 bool ondemand_document_is_null(OndemandDocument &doc, ErrorCode &code);
-OndemandJsonType ondemand_document_type(OndemandDocument &doc, ErrorCode &code);
+JsonType ondemand_document_type(OndemandDocument &doc, ErrorCode &code);
 bool ondemand_document_is_scalar(OndemandDocument &doc, ErrorCode &code);
 bool ondemand_document_is_negative(OndemandDocument &doc);
 bool ondemand_document_is_integer(OndemandDocument &doc, ErrorCode &code);

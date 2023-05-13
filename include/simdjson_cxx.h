@@ -29,6 +29,8 @@ struct OndemandStrResult;
 struct U64Result;
 struct I64Result;
 struct F64Result;
+struct JsonTypeResult;
+struct NumberTypeResult;
 
 int get_int();
 
@@ -70,7 +72,10 @@ bool ondemand_document_is_negative(OndemandDocument &doc);
 bool ondemand_document_is_integer(OndemandDocument &doc, ErrorCode &code);
 
 // ondemand::value
-uint64_t ondemand_value_get_uint64(OndemandValue &value, ErrorCode &code);
+U64Result ondemand_value_get_uint64(OndemandValue &value);
+I64Result ondemand_value_get_int64(OndemandValue &value);
+F64Result ondemand_value_get_double(OndemandValue &value);
+NumberTypeResult ondemand_value_get_number_type(OndemandValue &value);
 std::unique_ptr<OndemandArray> ondemand_value_get_array(OndemandValue &value,
                                                         ErrorCode &code);
 std::unique_ptr<OndemandObject> ondemand_value_get_object(OndemandValue &value,
@@ -89,6 +94,8 @@ std::unique_ptr<OndemandValue> ondemand_value_find_field(OndemandValue &value,
 std::unique_ptr<OndemandValue>
 ondemand_value_find_field_unordered(OndemandValue &value, const rust::Str key,
                                     ErrorCode &code);
+
+JsonTypeResult ondemand_value_type(OndemandValue &value);
 
 // ondemand::object
 std::unique_ptr<OndemandValue>

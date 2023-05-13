@@ -1,4 +1,4 @@
-use std::{fmt::Debug, pin::Pin};
+use std::fmt::Debug;
 
 use cxx::UniquePtr;
 

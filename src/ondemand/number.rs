@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use cxx::UniquePtr;
 
 use crate::bridge::ffi::{self, NumberType};
@@ -9,15 +11,21 @@ impl Number {
         self.0.get_uint64()
     }
 
-    pub fn get_i64(&mut self) -> i64 {
+    pub fn get_i64(&self) -> i64 {
         self.0.get_int64()
     }
 
-    pub fn get_f64(&mut self) -> f64 {
+    pub fn get_f64(&self) -> f64 {
         self.0.get_double()
     }
 
     pub fn get_number_type(&self) -> NumberType {
         self.0.get_number_type()
+    }
+}
+
+impl Debug for Number {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Number").finish()
     }
 }

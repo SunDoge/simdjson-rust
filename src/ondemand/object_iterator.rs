@@ -7,7 +7,7 @@ use crate::{
     error::Result,
 };
 
-use super::{field::Field, iterator::CxxIterator, value::Value};
+use super::{field::Field, iterator::CxxIterator};
 
 pub struct ObjectIterator(pub UniquePtr<ffi::OndemandObjectIterator>);
 

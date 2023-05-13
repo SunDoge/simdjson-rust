@@ -7,7 +7,11 @@ use std::{
 use cxx::UniquePtr;
 
 use crate::{
-    bridge::{check, ffi, into_result},
+    bridge::{
+        check,
+        ffi::{self, JsonType, NumberType},
+        into_result,
+    },
     error::Result,
 };
 
@@ -30,7 +34,19 @@ pub struct Value(pub UniquePtr<ffi::OndemandValue>);
 
 impl Value {
     pub fn get_u64(&mut self) -> Result<u64> {
-        check!(ffi::ondemand_value_get_uint64, self.0.pin_mut())
+        into_result!(ffi::ondemand_value_get_uint64(self.0.pin_mut()))
+    }
+
+    pub fn get_i64(&mut self) -> Result<i64> {
+        into_result!(ffi::ondemand_value_get_int64(self.0.pin_mut()))
+    }
+
+    pub fn get_f64(&mut self) -> Result<f64> {
+        into_result!(ffi::ondemand_value_get_double(self.0.pin_mut()))
+    }
+
+    pub fn get_number_type(&mut self) -> Result<NumberType> {
+        into_result!(ffi::ondemand_value_get_number_type(self.0.pin_mut()))
     }
 
     pub fn get_array(&mut self) -> Result<Array> {
@@ -68,6 +84,10 @@ impl Value {
             key
         )
         .map(Value)
+    }
+
+    pub fn get_type(&mut self) -> Result<JsonType> {
+        into_result!(ffi::ondemand_value_type(self.0.pin_mut()))
     }
 }
 

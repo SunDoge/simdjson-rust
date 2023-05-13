@@ -186,10 +186,17 @@ bool ondemand_document_is_integer(OndemandDocument &doc, ErrorCode &code) {
 }
 
 // ondemand::value
-uint64_t ondemand_value_get_uint64(OndemandValue &value, ErrorCode &code) {
-  uint64_t v;
-  value.get_uint64().tie(v, code);
-  return v;
+U64Result ondemand_value_get_uint64(OndemandValue &value) {
+  return into_result<U64Result>(value.get_uint64());
+}
+I64Result ondemand_value_get_int64(OndemandValue &value) {
+  return into_result<I64Result>(value.get_int64());
+}
+F64Result ondemand_value_get_double(OndemandValue &value) {
+  return into_result<F64Result>(value.get_double());
+}
+NumberTypeResult ondemand_value_get_number_type(OndemandValue &value) {
+  return into_result<NumberTypeResult>(value.get_number_type());
 }
 std::unique_ptr<OndemandArray> ondemand_value_get_array(OndemandValue &value,
                                                         ErrorCode &code) {
@@ -236,6 +243,10 @@ ondemand_value_find_field_unordered(OndemandValue &value, const rust::Str key,
   value.find_field_unordered(std::string_view(key.data(), key.size()))
       .tie(value, code);
   return std::make_unique<OndemandValue>(std::move(v));
+}
+
+JsonTypeResult ondemand_value_type(OndemandValue &value) {
+  return into_result<JsonTypeResult>(value.type());
 }
 
 // ondemand::object

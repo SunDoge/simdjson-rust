@@ -3,8 +3,6 @@ use thiserror::Error;
 pub type Result<T> = std::result::Result<T, SimdJsonError>;
 use crate::bridge::ffi::ErrorCode;
 
-
-
 #[derive(Debug, Error)]
 pub enum SimdJsonError {
     #[error("This parser can't support a document that big")]
@@ -98,6 +96,9 @@ pub enum SimdJsonError {
 
     #[error("todo")]
     TrailingContent,
+
+    #[error("serde: {0}")]
+    Serde(String),
 }
 
 impl From<ErrorCode> for SimdJsonError {

@@ -160,6 +160,16 @@ pub(crate) mod ffi {
         code: ErrorCode,
     }
 
+    struct JsonTypeResult {
+        value: JsonType,
+        code: ErrorCode,
+    }
+
+    struct NumberTypeResult {
+        value: NumberType,
+        code: ErrorCode,
+    }
+
     unsafe extern "C++" {
         include!("include/simdjson_cxx.h");
 
@@ -264,7 +274,10 @@ pub(crate) mod ffi {
         ) -> bool;
 
         // ondemand::value
-        fn ondemand_value_get_uint64(value: Pin<&mut OndemandValue>, code: &mut ErrorCode) -> u64;
+        fn ondemand_value_get_uint64(value: Pin<&mut OndemandValue>) -> U64Result;
+        fn ondemand_value_get_int64(value: Pin<&mut OndemandValue>) -> I64Result;
+        fn ondemand_value_get_double(value: Pin<&mut OndemandValue>) -> F64Result;
+        fn ondemand_value_get_number_type(value: Pin<&mut OndemandValue>) -> NumberTypeResult;
         fn ondemand_value_get_number(value: Pin<&mut OndemandValue>) -> OndemandNumberResult;
         fn ondemand_value_get_bool(value: Pin<&mut OndemandValue>) -> OndemandBoolResult;
         fn ondemand_value_get_string<'a>(
@@ -300,6 +313,8 @@ pub(crate) mod ffi {
         //     doc: Pin<&mut OndemandValue>,
         //     code: &mut ErrorCode,
         // ) -> i64;
+
+        fn ondemand_value_type(value: Pin<&mut OndemandValue>) -> JsonTypeResult;
 
         // ondemand::object
         fn ondemand_object_at_pointer(

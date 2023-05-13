@@ -1,6 +1,8 @@
 #include "include/simdjson_cxx.h"
+#include "rust/cxx.h"
 #include "simdjson-rust/src/bridge.rs.h"
 #include "simdjson/error.h"
+#include <string_view>
 
 namespace ffi {
 int get_int() { return 1; }
@@ -201,6 +203,21 @@ std::unique_ptr<OndemandObject> ondemand_value_get_object(OndemandValue &value,
   value.get_object().tie(obj, code);
   return std::make_unique<OndemandObject>(std::move(obj));
 }
+
+OndemandBoolResult ondemand_value_get_bool(OndemandValue &value) {
+  return into_result<OndemandBoolResult>(value.get_bool());
+}
+
+rust::Str ondemand_value_get_string(OndemandValue &value, ErrorCode &code) {
+  std::string_view sv;
+  value.get_string().tie(sv, code);
+  return string_view_to_rust_str(sv);
+}
+
+OndemandBoolResult ondemand_value_is_null(OndemandValue &value) {
+  return into_result<OndemandBoolResult>(value.is_null());
+}
+
 std::unique_ptr<OndemandValue> ondemand_value_find_field(OndemandValue &value,
                                                          const rust::Str key,
                                                          ErrorCode &code) {
@@ -323,7 +340,8 @@ ondemand_array_iterator_get(OndemandArrayIterator &iter, ErrorCode &code) {
 }
 
 // ondemand::field
-// rust::Str ondemand_field_unescaped_key(OndemandField &field, ErrorCode &code) {
+// rust::Str ondemand_field_unescaped_key(OndemandField &field, ErrorCode &code)
+// {
 //   std::string_view sv;
 //   field.unescaped_key().tie(sv, code);
 //   return rust::Str(sv.data(), sv.size());
@@ -354,6 +372,11 @@ std::unique_ptr<PaddedString> padded_string_load(const std::string &filename,
 std::unique_ptr<PaddedString> padded_string_from_str(const rust::Str s) {
 
   return std::make_unique<PaddedString>(s.data(), s.size());
+}
+
+// ondemand number
+OndemandNumberResult ondemand_value_get_number(OndemandValue &value) {
+  return into_unique_ptr_result<OndemandNumberResult>(value.get_number());
 }
 
 } // namespace ffi

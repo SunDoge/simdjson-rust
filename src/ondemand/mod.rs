@@ -9,3 +9,4 @@ pub mod parser;
 pub mod raw_json_string;
 pub mod types;
 pub mod value;
+pub mod number;

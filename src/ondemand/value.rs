@@ -1,3 +1,4 @@
+use super::number::Number;
 use std::{
     fmt::Debug,
     ops::{Index, IndexMut},
@@ -6,12 +7,25 @@ use std::{
 use cxx::UniquePtr;
 
 use crate::{
-    bridge::{check, ffi},
+    bridge::{check, ffi, into_result},
     error::Result,
 };
 
 use super::{array::Array, object::Object};
 
+/// Bind only minimal apis
+/// document -> value
+/// value -> {
+///     number,
+///     bool,
+///     raw_json_string/&str,
+///     object,
+///     array,
+/// }
+/// number -> {u64, i64, f64}
+/// object -> [key: value]
+/// array -> [value]
+///
 pub struct Value(pub UniquePtr<ffi::OndemandValue>);
 
 impl Value {
@@ -25,6 +39,22 @@ impl Value {
 
     pub fn get_object(&mut self) -> Result<Object> {
         check!(ffi::ondemand_value_get_object, self.0.pin_mut()).map(Object)
+    }
+
+    pub fn get_number(&mut self) -> Result<Number> {
+        into_result!(ffi::ondemand_value_get_number(self.0.pin_mut())).map(Number)
+    }
+
+    pub fn get_bool(&mut self) -> Result<bool> {
+        into_result!(ffi::ondemand_value_get_bool(self.0.pin_mut()))
+    }
+
+    pub fn get_string(&mut self) -> Result<&str> {
+        check!(ffi::ondemand_value_get_string, self.0.pin_mut())
+    }
+
+    pub fn is_null(&mut self) -> Result<bool> {
+        into_result!(ffi::ondemand_value_is_null(self.0.pin_mut()))
     }
 
     pub fn find_field(&mut self, key: &str) -> Result<Value> {

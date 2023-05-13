@@ -16,10 +16,14 @@ using OndemandField = simdjson::ondemand::field;
 using OndemandObjectIterator = simdjson::ondemand::object_iterator;
 using OndemandRawJsonString = simdjson::ondemand::raw_json_string;
 using OndemandJsonType = simdjson::ondemand::json_type;
+using OndemandNumber = simdjson::ondemand::number;
 
 struct OndemandDocumentResult;
 struct OndemandValueResult;
 struct OndemandObjectResult;
+struct OndemandNumberResult;
+struct OndemandBoolResult;
+struct OndemandStrResult;
 
 int get_int();
 
@@ -66,6 +70,14 @@ std::unique_ptr<OndemandArray> ondemand_value_get_array(OndemandValue &value,
                                                         ErrorCode &code);
 std::unique_ptr<OndemandObject> ondemand_value_get_object(OndemandValue &value,
                                                           ErrorCode &code);
+OndemandNumberResult ondemand_value_get_number(OndemandValue &value);
+
+OndemandBoolResult ondemand_value_get_bool(OndemandValue &value);
+
+rust::Str ondemand_value_get_string(OndemandValue &value, ErrorCode &code);
+
+OndemandBoolResult ondemand_value_is_null(OndemandValue &value);
+
 std::unique_ptr<OndemandValue> ondemand_value_find_field(OndemandValue &value,
                                                          const rust::Str key,
                                                          ErrorCode &code);
@@ -115,7 +127,8 @@ std::unique_ptr<OndemandValue>
 ondemand_array_iterator_get(OndemandArrayIterator &iter, ErrorCode &code);
 
 // ondemand::field
-// rust::Str ondemand_field_unescaped_key(OndemandField &field, ErrorCode &code);
+// rust::Str ondemand_field_unescaped_key(OndemandField &field, ErrorCode
+// &code);
 std::unique_ptr<OndemandValue> ondemand_field_value(OndemandField &field);
 std::unique_ptr<OndemandRawJsonString>
 ondemand_field_key(const OndemandField &field);
@@ -128,5 +141,7 @@ ondemand_field_key(const OndemandField &field);
 std::unique_ptr<PaddedString> padded_string_load(const std::string &filename,
                                                  ErrorCode &code);
 std::unique_ptr<PaddedString> padded_string_from_str(const rust::Str s);
+
+// ondemand::number
 
 } // namespace ffi

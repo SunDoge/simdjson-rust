@@ -108,18 +108,8 @@ pub(crate) mod ffi {
         code: ErrorCode,
     }
 
-    struct OndemandF64Result {
-        value: f64,
-        code: ErrorCode,
-    }
-
-    struct OndemandI64Result {
-        value: i64,
-        code: ErrorCode,
-    }
-
-    struct OndemandU64Result {
-        value: u64,
+    struct OndemandNumberResult {
+        value: UniquePtr<OndemandNumber>,
         code: ErrorCode,
     }
 
@@ -155,6 +145,8 @@ pub(crate) mod ffi {
         type OndemandField;
         type OndemandObjectIterator;
         type OndemandRawJsonString;
+
+        type OndemandNumber;
 
         type PaddedString;
 
@@ -240,6 +232,13 @@ pub(crate) mod ffi {
 
         // ondemand::value
         fn ondemand_value_get_uint64(value: Pin<&mut OndemandValue>, code: &mut ErrorCode) -> u64;
+        fn ondemand_value_get_number(value: Pin<&mut OndemandValue>) -> OndemandNumberResult;
+        fn ondemand_value_get_bool(value: Pin<&mut OndemandValue>) -> OndemandBoolResult;
+        fn ondemand_value_get_string<'a>(
+            value: Pin<&'a mut OndemandValue>,
+            code: &mut ErrorCode,
+        ) -> &'a str;
+        fn ondemand_value_is_null(value: Pin<&mut OndemandValue>) -> OndemandBoolResult;
         fn ondemand_value_get_array(
             value: Pin<&mut OndemandValue>,
             code: &mut ErrorCode,

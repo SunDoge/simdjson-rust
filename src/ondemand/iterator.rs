@@ -16,9 +16,9 @@ pub struct Iterate<T>
 where
     T: CxxIterator,
 {
-    begin: T,
-    end: T,
-    started: bool,
+    pub begin: T,
+    pub end: T,
+    pub started: bool,
 }
 
 impl<T> Iterate<T>

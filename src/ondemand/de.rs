@@ -1,13 +1,19 @@
 use std::{todo, unreachable};
 
 use serde::{
-    de::{Deserialize, SeqAccess},
+    de::{Deserialize, MapAccess, SeqAccess},
     Deserializer,
 };
 
 use crate::{bridge::ffi::NumberType, error::SimdJsonError};
 
-use super::value::Value;
+use super::{
+    array::Array,
+    array_iterator::{self, ArrayIterator},
+    iterator::{CxxIterator, Iterate},
+    object_iterator::ObjectIterator,
+    value::Value,
+};
 use crate::bridge::ffi::JsonType;
 
 impl serde::de::Error for SimdJsonError {
@@ -18,6 +24,45 @@ impl serde::de::Error for SimdJsonError {
         Self::Serde(msg.to_string())
     }
 }
+
+impl<'de> SeqAccess<'de> for Iterate<ArrayIterator> {
+    type Error = SimdJsonError;
+
+    fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>
+    where
+        T: serde::de::DeserializeSeed<'de>,
+    {
+        match self.next() {
+            Some(v) => {
+                let mut v = v?;
+                seed.deserialize(&mut v).map(Some)
+            }
+            None => Ok(None),
+        }
+    }
+}
+
+// impl<'de> MapAccess<'de> for Iterate<ObjectIterator> {
+//     type Error = SimdJsonError;
+
+//     fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Self::Error>
+//     where
+//         K: serde::de::DeserializeSeed<'de>,
+//     {
+//         if self.started {
+//             self.begin.next();
+//         }
+
+//         if self.begin.not_equal(&self.end) {
+//             self.started = true;
+//             let field = self.begin.get()?;
+//             seed.deserialize(field.unescaped_key(true)?).map(Some)
+//         } else {
+//             self.started = false;
+//             Ok(None)
+//         }
+//     }
+// }
 
 impl<'de> Deserializer<'de> for &mut Value {
     type Error = SimdJsonError;
@@ -36,8 +81,8 @@ impl<'de> Deserializer<'de> for &mut Value {
                 _ => unreachable!(),
             },
             JsonType::String => self.deserialize_str(visitor),
-            JsonType::Array => todo!(),
-            JsonType::Object => todo!(),
+            JsonType::Array => self.deserialize_seq(visitor),
+            JsonType::Object => self.deserialize_map(visitor),
             _ => unreachable!(),
         }
     }
@@ -198,7 +243,7 @@ impl<'de> Deserializer<'de> for &mut Value {
     where
         V: serde::de::Visitor<'de>,
     {
-        todo!()
+        visitor.visit_seq(self.get_array()?.iterate()?)
     }
 
     fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value, Self::Error>

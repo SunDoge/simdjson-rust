@@ -24,6 +24,7 @@ impl Array {
         check!(ffi::ondemand_array_end, self.0.pin_mut()).map(ArrayIterator)
     }
 
+    // TODO: rename it
     pub fn iterate(&mut self) -> Result<Iterate<ArrayIterator>> {
         Ok(Iterate::new(self.begin()?, self.end()?))
     }

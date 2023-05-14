@@ -236,7 +236,8 @@ impl<'de> Deserializer<'de> for &mut Value {
     where
         V: serde::de::Visitor<'de>,
     {
-        todo!()
+        let _ = name;
+        visitor.visit_newtype_struct(self)
     }
 
     fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value, Self::Error>

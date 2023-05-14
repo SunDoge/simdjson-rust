@@ -130,15 +130,15 @@ pub(crate) mod ffi {
         code: ErrorCode,
     }
 
-    struct OndemandStringResult {
-        value: String,
-        code: ErrorCode,
-    }
+    // struct OndemandStringResult {
+    //     value: String,
+    //     code: ErrorCode,
+    // }
 
-    struct OndemandStrResult<'a> {
-        value: &'a str,
-        code: ErrorCode,
-    }
+    // struct OndemandStrResult<'a> {
+    //     value: &'a str,
+    //     code: ErrorCode,
+    // }
 
     struct OndemandBoolResult {
         value: bool,

@@ -14,7 +14,7 @@ license = "Apache-2.0"
 
 
 [dependencies]
-cxx = "1.0.74"
+cxx = "1.0.94"
 thiserror = "1.0"
 # anyhow = "1.0"
 
@@ -23,8 +23,8 @@ serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
 
 [build-dependencies]
-cmake = "0.1.49"
-cxx-build = "1.0.74"
+cmake = "0.1.50"
+cxx-build = "1.0.94"
 
 
 [features]

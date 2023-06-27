@@ -2663,14 +2663,14 @@ public:
   const std::string &name() const noexcept final { return set_best()->name(); }
   const std::string &description() const noexcept final { return set_best()->description(); }
   uint32_t required_instruction_sets() const noexcept final { return set_best()->required_instruction_sets(); }
-  simdjson_warn_unused error_code create_dom_parser_implementation(
+  simdjson_warn_unused simdjson_error_code create_dom_parser_implementation(
     size_t capacity,
     size_t max_length,
     std::unique_ptr<internal::dom_parser_implementation>& dst
   ) const noexcept final {
     return set_best()->create_dom_parser_implementation(capacity, max_length, dst);
   }
-  simdjson_warn_unused error_code minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) const noexcept final {
+  simdjson_warn_unused simdjson_error_code minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) const noexcept final {
     return set_best()->minify(buf, len, dst, dst_len);
   }
   simdjson_warn_unused bool validate_utf8(const char * buf, size_t len) const noexcept final override {
@@ -2708,20 +2708,20 @@ static const std::initializer_list<const implementation *>& get_available_implem
 // So we can return UNSUPPORTED_ARCHITECTURE from the parser when there is no support
 class unsupported_implementation final : public implementation {
 public:
-  simdjson_warn_unused error_code create_dom_parser_implementation(
+  simdjson_warn_unused simdjson_error_code create_dom_parser_implementation(
     size_t,
     size_t,
     std::unique_ptr<internal::dom_parser_implementation>&
   ) const noexcept final {
     return UNSUPPORTED_ARCHITECTURE;
   }
-  simdjson_warn_unused error_code minify(const uint8_t *, size_t, uint8_t *, size_t &) const noexcept final override {
+  simdjson_warn_unused simdjson_error_code minify(const uint8_t *, size_t, uint8_t *, size_t &) const noexcept final override {
     return UNSUPPORTED_ARCHITECTURE;
   }
   simdjson_warn_unused bool validate_utf8(const char *, size_t) const noexcept final override {
     return false; // Just refuse to validate. Given that we have a fallback implementation
     // it seems unlikely that unsupported_implementation will ever be used. If it is used,
-    // then it will flag all strings as invalid. The alternative is to return an error_code
+    // then it will flag all strings as invalid. The alternative is to return an simdjson_error_code
     // from which the user has to figure out whether the string is valid UTF-8... which seems
     // like a lot of work just to handle the very unlikely case that we have an unsupported
     // implementation. And, when it does happen (that we have an unsupported implementation),
@@ -2786,7 +2786,7 @@ SIMDJSON_DLLIMPORTEXPORT internal::atomic_ptr<const implementation>& get_active_
     return active_implementation;
 }
 
-simdjson_warn_unused error_code minify(const char *buf, size_t len, char *dst, size_t &dst_len) noexcept {
+simdjson_warn_unused simdjson_error_code minify(const char *buf, size_t len, char *dst, size_t &dst_len) noexcept {
   return get_active_implementation()->minify(reinterpret_cast<const uint8_t *>(buf), len, reinterpret_cast<uint8_t *>(dst), dst_len);
 }
 simdjson_warn_unused bool validate_utf8(const char *buf, size_t len) noexcept {
@@ -2812,7 +2812,7 @@ const implementation * builtin_implementation() {
 namespace simdjson {
 namespace arm64 {
 
-simdjson_warn_unused error_code implementation::create_dom_parser_implementation(
+simdjson_warn_unused simdjson_error_code implementation::create_dom_parser_implementation(
   size_t capacity,
   size_t max_depth,
   std::unique_ptr<internal::dom_parser_implementation>& dst
@@ -3137,8 +3137,8 @@ using namespace simd;
       }
     }
     // do not forget to call check_eof!
-    simdjson_inline error_code errors() {
-      return this->error.any_bits_set_anywhere() ? error_code::UTF8_ERROR : error_code::SUCCESS;
+    simdjson_inline simdjson_error_code errors() {
+      return this->error.any_bits_set_anywhere() ? simdjson_error_code::UTF8_ERROR : simdjson_error_code::SUCCESS;
     }
 
   }; // struct utf8_checker
@@ -3295,7 +3295,7 @@ class json_string_scanner {
 public:
   simdjson_inline json_string_block next(const simd::simd8x64<uint8_t>& in);
   // Returns either UNCLOSED_STRING or SUCCESS
-  simdjson_inline error_code finish();
+  simdjson_inline simdjson_error_code finish();
 
 private:
   // Intended to be defined by the implementation
@@ -3393,7 +3393,7 @@ simdjson_inline json_string_block json_string_scanner::next(const simd::simd8x64
   );
 }
 
-simdjson_inline error_code json_string_scanner::finish() {
+simdjson_inline simdjson_error_code json_string_scanner::finish() {
   if (prev_in_string) {
     return UNCLOSED_STRING;
   }
@@ -3507,7 +3507,7 @@ public:
   json_scanner() = default;
   simdjson_inline json_block next(const simd::simd8x64<uint8_t>& in);
   // Returns either UNCLOSED_STRING or SUCCESS
-  simdjson_inline error_code finish();
+  simdjson_inline simdjson_error_code finish();
 
 private:
   // Whether the last character of the previous iteration is part of a scalar token
@@ -3555,7 +3555,7 @@ simdjson_inline json_block json_scanner::next(const simd::simd8x64<uint8_t>& in)
   );
 }
 
-simdjson_inline error_code json_scanner::finish() {
+simdjson_inline simdjson_error_code json_scanner::finish() {
   return string_scanner.finish();
 }
 
@@ -3578,7 +3578,7 @@ namespace stage1 {
 class json_minifier {
 public:
   template<size_t STEP_SIZE>
-  static error_code minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept;
+  static simdjson_error_code minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept;
 
 private:
   simdjson_inline json_minifier(uint8_t *_dst)
@@ -3587,7 +3587,7 @@ private:
   template<size_t STEP_SIZE>
   simdjson_inline void step(const uint8_t *block_buf, buf_block_reader<STEP_SIZE> &reader) noexcept;
   simdjson_inline void next(const simd::simd8x64<uint8_t>& in, const json_block& block);
-  simdjson_inline error_code finish(uint8_t *dst_start, size_t &dst_len);
+  simdjson_inline simdjson_error_code finish(uint8_t *dst_start, size_t &dst_len);
   json_scanner scanner{};
   uint8_t *dst;
 };
@@ -3597,8 +3597,8 @@ simdjson_inline void json_minifier::next(const simd::simd8x64<uint8_t>& in, cons
   dst += in.compress(mask, dst);
 }
 
-simdjson_inline error_code json_minifier::finish(uint8_t *dst_start, size_t &dst_len) {
-  error_code error = scanner.finish();
+simdjson_inline simdjson_error_code json_minifier::finish(uint8_t *dst_start, size_t &dst_len) {
+  simdjson_error_code error = scanner.finish();
   if (error) { dst_len = 0; return error; }
   dst_len = dst - dst_start;
   return SUCCESS;
@@ -3624,7 +3624,7 @@ simdjson_inline void json_minifier::step<64>(const uint8_t *block_buf, buf_block
 }
 
 template<size_t STEP_SIZE>
-error_code json_minifier::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept {
+simdjson_error_code json_minifier::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept {
   buf_block_reader<STEP_SIZE> reader(buf, len);
   json_minifier minifier(dst);
 
@@ -3883,14 +3883,14 @@ public:
    *   you are processing substrings, you may want to call on a function like trimmed_length_safe_utf8.
    */
   template<size_t STEP_SIZE>
-  static error_code index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept;
+  static simdjson_error_code index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept;
 
 private:
   simdjson_inline json_structural_indexer(uint32_t *structural_indexes);
   template<size_t STEP_SIZE>
   simdjson_inline void step(const uint8_t *block, buf_block_reader<STEP_SIZE> &reader) noexcept;
   simdjson_inline void next(const simd::simd8x64<uint8_t>& in, const json_block& block, size_t idx);
-  simdjson_inline error_code finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial);
+  simdjson_inline simdjson_error_code finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial);
 
   json_scanner scanner{};
   utf8_checker checker{};
@@ -3940,7 +3940,7 @@ simdjson_inline size_t trim_partial_utf8(const uint8_t *buf, size_t len) {
 // workout.
 //
 template<size_t STEP_SIZE>
-error_code json_structural_indexer::index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept {
+simdjson_error_code json_structural_indexer::index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept {
   if (simdjson_unlikely(len > parser.capacity())) { return CAPACITY; }
   // We guard the rest of the code so that we can assume that len > 0 throughout.
   if (len == 0) { return EMPTY; }
@@ -3995,10 +3995,10 @@ simdjson_inline void json_structural_indexer::next(const simd::simd8x64<uint8_t>
   unescaped_chars_error |= block.non_quote_inside_string(unescaped);
 }
 
-simdjson_inline error_code json_structural_indexer::finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial) {
+simdjson_inline simdjson_error_code json_structural_indexer::finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial) {
   // Write out the final iteration's structurals
   indexer.write(uint32_t(idx-64), prev_structurals);
-  error_code error = scanner.finish();
+  simdjson_error_code error = scanner.finish();
   // We deliberately break down the next expression so that it is
   // human readable.
   const bool should_we_exit = is_streaming(partial) ?
@@ -4125,7 +4125,7 @@ bool generic_validate_utf8(const uint8_t * input, size_t length) {
     c.check_next_input(in);
     reader.advance();
     c.check_eof();
-    return c.errors() == error_code::SUCCESS;
+    return c.errors() == simdjson_error_code::SUCCESS;
 }
 
 bool generic_validate_utf8(const char * input, size_t length) {
@@ -4511,7 +4511,7 @@ public:
    * - increment_count(iter) - each time a value is found in an array or object.
    */
   template<bool STREAMING, typename V>
-  simdjson_warn_unused simdjson_inline error_code walk_document(V &visitor) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code walk_document(V &visitor) noexcept;
 
   /**
    * Create an iterator capable of walking a JSON document.
@@ -4578,13 +4578,13 @@ public:
   simdjson_inline void log_error(const char *error) const noexcept;
 
   template<typename V>
-  simdjson_warn_unused simdjson_inline error_code visit_root_primitive(V &visitor, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_primitive(V &visitor, const uint8_t *value) noexcept;
   template<typename V>
-  simdjson_warn_unused simdjson_inline error_code visit_primitive(V &visitor, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_primitive(V &visitor, const uint8_t *value) noexcept;
 };
 
 template<bool STREAMING, typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::walk_document(V &visitor) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::walk_document(V &visitor) noexcept {
   logger::log_start();
 
   //
@@ -4754,7 +4754,7 @@ simdjson_inline void json_iterator::log_error(const char *error) const noexcept 
 }
 
 template<typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::visit_root_primitive(V &visitor, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::visit_root_primitive(V &visitor, const uint8_t *value) noexcept {
   switch (*value) {
     case '"': return visitor.visit_root_string(*this, value);
     case 't': return visitor.visit_root_true_atom(*this, value);
@@ -4770,7 +4770,7 @@ simdjson_warn_unused simdjson_inline error_code json_iterator::visit_root_primit
   }
 }
 template<typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::visit_primitive(V &visitor, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::visit_primitive(V &visitor, const uint8_t *value) noexcept {
   switch (*value) {
     case '"': return visitor.visit_string(*this, value);
     case 't': return visitor.visit_true_atom(*this, value);
@@ -4906,40 +4906,40 @@ namespace stage2 {
 
 struct tape_builder {
   template<bool STREAMING>
-  simdjson_warn_unused static simdjson_inline error_code parse_document(
+  simdjson_warn_unused static simdjson_inline simdjson_error_code parse_document(
     dom_parser_implementation &dom_parser,
     dom::document &doc) noexcept;
 
   /** Called when a non-empty document starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_document_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_document_start(json_iterator &iter) noexcept;
   /** Called when a non-empty document ends without error. */
-  simdjson_warn_unused simdjson_inline error_code visit_document_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_document_end(json_iterator &iter) noexcept;
 
   /** Called when a non-empty array starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_array_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_array_start(json_iterator &iter) noexcept;
   /** Called when a non-empty array ends. */
-  simdjson_warn_unused simdjson_inline error_code visit_array_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_array_end(json_iterator &iter) noexcept;
   /** Called when an empty array is found. */
-  simdjson_warn_unused simdjson_inline error_code visit_empty_array(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_empty_array(json_iterator &iter) noexcept;
 
   /** Called when a non-empty object starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_object_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_object_start(json_iterator &iter) noexcept;
   /**
    * Called when a key in a field is encountered.
    *
    * primitive, visit_object_start, visit_empty_object, visit_array_start, or visit_empty_array
    * will be called after this with the field value.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_key(json_iterator &iter, const uint8_t *key) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_key(json_iterator &iter, const uint8_t *key) noexcept;
   /** Called when a non-empty object ends. */
-  simdjson_warn_unused simdjson_inline error_code visit_object_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_object_end(json_iterator &iter) noexcept;
   /** Called when an empty object is found. */
-  simdjson_warn_unused simdjson_inline error_code visit_empty_object(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_empty_object(json_iterator &iter) noexcept;
 
   /**
    * Called when a string, number, boolean or null is found.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_primitive(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_primitive(json_iterator &iter, const uint8_t *value) noexcept;
   /**
    * Called when a string, number, boolean or null is found at the top level of a document (i.e.
    * when there is no array or object and the entire document is a single string, number, boolean or
@@ -4948,22 +4948,22 @@ struct tape_builder {
    * This is separate from primitive() because simdjson's normal primitive parsing routines assume
    * there is at least one more token after the value, which is only true in an array or object.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept;
 
-  simdjson_warn_unused simdjson_inline error_code visit_string(json_iterator &iter, const uint8_t *value, bool key = false) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_number(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_string(json_iterator &iter, const uint8_t *value, bool key = false) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_number(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
 
-  simdjson_warn_unused simdjson_inline error_code visit_root_string(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_number(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_string(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_number(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
 
   /** Called each time a new field or element in an array or object is found. */
-  simdjson_warn_unused simdjson_inline error_code increment_count(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code increment_count(json_iterator &iter) noexcept;
 
   /** Next location to write to tape */
   tape_writer tape;
@@ -4975,14 +4975,14 @@ private:
 
   simdjson_inline uint32_t next_tape_index(json_iterator &iter) const noexcept;
   simdjson_inline void start_container(json_iterator &iter) noexcept;
-  simdjson_warn_unused simdjson_inline error_code end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
-  simdjson_warn_unused simdjson_inline error_code empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
   simdjson_inline uint8_t *on_start_string(json_iterator &iter) noexcept;
   simdjson_inline void on_end_string(uint8_t *dst) noexcept;
 }; // class tape_builder
 
 template<bool STREAMING>
-simdjson_warn_unused simdjson_inline error_code tape_builder::parse_document(
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::parse_document(
     dom_parser_implementation &dom_parser,
     dom::document &doc) noexcept {
   dom_parser.doc = &doc;
@@ -4991,56 +4991,56 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::parse_document(
   return iter.walk_document<STREAMING>(builder);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept {
   return iter.visit_root_primitive(*this, value);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_primitive(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_primitive(json_iterator &iter, const uint8_t *value) noexcept {
   return iter.visit_primitive(*this, value);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_empty_object(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_empty_object(json_iterator &iter) noexcept {
   return empty_container(iter, internal::tape_type::START_OBJECT, internal::tape_type::END_OBJECT);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_empty_array(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_empty_array(json_iterator &iter) noexcept {
   return empty_container(iter, internal::tape_type::START_ARRAY, internal::tape_type::END_ARRAY);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_document_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_document_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_object_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_object_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_array_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_array_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_object_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_object_end(json_iterator &iter) noexcept {
   return end_container(iter, internal::tape_type::START_OBJECT, internal::tape_type::END_OBJECT);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_array_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_array_end(json_iterator &iter) noexcept {
   return end_container(iter, internal::tape_type::START_ARRAY, internal::tape_type::END_ARRAY);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_document_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_document_end(json_iterator &iter) noexcept {
   constexpr uint32_t start_tape_index = 0;
   tape.append(start_tape_index, internal::tape_type::ROOT);
   tape_writer::write(iter.dom_parser.doc->tape[start_tape_index], next_tape_index(iter), internal::tape_type::ROOT);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_key(json_iterator &iter, const uint8_t *key) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_key(json_iterator &iter, const uint8_t *key) noexcept {
   return visit_string(iter, key, true);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::increment_count(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::increment_count(json_iterator &iter) noexcept {
   iter.dom_parser.open_containers[iter.depth].count++; // we have a key value pair in the object at parser.dom_parser.depth - 1
   return SUCCESS;
 }
 
 simdjson_inline tape_builder::tape_builder(dom::document &doc) noexcept : tape{doc.tape.get()}, current_string_buf_loc{doc.string_buf.get()} {}
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_string(json_iterator &iter, const uint8_t *value, bool key) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_string(json_iterator &iter, const uint8_t *value, bool key) noexcept {
   iter.log_value(key ? "key" : "string");
   uint8_t *dst = on_start_string(iter);
   dst = stringparsing::parse_string(value+1, dst, false); // We do not allow replacement when the escape characters are invalid.
@@ -5052,16 +5052,16 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::visit_string(json_
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_string(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_string(json_iterator &iter, const uint8_t *value) noexcept {
   return visit_string(iter, value);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_number(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_number(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("number");
   return numberparsing::parse_number(value, tape);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_number(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_number(json_iterator &iter, const uint8_t *value) noexcept {
   //
   // We need to make a copy to make sure that the string is space terminated.
   // This is not about padding the input, which should already padded up
@@ -5079,46 +5079,46 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_number(
   if (copy.get() == nullptr) { return MEMALLOC; }
   std::memcpy(copy.get(), value, iter.remaining_len());
   std::memset(copy.get() + iter.remaining_len(), ' ', SIMDJSON_PADDING);
-  error_code error = visit_number(iter, copy.get());
+  simdjson_error_code error = visit_number(iter, copy.get());
   return error;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("true");
   if (!atomparsing::is_valid_true_atom(value)) { return T_ATOM_ERROR; }
   tape.append(0, internal::tape_type::TRUE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("true");
   if (!atomparsing::is_valid_true_atom(value, iter.remaining_len())) { return T_ATOM_ERROR; }
   tape.append(0, internal::tape_type::TRUE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("false");
   if (!atomparsing::is_valid_false_atom(value)) { return F_ATOM_ERROR; }
   tape.append(0, internal::tape_type::FALSE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("false");
   if (!atomparsing::is_valid_false_atom(value, iter.remaining_len())) { return F_ATOM_ERROR; }
   tape.append(0, internal::tape_type::FALSE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("null");
   if (!atomparsing::is_valid_null_atom(value)) { return N_ATOM_ERROR; }
   tape.append(0, internal::tape_type::NULL_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("null");
   if (!atomparsing::is_valid_null_atom(value, iter.remaining_len())) { return N_ATOM_ERROR; }
   tape.append(0, internal::tape_type::NULL_VALUE);
@@ -5131,7 +5131,7 @@ simdjson_inline uint32_t tape_builder::next_tape_index(json_iterator &iter) cons
   return uint32_t(tape.next_tape_loc - iter.dom_parser.doc->tape.get());
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
   auto start_index = next_tape_index(iter);
   tape.append(start_index+2, start);
   tape.append(start_index, end);
@@ -5144,7 +5144,7 @@ simdjson_inline void tape_builder::start_container(json_iterator &iter) noexcept
   tape.skip(); // We don't actually *write* the start element until the end.
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
   // Write the ending tape element, pointing at the start location
   const uint32_t start_tape_index = iter.dom_parser.open_containers[iter.depth].tape_index;
   tape.append(start_tape_index, end);
@@ -5199,11 +5199,11 @@ simdjson_inline uint64_t json_string_scanner::find_escaped(uint64_t backslash) {
 } // namespace stage1
 } // unnamed namespace
 
-simdjson_warn_unused error_code implementation::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) const noexcept {
+simdjson_warn_unused simdjson_error_code implementation::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) const noexcept {
   return arm64::stage1::json_minifier::minify<64>(buf, len, dst, dst_len);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage1(const uint8_t *_buf, size_t _len, stage1_mode streaming) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage1(const uint8_t *_buf, size_t _len, stage1_mode streaming) noexcept {
   this->buf = _buf;
   this->len = _len;
   return arm64::stage1::json_structural_indexer::index<64>(buf, len, *this, streaming);
@@ -5213,11 +5213,11 @@ simdjson_warn_unused bool implementation::validate_utf8(const char *buf, size_t 
   return arm64::stage1::generic_validate_utf8(buf,len);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage2(dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage2(dom::document &_doc) noexcept {
   return stage2::tape_builder::parse_document<false>(*this, _doc);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage2_next(dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage2_next(dom::document &_doc) noexcept {
   return stage2::tape_builder::parse_document<true>(*this, _doc);
 }
 
@@ -5229,7 +5229,7 @@ simdjson_warn_unused uint8_t *dom_parser_implementation::parse_wobbly_string(con
   return arm64::stringparsing::parse_wobbly_string(src, dst);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::parse(const uint8_t *_buf, size_t _len, dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::parse(const uint8_t *_buf, size_t _len, dom::document &_doc) noexcept {
   auto error = stage1(_buf, _len, stage1_mode::regular);
   if (error) { return error; }
   return stage2(_doc);
@@ -5251,7 +5251,7 @@ simdjson_warn_unused error_code dom_parser_implementation::parse(const uint8_t *
 namespace simdjson {
 namespace fallback {
 
-simdjson_warn_unused error_code implementation::create_dom_parser_implementation(
+simdjson_warn_unused simdjson_error_code implementation::create_dom_parser_implementation(
   size_t capacity,
   size_t max_depth,
   std::unique_ptr<internal::dom_parser_implementation>& dst
@@ -5492,7 +5492,7 @@ simdjson_inline bool is_whitespace_or_operator(uint8_t c) {
 //
 // Parse the entire input in STEP_SIZE-byte chunks.
 //
-simdjson_inline error_code scan() {
+simdjson_inline simdjson_error_code scan() {
   bool unclosed_string = false;
   for (;idx<len;idx++) {
     switch (buf[idx]) {
@@ -5578,14 +5578,14 @@ private:
   dom_parser_implementation &parser;
   uint32_t len;
   uint32_t idx{0};
-  error_code error{SUCCESS};
+  simdjson_error_code error{SUCCESS};
   stage1_mode partial;
 }; // structural_scanner
 
 } // namespace stage1
 } // unnamed namespace
 
-simdjson_warn_unused error_code dom_parser_implementation::stage1(const uint8_t *_buf, size_t _len, stage1_mode partial) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage1(const uint8_t *_buf, size_t _len, stage1_mode partial) noexcept {
   this->buf = _buf;
   this->len = _len;
   stage1::structural_scanner scanner(*this, partial);
@@ -5627,7 +5627,7 @@ static uint8_t jump_table[256 * 3] = {
     0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1,
 };
 
-simdjson_warn_unused error_code implementation::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) const noexcept {
+simdjson_warn_unused simdjson_error_code implementation::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) const noexcept {
   size_t i = 0, pos = 0;
   uint8_t quote = 0;
   uint8_t nonescape = 1;
@@ -6086,7 +6086,7 @@ public:
    * - increment_count(iter) - each time a value is found in an array or object.
    */
   template<bool STREAMING, typename V>
-  simdjson_warn_unused simdjson_inline error_code walk_document(V &visitor) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code walk_document(V &visitor) noexcept;
 
   /**
    * Create an iterator capable of walking a JSON document.
@@ -6153,13 +6153,13 @@ public:
   simdjson_inline void log_error(const char *error) const noexcept;
 
   template<typename V>
-  simdjson_warn_unused simdjson_inline error_code visit_root_primitive(V &visitor, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_primitive(V &visitor, const uint8_t *value) noexcept;
   template<typename V>
-  simdjson_warn_unused simdjson_inline error_code visit_primitive(V &visitor, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_primitive(V &visitor, const uint8_t *value) noexcept;
 };
 
 template<bool STREAMING, typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::walk_document(V &visitor) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::walk_document(V &visitor) noexcept {
   logger::log_start();
 
   //
@@ -6329,7 +6329,7 @@ simdjson_inline void json_iterator::log_error(const char *error) const noexcept 
 }
 
 template<typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::visit_root_primitive(V &visitor, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::visit_root_primitive(V &visitor, const uint8_t *value) noexcept {
   switch (*value) {
     case '"': return visitor.visit_root_string(*this, value);
     case 't': return visitor.visit_root_true_atom(*this, value);
@@ -6345,7 +6345,7 @@ simdjson_warn_unused simdjson_inline error_code json_iterator::visit_root_primit
   }
 }
 template<typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::visit_primitive(V &visitor, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::visit_primitive(V &visitor, const uint8_t *value) noexcept {
   switch (*value) {
     case '"': return visitor.visit_string(*this, value);
     case 't': return visitor.visit_true_atom(*this, value);
@@ -6481,40 +6481,40 @@ namespace stage2 {
 
 struct tape_builder {
   template<bool STREAMING>
-  simdjson_warn_unused static simdjson_inline error_code parse_document(
+  simdjson_warn_unused static simdjson_inline simdjson_error_code parse_document(
     dom_parser_implementation &dom_parser,
     dom::document &doc) noexcept;
 
   /** Called when a non-empty document starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_document_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_document_start(json_iterator &iter) noexcept;
   /** Called when a non-empty document ends without error. */
-  simdjson_warn_unused simdjson_inline error_code visit_document_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_document_end(json_iterator &iter) noexcept;
 
   /** Called when a non-empty array starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_array_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_array_start(json_iterator &iter) noexcept;
   /** Called when a non-empty array ends. */
-  simdjson_warn_unused simdjson_inline error_code visit_array_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_array_end(json_iterator &iter) noexcept;
   /** Called when an empty array is found. */
-  simdjson_warn_unused simdjson_inline error_code visit_empty_array(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_empty_array(json_iterator &iter) noexcept;
 
   /** Called when a non-empty object starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_object_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_object_start(json_iterator &iter) noexcept;
   /**
    * Called when a key in a field is encountered.
    *
    * primitive, visit_object_start, visit_empty_object, visit_array_start, or visit_empty_array
    * will be called after this with the field value.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_key(json_iterator &iter, const uint8_t *key) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_key(json_iterator &iter, const uint8_t *key) noexcept;
   /** Called when a non-empty object ends. */
-  simdjson_warn_unused simdjson_inline error_code visit_object_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_object_end(json_iterator &iter) noexcept;
   /** Called when an empty object is found. */
-  simdjson_warn_unused simdjson_inline error_code visit_empty_object(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_empty_object(json_iterator &iter) noexcept;
 
   /**
    * Called when a string, number, boolean or null is found.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_primitive(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_primitive(json_iterator &iter, const uint8_t *value) noexcept;
   /**
    * Called when a string, number, boolean or null is found at the top level of a document (i.e.
    * when there is no array or object and the entire document is a single string, number, boolean or
@@ -6523,22 +6523,22 @@ struct tape_builder {
    * This is separate from primitive() because simdjson's normal primitive parsing routines assume
    * there is at least one more token after the value, which is only true in an array or object.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept;
 
-  simdjson_warn_unused simdjson_inline error_code visit_string(json_iterator &iter, const uint8_t *value, bool key = false) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_number(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_string(json_iterator &iter, const uint8_t *value, bool key = false) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_number(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
 
-  simdjson_warn_unused simdjson_inline error_code visit_root_string(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_number(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_string(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_number(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
 
   /** Called each time a new field or element in an array or object is found. */
-  simdjson_warn_unused simdjson_inline error_code increment_count(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code increment_count(json_iterator &iter) noexcept;
 
   /** Next location to write to tape */
   tape_writer tape;
@@ -6550,14 +6550,14 @@ private:
 
   simdjson_inline uint32_t next_tape_index(json_iterator &iter) const noexcept;
   simdjson_inline void start_container(json_iterator &iter) noexcept;
-  simdjson_warn_unused simdjson_inline error_code end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
-  simdjson_warn_unused simdjson_inline error_code empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
   simdjson_inline uint8_t *on_start_string(json_iterator &iter) noexcept;
   simdjson_inline void on_end_string(uint8_t *dst) noexcept;
 }; // class tape_builder
 
 template<bool STREAMING>
-simdjson_warn_unused simdjson_inline error_code tape_builder::parse_document(
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::parse_document(
     dom_parser_implementation &dom_parser,
     dom::document &doc) noexcept {
   dom_parser.doc = &doc;
@@ -6566,56 +6566,56 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::parse_document(
   return iter.walk_document<STREAMING>(builder);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept {
   return iter.visit_root_primitive(*this, value);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_primitive(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_primitive(json_iterator &iter, const uint8_t *value) noexcept {
   return iter.visit_primitive(*this, value);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_empty_object(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_empty_object(json_iterator &iter) noexcept {
   return empty_container(iter, internal::tape_type::START_OBJECT, internal::tape_type::END_OBJECT);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_empty_array(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_empty_array(json_iterator &iter) noexcept {
   return empty_container(iter, internal::tape_type::START_ARRAY, internal::tape_type::END_ARRAY);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_document_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_document_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_object_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_object_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_array_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_array_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_object_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_object_end(json_iterator &iter) noexcept {
   return end_container(iter, internal::tape_type::START_OBJECT, internal::tape_type::END_OBJECT);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_array_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_array_end(json_iterator &iter) noexcept {
   return end_container(iter, internal::tape_type::START_ARRAY, internal::tape_type::END_ARRAY);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_document_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_document_end(json_iterator &iter) noexcept {
   constexpr uint32_t start_tape_index = 0;
   tape.append(start_tape_index, internal::tape_type::ROOT);
   tape_writer::write(iter.dom_parser.doc->tape[start_tape_index], next_tape_index(iter), internal::tape_type::ROOT);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_key(json_iterator &iter, const uint8_t *key) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_key(json_iterator &iter, const uint8_t *key) noexcept {
   return visit_string(iter, key, true);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::increment_count(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::increment_count(json_iterator &iter) noexcept {
   iter.dom_parser.open_containers[iter.depth].count++; // we have a key value pair in the object at parser.dom_parser.depth - 1
   return SUCCESS;
 }
 
 simdjson_inline tape_builder::tape_builder(dom::document &doc) noexcept : tape{doc.tape.get()}, current_string_buf_loc{doc.string_buf.get()} {}
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_string(json_iterator &iter, const uint8_t *value, bool key) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_string(json_iterator &iter, const uint8_t *value, bool key) noexcept {
   iter.log_value(key ? "key" : "string");
   uint8_t *dst = on_start_string(iter);
   dst = stringparsing::parse_string(value+1, dst, false); // We do not allow replacement when the escape characters are invalid.
@@ -6627,16 +6627,16 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::visit_string(json_
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_string(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_string(json_iterator &iter, const uint8_t *value) noexcept {
   return visit_string(iter, value);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_number(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_number(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("number");
   return numberparsing::parse_number(value, tape);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_number(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_number(json_iterator &iter, const uint8_t *value) noexcept {
   //
   // We need to make a copy to make sure that the string is space terminated.
   // This is not about padding the input, which should already padded up
@@ -6654,46 +6654,46 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_number(
   if (copy.get() == nullptr) { return MEMALLOC; }
   std::memcpy(copy.get(), value, iter.remaining_len());
   std::memset(copy.get() + iter.remaining_len(), ' ', SIMDJSON_PADDING);
-  error_code error = visit_number(iter, copy.get());
+  simdjson_error_code error = visit_number(iter, copy.get());
   return error;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("true");
   if (!atomparsing::is_valid_true_atom(value)) { return T_ATOM_ERROR; }
   tape.append(0, internal::tape_type::TRUE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("true");
   if (!atomparsing::is_valid_true_atom(value, iter.remaining_len())) { return T_ATOM_ERROR; }
   tape.append(0, internal::tape_type::TRUE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("false");
   if (!atomparsing::is_valid_false_atom(value)) { return F_ATOM_ERROR; }
   tape.append(0, internal::tape_type::FALSE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("false");
   if (!atomparsing::is_valid_false_atom(value, iter.remaining_len())) { return F_ATOM_ERROR; }
   tape.append(0, internal::tape_type::FALSE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("null");
   if (!atomparsing::is_valid_null_atom(value)) { return N_ATOM_ERROR; }
   tape.append(0, internal::tape_type::NULL_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("null");
   if (!atomparsing::is_valid_null_atom(value, iter.remaining_len())) { return N_ATOM_ERROR; }
   tape.append(0, internal::tape_type::NULL_VALUE);
@@ -6706,7 +6706,7 @@ simdjson_inline uint32_t tape_builder::next_tape_index(json_iterator &iter) cons
   return uint32_t(tape.next_tape_loc - iter.dom_parser.doc->tape.get());
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
   auto start_index = next_tape_index(iter);
   tape.append(start_index+2, start);
   tape.append(start_index, end);
@@ -6719,7 +6719,7 @@ simdjson_inline void tape_builder::start_container(json_iterator &iter) noexcept
   tape.skip(); // We don't actually *write* the start element until the end.
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
   // Write the ending tape element, pointing at the start location
   const uint32_t start_tape_index = iter.dom_parser.open_containers[iter.depth].tape_index;
   tape.append(start_tape_index, end);
@@ -6759,11 +6759,11 @@ simdjson_inline void tape_builder::on_end_string(uint8_t *dst) noexcept {
 namespace simdjson {
 namespace fallback {
 
-simdjson_warn_unused error_code dom_parser_implementation::stage2(dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage2(dom::document &_doc) noexcept {
   return stage2::tape_builder::parse_document<false>(*this, _doc);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage2_next(dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage2_next(dom::document &_doc) noexcept {
   return stage2::tape_builder::parse_document<true>(*this, _doc);
 }
 
@@ -6775,7 +6775,7 @@ simdjson_warn_unused uint8_t *dom_parser_implementation::parse_wobbly_string(con
   return fallback::stringparsing::parse_wobbly_string(src, dst);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::parse(const uint8_t *_buf, size_t _len, dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::parse(const uint8_t *_buf, size_t _len, dom::document &_doc) noexcept {
   auto error = stage1(_buf, _len, stage1_mode::regular);
   if (error) { return error; }
   return stage2(_doc);
@@ -6799,7 +6799,7 @@ SIMDJSON_TARGET_ICELAKE
 namespace simdjson {
 namespace icelake {
 
-simdjson_warn_unused error_code implementation::create_dom_parser_implementation(
+simdjson_warn_unused simdjson_error_code implementation::create_dom_parser_implementation(
   size_t capacity,
   size_t max_depth,
   std::unique_ptr<internal::dom_parser_implementation>& dst
@@ -7128,8 +7128,8 @@ using namespace simd;
       }
     }
     // do not forget to call check_eof!
-    simdjson_inline error_code errors() {
-      return this->error.any_bits_set_anywhere() ? error_code::UTF8_ERROR : error_code::SUCCESS;
+    simdjson_inline simdjson_error_code errors() {
+      return this->error.any_bits_set_anywhere() ? simdjson_error_code::UTF8_ERROR : simdjson_error_code::SUCCESS;
     }
 
   }; // struct utf8_checker
@@ -7288,7 +7288,7 @@ class json_string_scanner {
 public:
   simdjson_inline json_string_block next(const simd::simd8x64<uint8_t>& in);
   // Returns either UNCLOSED_STRING or SUCCESS
-  simdjson_inline error_code finish();
+  simdjson_inline simdjson_error_code finish();
 
 private:
   // Intended to be defined by the implementation
@@ -7386,7 +7386,7 @@ simdjson_inline json_string_block json_string_scanner::next(const simd::simd8x64
   );
 }
 
-simdjson_inline error_code json_string_scanner::finish() {
+simdjson_inline simdjson_error_code json_string_scanner::finish() {
   if (prev_in_string) {
     return UNCLOSED_STRING;
   }
@@ -7500,7 +7500,7 @@ public:
   json_scanner() = default;
   simdjson_inline json_block next(const simd::simd8x64<uint8_t>& in);
   // Returns either UNCLOSED_STRING or SUCCESS
-  simdjson_inline error_code finish();
+  simdjson_inline simdjson_error_code finish();
 
 private:
   // Whether the last character of the previous iteration is part of a scalar token
@@ -7548,7 +7548,7 @@ simdjson_inline json_block json_scanner::next(const simd::simd8x64<uint8_t>& in)
   );
 }
 
-simdjson_inline error_code json_scanner::finish() {
+simdjson_inline simdjson_error_code json_scanner::finish() {
   return string_scanner.finish();
 }
 
@@ -7571,7 +7571,7 @@ namespace stage1 {
 class json_minifier {
 public:
   template<size_t STEP_SIZE>
-  static error_code minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept;
+  static simdjson_error_code minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept;
 
 private:
   simdjson_inline json_minifier(uint8_t *_dst)
@@ -7580,7 +7580,7 @@ private:
   template<size_t STEP_SIZE>
   simdjson_inline void step(const uint8_t *block_buf, buf_block_reader<STEP_SIZE> &reader) noexcept;
   simdjson_inline void next(const simd::simd8x64<uint8_t>& in, const json_block& block);
-  simdjson_inline error_code finish(uint8_t *dst_start, size_t &dst_len);
+  simdjson_inline simdjson_error_code finish(uint8_t *dst_start, size_t &dst_len);
   json_scanner scanner{};
   uint8_t *dst;
 };
@@ -7590,8 +7590,8 @@ simdjson_inline void json_minifier::next(const simd::simd8x64<uint8_t>& in, cons
   dst += in.compress(mask, dst);
 }
 
-simdjson_inline error_code json_minifier::finish(uint8_t *dst_start, size_t &dst_len) {
-  error_code error = scanner.finish();
+simdjson_inline simdjson_error_code json_minifier::finish(uint8_t *dst_start, size_t &dst_len) {
+  simdjson_error_code error = scanner.finish();
   if (error) { dst_len = 0; return error; }
   dst_len = dst - dst_start;
   return SUCCESS;
@@ -7617,7 +7617,7 @@ simdjson_inline void json_minifier::step<64>(const uint8_t *block_buf, buf_block
 }
 
 template<size_t STEP_SIZE>
-error_code json_minifier::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept {
+simdjson_error_code json_minifier::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept {
   buf_block_reader<STEP_SIZE> reader(buf, len);
   json_minifier minifier(dst);
 
@@ -7876,14 +7876,14 @@ public:
    *   you are processing substrings, you may want to call on a function like trimmed_length_safe_utf8.
    */
   template<size_t STEP_SIZE>
-  static error_code index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept;
+  static simdjson_error_code index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept;
 
 private:
   simdjson_inline json_structural_indexer(uint32_t *structural_indexes);
   template<size_t STEP_SIZE>
   simdjson_inline void step(const uint8_t *block, buf_block_reader<STEP_SIZE> &reader) noexcept;
   simdjson_inline void next(const simd::simd8x64<uint8_t>& in, const json_block& block, size_t idx);
-  simdjson_inline error_code finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial);
+  simdjson_inline simdjson_error_code finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial);
 
   json_scanner scanner{};
   utf8_checker checker{};
@@ -7933,7 +7933,7 @@ simdjson_inline size_t trim_partial_utf8(const uint8_t *buf, size_t len) {
 // workout.
 //
 template<size_t STEP_SIZE>
-error_code json_structural_indexer::index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept {
+simdjson_error_code json_structural_indexer::index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept {
   if (simdjson_unlikely(len > parser.capacity())) { return CAPACITY; }
   // We guard the rest of the code so that we can assume that len > 0 throughout.
   if (len == 0) { return EMPTY; }
@@ -7988,10 +7988,10 @@ simdjson_inline void json_structural_indexer::next(const simd::simd8x64<uint8_t>
   unescaped_chars_error |= block.non_quote_inside_string(unescaped);
 }
 
-simdjson_inline error_code json_structural_indexer::finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial) {
+simdjson_inline simdjson_error_code json_structural_indexer::finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial) {
   // Write out the final iteration's structurals
   indexer.write(uint32_t(idx-64), prev_structurals);
-  error_code error = scanner.finish();
+  simdjson_error_code error = scanner.finish();
   // We deliberately break down the next expression so that it is
   // human readable.
   const bool should_we_exit = is_streaming(partial) ?
@@ -8165,7 +8165,7 @@ bool generic_validate_utf8(const uint8_t * input, size_t length) {
     c.check_next_input(in);
     reader.advance();
     c.check_eof();
-    return c.errors() == error_code::SUCCESS;
+    return c.errors() == simdjson_error_code::SUCCESS;
 }
 
 bool generic_validate_utf8(const char * input, size_t length) {
@@ -8550,7 +8550,7 @@ public:
    * - increment_count(iter) - each time a value is found in an array or object.
    */
   template<bool STREAMING, typename V>
-  simdjson_warn_unused simdjson_inline error_code walk_document(V &visitor) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code walk_document(V &visitor) noexcept;
 
   /**
    * Create an iterator capable of walking a JSON document.
@@ -8617,13 +8617,13 @@ public:
   simdjson_inline void log_error(const char *error) const noexcept;
 
   template<typename V>
-  simdjson_warn_unused simdjson_inline error_code visit_root_primitive(V &visitor, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_primitive(V &visitor, const uint8_t *value) noexcept;
   template<typename V>
-  simdjson_warn_unused simdjson_inline error_code visit_primitive(V &visitor, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_primitive(V &visitor, const uint8_t *value) noexcept;
 };
 
 template<bool STREAMING, typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::walk_document(V &visitor) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::walk_document(V &visitor) noexcept {
   logger::log_start();
 
   //
@@ -8793,7 +8793,7 @@ simdjson_inline void json_iterator::log_error(const char *error) const noexcept 
 }
 
 template<typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::visit_root_primitive(V &visitor, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::visit_root_primitive(V &visitor, const uint8_t *value) noexcept {
   switch (*value) {
     case '"': return visitor.visit_root_string(*this, value);
     case 't': return visitor.visit_root_true_atom(*this, value);
@@ -8809,7 +8809,7 @@ simdjson_warn_unused simdjson_inline error_code json_iterator::visit_root_primit
   }
 }
 template<typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::visit_primitive(V &visitor, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::visit_primitive(V &visitor, const uint8_t *value) noexcept {
   switch (*value) {
     case '"': return visitor.visit_string(*this, value);
     case 't': return visitor.visit_true_atom(*this, value);
@@ -8945,40 +8945,40 @@ namespace stage2 {
 
 struct tape_builder {
   template<bool STREAMING>
-  simdjson_warn_unused static simdjson_inline error_code parse_document(
+  simdjson_warn_unused static simdjson_inline simdjson_error_code parse_document(
     dom_parser_implementation &dom_parser,
     dom::document &doc) noexcept;
 
   /** Called when a non-empty document starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_document_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_document_start(json_iterator &iter) noexcept;
   /** Called when a non-empty document ends without error. */
-  simdjson_warn_unused simdjson_inline error_code visit_document_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_document_end(json_iterator &iter) noexcept;
 
   /** Called when a non-empty array starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_array_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_array_start(json_iterator &iter) noexcept;
   /** Called when a non-empty array ends. */
-  simdjson_warn_unused simdjson_inline error_code visit_array_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_array_end(json_iterator &iter) noexcept;
   /** Called when an empty array is found. */
-  simdjson_warn_unused simdjson_inline error_code visit_empty_array(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_empty_array(json_iterator &iter) noexcept;
 
   /** Called when a non-empty object starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_object_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_object_start(json_iterator &iter) noexcept;
   /**
    * Called when a key in a field is encountered.
    *
    * primitive, visit_object_start, visit_empty_object, visit_array_start, or visit_empty_array
    * will be called after this with the field value.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_key(json_iterator &iter, const uint8_t *key) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_key(json_iterator &iter, const uint8_t *key) noexcept;
   /** Called when a non-empty object ends. */
-  simdjson_warn_unused simdjson_inline error_code visit_object_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_object_end(json_iterator &iter) noexcept;
   /** Called when an empty object is found. */
-  simdjson_warn_unused simdjson_inline error_code visit_empty_object(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_empty_object(json_iterator &iter) noexcept;
 
   /**
    * Called when a string, number, boolean or null is found.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_primitive(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_primitive(json_iterator &iter, const uint8_t *value) noexcept;
   /**
    * Called when a string, number, boolean or null is found at the top level of a document (i.e.
    * when there is no array or object and the entire document is a single string, number, boolean or
@@ -8987,22 +8987,22 @@ struct tape_builder {
    * This is separate from primitive() because simdjson's normal primitive parsing routines assume
    * there is at least one more token after the value, which is only true in an array or object.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept;
 
-  simdjson_warn_unused simdjson_inline error_code visit_string(json_iterator &iter, const uint8_t *value, bool key = false) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_number(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_string(json_iterator &iter, const uint8_t *value, bool key = false) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_number(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
 
-  simdjson_warn_unused simdjson_inline error_code visit_root_string(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_number(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_string(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_number(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
 
   /** Called each time a new field or element in an array or object is found. */
-  simdjson_warn_unused simdjson_inline error_code increment_count(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code increment_count(json_iterator &iter) noexcept;
 
   /** Next location to write to tape */
   tape_writer tape;
@@ -9014,14 +9014,14 @@ private:
 
   simdjson_inline uint32_t next_tape_index(json_iterator &iter) const noexcept;
   simdjson_inline void start_container(json_iterator &iter) noexcept;
-  simdjson_warn_unused simdjson_inline error_code end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
-  simdjson_warn_unused simdjson_inline error_code empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
   simdjson_inline uint8_t *on_start_string(json_iterator &iter) noexcept;
   simdjson_inline void on_end_string(uint8_t *dst) noexcept;
 }; // class tape_builder
 
 template<bool STREAMING>
-simdjson_warn_unused simdjson_inline error_code tape_builder::parse_document(
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::parse_document(
     dom_parser_implementation &dom_parser,
     dom::document &doc) noexcept {
   dom_parser.doc = &doc;
@@ -9030,56 +9030,56 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::parse_document(
   return iter.walk_document<STREAMING>(builder);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept {
   return iter.visit_root_primitive(*this, value);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_primitive(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_primitive(json_iterator &iter, const uint8_t *value) noexcept {
   return iter.visit_primitive(*this, value);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_empty_object(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_empty_object(json_iterator &iter) noexcept {
   return empty_container(iter, internal::tape_type::START_OBJECT, internal::tape_type::END_OBJECT);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_empty_array(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_empty_array(json_iterator &iter) noexcept {
   return empty_container(iter, internal::tape_type::START_ARRAY, internal::tape_type::END_ARRAY);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_document_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_document_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_object_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_object_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_array_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_array_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_object_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_object_end(json_iterator &iter) noexcept {
   return end_container(iter, internal::tape_type::START_OBJECT, internal::tape_type::END_OBJECT);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_array_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_array_end(json_iterator &iter) noexcept {
   return end_container(iter, internal::tape_type::START_ARRAY, internal::tape_type::END_ARRAY);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_document_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_document_end(json_iterator &iter) noexcept {
   constexpr uint32_t start_tape_index = 0;
   tape.append(start_tape_index, internal::tape_type::ROOT);
   tape_writer::write(iter.dom_parser.doc->tape[start_tape_index], next_tape_index(iter), internal::tape_type::ROOT);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_key(json_iterator &iter, const uint8_t *key) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_key(json_iterator &iter, const uint8_t *key) noexcept {
   return visit_string(iter, key, true);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::increment_count(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::increment_count(json_iterator &iter) noexcept {
   iter.dom_parser.open_containers[iter.depth].count++; // we have a key value pair in the object at parser.dom_parser.depth - 1
   return SUCCESS;
 }
 
 simdjson_inline tape_builder::tape_builder(dom::document &doc) noexcept : tape{doc.tape.get()}, current_string_buf_loc{doc.string_buf.get()} {}
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_string(json_iterator &iter, const uint8_t *value, bool key) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_string(json_iterator &iter, const uint8_t *value, bool key) noexcept {
   iter.log_value(key ? "key" : "string");
   uint8_t *dst = on_start_string(iter);
   dst = stringparsing::parse_string(value+1, dst, false); // We do not allow replacement when the escape characters are invalid.
@@ -9091,16 +9091,16 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::visit_string(json_
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_string(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_string(json_iterator &iter, const uint8_t *value) noexcept {
   return visit_string(iter, value);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_number(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_number(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("number");
   return numberparsing::parse_number(value, tape);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_number(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_number(json_iterator &iter, const uint8_t *value) noexcept {
   //
   // We need to make a copy to make sure that the string is space terminated.
   // This is not about padding the input, which should already padded up
@@ -9118,46 +9118,46 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_number(
   if (copy.get() == nullptr) { return MEMALLOC; }
   std::memcpy(copy.get(), value, iter.remaining_len());
   std::memset(copy.get() + iter.remaining_len(), ' ', SIMDJSON_PADDING);
-  error_code error = visit_number(iter, copy.get());
+  simdjson_error_code error = visit_number(iter, copy.get());
   return error;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("true");
   if (!atomparsing::is_valid_true_atom(value)) { return T_ATOM_ERROR; }
   tape.append(0, internal::tape_type::TRUE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("true");
   if (!atomparsing::is_valid_true_atom(value, iter.remaining_len())) { return T_ATOM_ERROR; }
   tape.append(0, internal::tape_type::TRUE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("false");
   if (!atomparsing::is_valid_false_atom(value)) { return F_ATOM_ERROR; }
   tape.append(0, internal::tape_type::FALSE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("false");
   if (!atomparsing::is_valid_false_atom(value, iter.remaining_len())) { return F_ATOM_ERROR; }
   tape.append(0, internal::tape_type::FALSE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("null");
   if (!atomparsing::is_valid_null_atom(value)) { return N_ATOM_ERROR; }
   tape.append(0, internal::tape_type::NULL_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("null");
   if (!atomparsing::is_valid_null_atom(value, iter.remaining_len())) { return N_ATOM_ERROR; }
   tape.append(0, internal::tape_type::NULL_VALUE);
@@ -9170,7 +9170,7 @@ simdjson_inline uint32_t tape_builder::next_tape_index(json_iterator &iter) cons
   return uint32_t(tape.next_tape_loc - iter.dom_parser.doc->tape.get());
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
   auto start_index = next_tape_index(iter);
   tape.append(start_index+2, start);
   tape.append(start_index, end);
@@ -9183,7 +9183,7 @@ simdjson_inline void tape_builder::start_container(json_iterator &iter) noexcept
   tape.skip(); // We don't actually *write* the start element until the end.
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
   // Write the ending tape element, pointing at the start location
   const uint32_t start_tape_index = iter.dom_parser.open_containers[iter.depth].tape_index;
   tape.append(start_tape_index, end);
@@ -9236,11 +9236,11 @@ simdjson_inline uint64_t json_string_scanner::find_escaped(uint64_t backslash) {
 } // namespace stage1
 } // unnamed namespace
 
-simdjson_warn_unused error_code implementation::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) const noexcept {
+simdjson_warn_unused simdjson_error_code implementation::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) const noexcept {
   return icelake::stage1::json_minifier::minify<128>(buf, len, dst, dst_len);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage1(const uint8_t *_buf, size_t _len, stage1_mode streaming) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage1(const uint8_t *_buf, size_t _len, stage1_mode streaming) noexcept {
   this->buf = _buf;
   this->len = _len;
   return icelake::stage1::json_structural_indexer::index<128>(_buf, _len, *this, streaming);
@@ -9250,11 +9250,11 @@ simdjson_warn_unused bool implementation::validate_utf8(const char *buf, size_t 
   return icelake::stage1::generic_validate_utf8(buf,len);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage2(dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage2(dom::document &_doc) noexcept {
   return stage2::tape_builder::parse_document<false>(*this, _doc);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage2_next(dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage2_next(dom::document &_doc) noexcept {
   return stage2::tape_builder::parse_document<true>(*this, _doc);
 }
 
@@ -9266,7 +9266,7 @@ simdjson_warn_unused uint8_t *dom_parser_implementation::parse_wobbly_string(con
   return icelake::stringparsing::parse_wobbly_string(src, dst);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::parse(const uint8_t *_buf, size_t _len, dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::parse(const uint8_t *_buf, size_t _len, dom::document &_doc) noexcept {
   auto error = stage1(_buf, _len, stage1_mode::regular);
   if (error) { return error; }
   return stage2(_doc);
@@ -9291,7 +9291,7 @@ SIMDJSON_TARGET_HASWELL
 namespace simdjson {
 namespace haswell {
 
-simdjson_warn_unused error_code implementation::create_dom_parser_implementation(
+simdjson_warn_unused simdjson_error_code implementation::create_dom_parser_implementation(
   size_t capacity,
   size_t max_depth,
   std::unique_ptr<internal::dom_parser_implementation>& dst
@@ -9623,8 +9623,8 @@ using namespace simd;
       }
     }
     // do not forget to call check_eof!
-    simdjson_inline error_code errors() {
-      return this->error.any_bits_set_anywhere() ? error_code::UTF8_ERROR : error_code::SUCCESS;
+    simdjson_inline simdjson_error_code errors() {
+      return this->error.any_bits_set_anywhere() ? simdjson_error_code::UTF8_ERROR : simdjson_error_code::SUCCESS;
     }
 
   }; // struct utf8_checker
@@ -9781,7 +9781,7 @@ class json_string_scanner {
 public:
   simdjson_inline json_string_block next(const simd::simd8x64<uint8_t>& in);
   // Returns either UNCLOSED_STRING or SUCCESS
-  simdjson_inline error_code finish();
+  simdjson_inline simdjson_error_code finish();
 
 private:
   // Intended to be defined by the implementation
@@ -9879,7 +9879,7 @@ simdjson_inline json_string_block json_string_scanner::next(const simd::simd8x64
   );
 }
 
-simdjson_inline error_code json_string_scanner::finish() {
+simdjson_inline simdjson_error_code json_string_scanner::finish() {
   if (prev_in_string) {
     return UNCLOSED_STRING;
   }
@@ -9993,7 +9993,7 @@ public:
   json_scanner() = default;
   simdjson_inline json_block next(const simd::simd8x64<uint8_t>& in);
   // Returns either UNCLOSED_STRING or SUCCESS
-  simdjson_inline error_code finish();
+  simdjson_inline simdjson_error_code finish();
 
 private:
   // Whether the last character of the previous iteration is part of a scalar token
@@ -10041,7 +10041,7 @@ simdjson_inline json_block json_scanner::next(const simd::simd8x64<uint8_t>& in)
   );
 }
 
-simdjson_inline error_code json_scanner::finish() {
+simdjson_inline simdjson_error_code json_scanner::finish() {
   return string_scanner.finish();
 }
 
@@ -10064,7 +10064,7 @@ namespace stage1 {
 class json_minifier {
 public:
   template<size_t STEP_SIZE>
-  static error_code minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept;
+  static simdjson_error_code minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept;
 
 private:
   simdjson_inline json_minifier(uint8_t *_dst)
@@ -10073,7 +10073,7 @@ private:
   template<size_t STEP_SIZE>
   simdjson_inline void step(const uint8_t *block_buf, buf_block_reader<STEP_SIZE> &reader) noexcept;
   simdjson_inline void next(const simd::simd8x64<uint8_t>& in, const json_block& block);
-  simdjson_inline error_code finish(uint8_t *dst_start, size_t &dst_len);
+  simdjson_inline simdjson_error_code finish(uint8_t *dst_start, size_t &dst_len);
   json_scanner scanner{};
   uint8_t *dst;
 };
@@ -10083,8 +10083,8 @@ simdjson_inline void json_minifier::next(const simd::simd8x64<uint8_t>& in, cons
   dst += in.compress(mask, dst);
 }
 
-simdjson_inline error_code json_minifier::finish(uint8_t *dst_start, size_t &dst_len) {
-  error_code error = scanner.finish();
+simdjson_inline simdjson_error_code json_minifier::finish(uint8_t *dst_start, size_t &dst_len) {
+  simdjson_error_code error = scanner.finish();
   if (error) { dst_len = 0; return error; }
   dst_len = dst - dst_start;
   return SUCCESS;
@@ -10110,7 +10110,7 @@ simdjson_inline void json_minifier::step<64>(const uint8_t *block_buf, buf_block
 }
 
 template<size_t STEP_SIZE>
-error_code json_minifier::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept {
+simdjson_error_code json_minifier::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept {
   buf_block_reader<STEP_SIZE> reader(buf, len);
   json_minifier minifier(dst);
 
@@ -10369,14 +10369,14 @@ public:
    *   you are processing substrings, you may want to call on a function like trimmed_length_safe_utf8.
    */
   template<size_t STEP_SIZE>
-  static error_code index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept;
+  static simdjson_error_code index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept;
 
 private:
   simdjson_inline json_structural_indexer(uint32_t *structural_indexes);
   template<size_t STEP_SIZE>
   simdjson_inline void step(const uint8_t *block, buf_block_reader<STEP_SIZE> &reader) noexcept;
   simdjson_inline void next(const simd::simd8x64<uint8_t>& in, const json_block& block, size_t idx);
-  simdjson_inline error_code finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial);
+  simdjson_inline simdjson_error_code finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial);
 
   json_scanner scanner{};
   utf8_checker checker{};
@@ -10426,7 +10426,7 @@ simdjson_inline size_t trim_partial_utf8(const uint8_t *buf, size_t len) {
 // workout.
 //
 template<size_t STEP_SIZE>
-error_code json_structural_indexer::index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept {
+simdjson_error_code json_structural_indexer::index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept {
   if (simdjson_unlikely(len > parser.capacity())) { return CAPACITY; }
   // We guard the rest of the code so that we can assume that len > 0 throughout.
   if (len == 0) { return EMPTY; }
@@ -10481,10 +10481,10 @@ simdjson_inline void json_structural_indexer::next(const simd::simd8x64<uint8_t>
   unescaped_chars_error |= block.non_quote_inside_string(unescaped);
 }
 
-simdjson_inline error_code json_structural_indexer::finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial) {
+simdjson_inline simdjson_error_code json_structural_indexer::finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial) {
   // Write out the final iteration's structurals
   indexer.write(uint32_t(idx-64), prev_structurals);
-  error_code error = scanner.finish();
+  simdjson_error_code error = scanner.finish();
   // We deliberately break down the next expression so that it is
   // human readable.
   const bool should_we_exit = is_streaming(partial) ?
@@ -10611,7 +10611,7 @@ bool generic_validate_utf8(const uint8_t * input, size_t length) {
     c.check_next_input(in);
     reader.advance();
     c.check_eof();
-    return c.errors() == error_code::SUCCESS;
+    return c.errors() == simdjson_error_code::SUCCESS;
 }
 
 bool generic_validate_utf8(const char * input, size_t length) {
@@ -10996,7 +10996,7 @@ public:
    * - increment_count(iter) - each time a value is found in an array or object.
    */
   template<bool STREAMING, typename V>
-  simdjson_warn_unused simdjson_inline error_code walk_document(V &visitor) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code walk_document(V &visitor) noexcept;
 
   /**
    * Create an iterator capable of walking a JSON document.
@@ -11063,13 +11063,13 @@ public:
   simdjson_inline void log_error(const char *error) const noexcept;
 
   template<typename V>
-  simdjson_warn_unused simdjson_inline error_code visit_root_primitive(V &visitor, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_primitive(V &visitor, const uint8_t *value) noexcept;
   template<typename V>
-  simdjson_warn_unused simdjson_inline error_code visit_primitive(V &visitor, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_primitive(V &visitor, const uint8_t *value) noexcept;
 };
 
 template<bool STREAMING, typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::walk_document(V &visitor) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::walk_document(V &visitor) noexcept {
   logger::log_start();
 
   //
@@ -11239,7 +11239,7 @@ simdjson_inline void json_iterator::log_error(const char *error) const noexcept 
 }
 
 template<typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::visit_root_primitive(V &visitor, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::visit_root_primitive(V &visitor, const uint8_t *value) noexcept {
   switch (*value) {
     case '"': return visitor.visit_root_string(*this, value);
     case 't': return visitor.visit_root_true_atom(*this, value);
@@ -11255,7 +11255,7 @@ simdjson_warn_unused simdjson_inline error_code json_iterator::visit_root_primit
   }
 }
 template<typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::visit_primitive(V &visitor, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::visit_primitive(V &visitor, const uint8_t *value) noexcept {
   switch (*value) {
     case '"': return visitor.visit_string(*this, value);
     case 't': return visitor.visit_true_atom(*this, value);
@@ -11391,40 +11391,40 @@ namespace stage2 {
 
 struct tape_builder {
   template<bool STREAMING>
-  simdjson_warn_unused static simdjson_inline error_code parse_document(
+  simdjson_warn_unused static simdjson_inline simdjson_error_code parse_document(
     dom_parser_implementation &dom_parser,
     dom::document &doc) noexcept;
 
   /** Called when a non-empty document starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_document_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_document_start(json_iterator &iter) noexcept;
   /** Called when a non-empty document ends without error. */
-  simdjson_warn_unused simdjson_inline error_code visit_document_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_document_end(json_iterator &iter) noexcept;
 
   /** Called when a non-empty array starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_array_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_array_start(json_iterator &iter) noexcept;
   /** Called when a non-empty array ends. */
-  simdjson_warn_unused simdjson_inline error_code visit_array_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_array_end(json_iterator &iter) noexcept;
   /** Called when an empty array is found. */
-  simdjson_warn_unused simdjson_inline error_code visit_empty_array(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_empty_array(json_iterator &iter) noexcept;
 
   /** Called when a non-empty object starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_object_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_object_start(json_iterator &iter) noexcept;
   /**
    * Called when a key in a field is encountered.
    *
    * primitive, visit_object_start, visit_empty_object, visit_array_start, or visit_empty_array
    * will be called after this with the field value.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_key(json_iterator &iter, const uint8_t *key) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_key(json_iterator &iter, const uint8_t *key) noexcept;
   /** Called when a non-empty object ends. */
-  simdjson_warn_unused simdjson_inline error_code visit_object_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_object_end(json_iterator &iter) noexcept;
   /** Called when an empty object is found. */
-  simdjson_warn_unused simdjson_inline error_code visit_empty_object(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_empty_object(json_iterator &iter) noexcept;
 
   /**
    * Called when a string, number, boolean or null is found.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_primitive(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_primitive(json_iterator &iter, const uint8_t *value) noexcept;
   /**
    * Called when a string, number, boolean or null is found at the top level of a document (i.e.
    * when there is no array or object and the entire document is a single string, number, boolean or
@@ -11433,22 +11433,22 @@ struct tape_builder {
    * This is separate from primitive() because simdjson's normal primitive parsing routines assume
    * there is at least one more token after the value, which is only true in an array or object.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept;
 
-  simdjson_warn_unused simdjson_inline error_code visit_string(json_iterator &iter, const uint8_t *value, bool key = false) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_number(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_string(json_iterator &iter, const uint8_t *value, bool key = false) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_number(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
 
-  simdjson_warn_unused simdjson_inline error_code visit_root_string(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_number(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_string(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_number(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
 
   /** Called each time a new field or element in an array or object is found. */
-  simdjson_warn_unused simdjson_inline error_code increment_count(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code increment_count(json_iterator &iter) noexcept;
 
   /** Next location to write to tape */
   tape_writer tape;
@@ -11460,14 +11460,14 @@ private:
 
   simdjson_inline uint32_t next_tape_index(json_iterator &iter) const noexcept;
   simdjson_inline void start_container(json_iterator &iter) noexcept;
-  simdjson_warn_unused simdjson_inline error_code end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
-  simdjson_warn_unused simdjson_inline error_code empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
   simdjson_inline uint8_t *on_start_string(json_iterator &iter) noexcept;
   simdjson_inline void on_end_string(uint8_t *dst) noexcept;
 }; // class tape_builder
 
 template<bool STREAMING>
-simdjson_warn_unused simdjson_inline error_code tape_builder::parse_document(
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::parse_document(
     dom_parser_implementation &dom_parser,
     dom::document &doc) noexcept {
   dom_parser.doc = &doc;
@@ -11476,56 +11476,56 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::parse_document(
   return iter.walk_document<STREAMING>(builder);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept {
   return iter.visit_root_primitive(*this, value);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_primitive(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_primitive(json_iterator &iter, const uint8_t *value) noexcept {
   return iter.visit_primitive(*this, value);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_empty_object(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_empty_object(json_iterator &iter) noexcept {
   return empty_container(iter, internal::tape_type::START_OBJECT, internal::tape_type::END_OBJECT);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_empty_array(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_empty_array(json_iterator &iter) noexcept {
   return empty_container(iter, internal::tape_type::START_ARRAY, internal::tape_type::END_ARRAY);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_document_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_document_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_object_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_object_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_array_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_array_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_object_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_object_end(json_iterator &iter) noexcept {
   return end_container(iter, internal::tape_type::START_OBJECT, internal::tape_type::END_OBJECT);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_array_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_array_end(json_iterator &iter) noexcept {
   return end_container(iter, internal::tape_type::START_ARRAY, internal::tape_type::END_ARRAY);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_document_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_document_end(json_iterator &iter) noexcept {
   constexpr uint32_t start_tape_index = 0;
   tape.append(start_tape_index, internal::tape_type::ROOT);
   tape_writer::write(iter.dom_parser.doc->tape[start_tape_index], next_tape_index(iter), internal::tape_type::ROOT);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_key(json_iterator &iter, const uint8_t *key) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_key(json_iterator &iter, const uint8_t *key) noexcept {
   return visit_string(iter, key, true);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::increment_count(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::increment_count(json_iterator &iter) noexcept {
   iter.dom_parser.open_containers[iter.depth].count++; // we have a key value pair in the object at parser.dom_parser.depth - 1
   return SUCCESS;
 }
 
 simdjson_inline tape_builder::tape_builder(dom::document &doc) noexcept : tape{doc.tape.get()}, current_string_buf_loc{doc.string_buf.get()} {}
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_string(json_iterator &iter, const uint8_t *value, bool key) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_string(json_iterator &iter, const uint8_t *value, bool key) noexcept {
   iter.log_value(key ? "key" : "string");
   uint8_t *dst = on_start_string(iter);
   dst = stringparsing::parse_string(value+1, dst, false); // We do not allow replacement when the escape characters are invalid.
@@ -11537,16 +11537,16 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::visit_string(json_
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_string(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_string(json_iterator &iter, const uint8_t *value) noexcept {
   return visit_string(iter, value);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_number(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_number(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("number");
   return numberparsing::parse_number(value, tape);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_number(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_number(json_iterator &iter, const uint8_t *value) noexcept {
   //
   // We need to make a copy to make sure that the string is space terminated.
   // This is not about padding the input, which should already padded up
@@ -11564,46 +11564,46 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_number(
   if (copy.get() == nullptr) { return MEMALLOC; }
   std::memcpy(copy.get(), value, iter.remaining_len());
   std::memset(copy.get() + iter.remaining_len(), ' ', SIMDJSON_PADDING);
-  error_code error = visit_number(iter, copy.get());
+  simdjson_error_code error = visit_number(iter, copy.get());
   return error;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("true");
   if (!atomparsing::is_valid_true_atom(value)) { return T_ATOM_ERROR; }
   tape.append(0, internal::tape_type::TRUE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("true");
   if (!atomparsing::is_valid_true_atom(value, iter.remaining_len())) { return T_ATOM_ERROR; }
   tape.append(0, internal::tape_type::TRUE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("false");
   if (!atomparsing::is_valid_false_atom(value)) { return F_ATOM_ERROR; }
   tape.append(0, internal::tape_type::FALSE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("false");
   if (!atomparsing::is_valid_false_atom(value, iter.remaining_len())) { return F_ATOM_ERROR; }
   tape.append(0, internal::tape_type::FALSE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("null");
   if (!atomparsing::is_valid_null_atom(value)) { return N_ATOM_ERROR; }
   tape.append(0, internal::tape_type::NULL_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("null");
   if (!atomparsing::is_valid_null_atom(value, iter.remaining_len())) { return N_ATOM_ERROR; }
   tape.append(0, internal::tape_type::NULL_VALUE);
@@ -11616,7 +11616,7 @@ simdjson_inline uint32_t tape_builder::next_tape_index(json_iterator &iter) cons
   return uint32_t(tape.next_tape_loc - iter.dom_parser.doc->tape.get());
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
   auto start_index = next_tape_index(iter);
   tape.append(start_index+2, start);
   tape.append(start_index, end);
@@ -11629,7 +11629,7 @@ simdjson_inline void tape_builder::start_container(json_iterator &iter) noexcept
   tape.skip(); // We don't actually *write* the start element until the end.
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
   // Write the ending tape element, pointing at the start location
   const uint32_t start_tape_index = iter.dom_parser.open_containers[iter.depth].tape_index;
   tape.append(start_tape_index, end);
@@ -11682,11 +11682,11 @@ simdjson_inline uint64_t json_string_scanner::find_escaped(uint64_t backslash) {
 } // namespace stage1
 } // unnamed namespace
 
-simdjson_warn_unused error_code implementation::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) const noexcept {
+simdjson_warn_unused simdjson_error_code implementation::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) const noexcept {
   return haswell::stage1::json_minifier::minify<128>(buf, len, dst, dst_len);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage1(const uint8_t *_buf, size_t _len, stage1_mode streaming) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage1(const uint8_t *_buf, size_t _len, stage1_mode streaming) noexcept {
   this->buf = _buf;
   this->len = _len;
   return haswell::stage1::json_structural_indexer::index<128>(_buf, _len, *this, streaming);
@@ -11696,11 +11696,11 @@ simdjson_warn_unused bool implementation::validate_utf8(const char *buf, size_t 
   return haswell::stage1::generic_validate_utf8(buf,len);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage2(dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage2(dom::document &_doc) noexcept {
   return stage2::tape_builder::parse_document<false>(*this, _doc);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage2_next(dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage2_next(dom::document &_doc) noexcept {
   return stage2::tape_builder::parse_document<true>(*this, _doc);
 }
 
@@ -11712,7 +11712,7 @@ simdjson_warn_unused uint8_t *dom_parser_implementation::parse_wobbly_string(con
   return haswell::stringparsing::parse_wobbly_string(src, dst);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::parse(const uint8_t *_buf, size_t _len, dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::parse(const uint8_t *_buf, size_t _len, dom::document &_doc) noexcept {
   auto error = stage1(_buf, _len, stage1_mode::regular);
   if (error) { return error; }
   return stage2(_doc);
@@ -11736,7 +11736,7 @@ SIMDJSON_UNTARGET_HASWELL
 namespace simdjson {
 namespace ppc64 {
 
-simdjson_warn_unused error_code implementation::create_dom_parser_implementation(
+simdjson_warn_unused simdjson_error_code implementation::create_dom_parser_implementation(
   size_t capacity,
   size_t max_depth,
   std::unique_ptr<internal::dom_parser_implementation>& dst
@@ -12032,8 +12032,8 @@ using namespace simd;
       }
     }
     // do not forget to call check_eof!
-    simdjson_inline error_code errors() {
-      return this->error.any_bits_set_anywhere() ? error_code::UTF8_ERROR : error_code::SUCCESS;
+    simdjson_inline simdjson_error_code errors() {
+      return this->error.any_bits_set_anywhere() ? simdjson_error_code::UTF8_ERROR : simdjson_error_code::SUCCESS;
     }
 
   }; // struct utf8_checker
@@ -12190,7 +12190,7 @@ class json_string_scanner {
 public:
   simdjson_inline json_string_block next(const simd::simd8x64<uint8_t>& in);
   // Returns either UNCLOSED_STRING or SUCCESS
-  simdjson_inline error_code finish();
+  simdjson_inline simdjson_error_code finish();
 
 private:
   // Intended to be defined by the implementation
@@ -12288,7 +12288,7 @@ simdjson_inline json_string_block json_string_scanner::next(const simd::simd8x64
   );
 }
 
-simdjson_inline error_code json_string_scanner::finish() {
+simdjson_inline simdjson_error_code json_string_scanner::finish() {
   if (prev_in_string) {
     return UNCLOSED_STRING;
   }
@@ -12402,7 +12402,7 @@ public:
   json_scanner() = default;
   simdjson_inline json_block next(const simd::simd8x64<uint8_t>& in);
   // Returns either UNCLOSED_STRING or SUCCESS
-  simdjson_inline error_code finish();
+  simdjson_inline simdjson_error_code finish();
 
 private:
   // Whether the last character of the previous iteration is part of a scalar token
@@ -12450,7 +12450,7 @@ simdjson_inline json_block json_scanner::next(const simd::simd8x64<uint8_t>& in)
   );
 }
 
-simdjson_inline error_code json_scanner::finish() {
+simdjson_inline simdjson_error_code json_scanner::finish() {
   return string_scanner.finish();
 }
 
@@ -12473,7 +12473,7 @@ namespace stage1 {
 class json_minifier {
 public:
   template<size_t STEP_SIZE>
-  static error_code minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept;
+  static simdjson_error_code minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept;
 
 private:
   simdjson_inline json_minifier(uint8_t *_dst)
@@ -12482,7 +12482,7 @@ private:
   template<size_t STEP_SIZE>
   simdjson_inline void step(const uint8_t *block_buf, buf_block_reader<STEP_SIZE> &reader) noexcept;
   simdjson_inline void next(const simd::simd8x64<uint8_t>& in, const json_block& block);
-  simdjson_inline error_code finish(uint8_t *dst_start, size_t &dst_len);
+  simdjson_inline simdjson_error_code finish(uint8_t *dst_start, size_t &dst_len);
   json_scanner scanner{};
   uint8_t *dst;
 };
@@ -12492,8 +12492,8 @@ simdjson_inline void json_minifier::next(const simd::simd8x64<uint8_t>& in, cons
   dst += in.compress(mask, dst);
 }
 
-simdjson_inline error_code json_minifier::finish(uint8_t *dst_start, size_t &dst_len) {
-  error_code error = scanner.finish();
+simdjson_inline simdjson_error_code json_minifier::finish(uint8_t *dst_start, size_t &dst_len) {
+  simdjson_error_code error = scanner.finish();
   if (error) { dst_len = 0; return error; }
   dst_len = dst - dst_start;
   return SUCCESS;
@@ -12519,7 +12519,7 @@ simdjson_inline void json_minifier::step<64>(const uint8_t *block_buf, buf_block
 }
 
 template<size_t STEP_SIZE>
-error_code json_minifier::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept {
+simdjson_error_code json_minifier::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept {
   buf_block_reader<STEP_SIZE> reader(buf, len);
   json_minifier minifier(dst);
 
@@ -12778,14 +12778,14 @@ public:
    *   you are processing substrings, you may want to call on a function like trimmed_length_safe_utf8.
    */
   template<size_t STEP_SIZE>
-  static error_code index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept;
+  static simdjson_error_code index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept;
 
 private:
   simdjson_inline json_structural_indexer(uint32_t *structural_indexes);
   template<size_t STEP_SIZE>
   simdjson_inline void step(const uint8_t *block, buf_block_reader<STEP_SIZE> &reader) noexcept;
   simdjson_inline void next(const simd::simd8x64<uint8_t>& in, const json_block& block, size_t idx);
-  simdjson_inline error_code finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial);
+  simdjson_inline simdjson_error_code finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial);
 
   json_scanner scanner{};
   utf8_checker checker{};
@@ -12835,7 +12835,7 @@ simdjson_inline size_t trim_partial_utf8(const uint8_t *buf, size_t len) {
 // workout.
 //
 template<size_t STEP_SIZE>
-error_code json_structural_indexer::index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept {
+simdjson_error_code json_structural_indexer::index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept {
   if (simdjson_unlikely(len > parser.capacity())) { return CAPACITY; }
   // We guard the rest of the code so that we can assume that len > 0 throughout.
   if (len == 0) { return EMPTY; }
@@ -12890,10 +12890,10 @@ simdjson_inline void json_structural_indexer::next(const simd::simd8x64<uint8_t>
   unescaped_chars_error |= block.non_quote_inside_string(unescaped);
 }
 
-simdjson_inline error_code json_structural_indexer::finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial) {
+simdjson_inline simdjson_error_code json_structural_indexer::finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial) {
   // Write out the final iteration's structurals
   indexer.write(uint32_t(idx-64), prev_structurals);
-  error_code error = scanner.finish();
+  simdjson_error_code error = scanner.finish();
   // We deliberately break down the next expression so that it is
   // human readable.
   const bool should_we_exit = is_streaming(partial) ?
@@ -13020,7 +13020,7 @@ bool generic_validate_utf8(const uint8_t * input, size_t length) {
     c.check_next_input(in);
     reader.advance();
     c.check_eof();
-    return c.errors() == error_code::SUCCESS;
+    return c.errors() == simdjson_error_code::SUCCESS;
 }
 
 bool generic_validate_utf8(const char * input, size_t length) {
@@ -13405,7 +13405,7 @@ public:
    * - increment_count(iter) - each time a value is found in an array or object.
    */
   template<bool STREAMING, typename V>
-  simdjson_warn_unused simdjson_inline error_code walk_document(V &visitor) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code walk_document(V &visitor) noexcept;
 
   /**
    * Create an iterator capable of walking a JSON document.
@@ -13472,13 +13472,13 @@ public:
   simdjson_inline void log_error(const char *error) const noexcept;
 
   template<typename V>
-  simdjson_warn_unused simdjson_inline error_code visit_root_primitive(V &visitor, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_primitive(V &visitor, const uint8_t *value) noexcept;
   template<typename V>
-  simdjson_warn_unused simdjson_inline error_code visit_primitive(V &visitor, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_primitive(V &visitor, const uint8_t *value) noexcept;
 };
 
 template<bool STREAMING, typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::walk_document(V &visitor) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::walk_document(V &visitor) noexcept {
   logger::log_start();
 
   //
@@ -13648,7 +13648,7 @@ simdjson_inline void json_iterator::log_error(const char *error) const noexcept 
 }
 
 template<typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::visit_root_primitive(V &visitor, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::visit_root_primitive(V &visitor, const uint8_t *value) noexcept {
   switch (*value) {
     case '"': return visitor.visit_root_string(*this, value);
     case 't': return visitor.visit_root_true_atom(*this, value);
@@ -13664,7 +13664,7 @@ simdjson_warn_unused simdjson_inline error_code json_iterator::visit_root_primit
   }
 }
 template<typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::visit_primitive(V &visitor, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::visit_primitive(V &visitor, const uint8_t *value) noexcept {
   switch (*value) {
     case '"': return visitor.visit_string(*this, value);
     case 't': return visitor.visit_true_atom(*this, value);
@@ -13800,40 +13800,40 @@ namespace stage2 {
 
 struct tape_builder {
   template<bool STREAMING>
-  simdjson_warn_unused static simdjson_inline error_code parse_document(
+  simdjson_warn_unused static simdjson_inline simdjson_error_code parse_document(
     dom_parser_implementation &dom_parser,
     dom::document &doc) noexcept;
 
   /** Called when a non-empty document starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_document_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_document_start(json_iterator &iter) noexcept;
   /** Called when a non-empty document ends without error. */
-  simdjson_warn_unused simdjson_inline error_code visit_document_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_document_end(json_iterator &iter) noexcept;
 
   /** Called when a non-empty array starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_array_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_array_start(json_iterator &iter) noexcept;
   /** Called when a non-empty array ends. */
-  simdjson_warn_unused simdjson_inline error_code visit_array_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_array_end(json_iterator &iter) noexcept;
   /** Called when an empty array is found. */
-  simdjson_warn_unused simdjson_inline error_code visit_empty_array(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_empty_array(json_iterator &iter) noexcept;
 
   /** Called when a non-empty object starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_object_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_object_start(json_iterator &iter) noexcept;
   /**
    * Called when a key in a field is encountered.
    *
    * primitive, visit_object_start, visit_empty_object, visit_array_start, or visit_empty_array
    * will be called after this with the field value.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_key(json_iterator &iter, const uint8_t *key) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_key(json_iterator &iter, const uint8_t *key) noexcept;
   /** Called when a non-empty object ends. */
-  simdjson_warn_unused simdjson_inline error_code visit_object_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_object_end(json_iterator &iter) noexcept;
   /** Called when an empty object is found. */
-  simdjson_warn_unused simdjson_inline error_code visit_empty_object(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_empty_object(json_iterator &iter) noexcept;
 
   /**
    * Called when a string, number, boolean or null is found.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_primitive(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_primitive(json_iterator &iter, const uint8_t *value) noexcept;
   /**
    * Called when a string, number, boolean or null is found at the top level of a document (i.e.
    * when there is no array or object and the entire document is a single string, number, boolean or
@@ -13842,22 +13842,22 @@ struct tape_builder {
    * This is separate from primitive() because simdjson's normal primitive parsing routines assume
    * there is at least one more token after the value, which is only true in an array or object.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept;
 
-  simdjson_warn_unused simdjson_inline error_code visit_string(json_iterator &iter, const uint8_t *value, bool key = false) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_number(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_string(json_iterator &iter, const uint8_t *value, bool key = false) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_number(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
 
-  simdjson_warn_unused simdjson_inline error_code visit_root_string(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_number(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_string(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_number(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
 
   /** Called each time a new field or element in an array or object is found. */
-  simdjson_warn_unused simdjson_inline error_code increment_count(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code increment_count(json_iterator &iter) noexcept;
 
   /** Next location to write to tape */
   tape_writer tape;
@@ -13869,14 +13869,14 @@ private:
 
   simdjson_inline uint32_t next_tape_index(json_iterator &iter) const noexcept;
   simdjson_inline void start_container(json_iterator &iter) noexcept;
-  simdjson_warn_unused simdjson_inline error_code end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
-  simdjson_warn_unused simdjson_inline error_code empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
   simdjson_inline uint8_t *on_start_string(json_iterator &iter) noexcept;
   simdjson_inline void on_end_string(uint8_t *dst) noexcept;
 }; // class tape_builder
 
 template<bool STREAMING>
-simdjson_warn_unused simdjson_inline error_code tape_builder::parse_document(
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::parse_document(
     dom_parser_implementation &dom_parser,
     dom::document &doc) noexcept {
   dom_parser.doc = &doc;
@@ -13885,56 +13885,56 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::parse_document(
   return iter.walk_document<STREAMING>(builder);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept {
   return iter.visit_root_primitive(*this, value);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_primitive(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_primitive(json_iterator &iter, const uint8_t *value) noexcept {
   return iter.visit_primitive(*this, value);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_empty_object(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_empty_object(json_iterator &iter) noexcept {
   return empty_container(iter, internal::tape_type::START_OBJECT, internal::tape_type::END_OBJECT);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_empty_array(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_empty_array(json_iterator &iter) noexcept {
   return empty_container(iter, internal::tape_type::START_ARRAY, internal::tape_type::END_ARRAY);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_document_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_document_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_object_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_object_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_array_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_array_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_object_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_object_end(json_iterator &iter) noexcept {
   return end_container(iter, internal::tape_type::START_OBJECT, internal::tape_type::END_OBJECT);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_array_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_array_end(json_iterator &iter) noexcept {
   return end_container(iter, internal::tape_type::START_ARRAY, internal::tape_type::END_ARRAY);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_document_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_document_end(json_iterator &iter) noexcept {
   constexpr uint32_t start_tape_index = 0;
   tape.append(start_tape_index, internal::tape_type::ROOT);
   tape_writer::write(iter.dom_parser.doc->tape[start_tape_index], next_tape_index(iter), internal::tape_type::ROOT);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_key(json_iterator &iter, const uint8_t *key) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_key(json_iterator &iter, const uint8_t *key) noexcept {
   return visit_string(iter, key, true);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::increment_count(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::increment_count(json_iterator &iter) noexcept {
   iter.dom_parser.open_containers[iter.depth].count++; // we have a key value pair in the object at parser.dom_parser.depth - 1
   return SUCCESS;
 }
 
 simdjson_inline tape_builder::tape_builder(dom::document &doc) noexcept : tape{doc.tape.get()}, current_string_buf_loc{doc.string_buf.get()} {}
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_string(json_iterator &iter, const uint8_t *value, bool key) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_string(json_iterator &iter, const uint8_t *value, bool key) noexcept {
   iter.log_value(key ? "key" : "string");
   uint8_t *dst = on_start_string(iter);
   dst = stringparsing::parse_string(value+1, dst, false); // We do not allow replacement when the escape characters are invalid.
@@ -13946,16 +13946,16 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::visit_string(json_
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_string(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_string(json_iterator &iter, const uint8_t *value) noexcept {
   return visit_string(iter, value);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_number(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_number(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("number");
   return numberparsing::parse_number(value, tape);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_number(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_number(json_iterator &iter, const uint8_t *value) noexcept {
   //
   // We need to make a copy to make sure that the string is space terminated.
   // This is not about padding the input, which should already padded up
@@ -13973,46 +13973,46 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_number(
   if (copy.get() == nullptr) { return MEMALLOC; }
   std::memcpy(copy.get(), value, iter.remaining_len());
   std::memset(copy.get() + iter.remaining_len(), ' ', SIMDJSON_PADDING);
-  error_code error = visit_number(iter, copy.get());
+  simdjson_error_code error = visit_number(iter, copy.get());
   return error;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("true");
   if (!atomparsing::is_valid_true_atom(value)) { return T_ATOM_ERROR; }
   tape.append(0, internal::tape_type::TRUE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("true");
   if (!atomparsing::is_valid_true_atom(value, iter.remaining_len())) { return T_ATOM_ERROR; }
   tape.append(0, internal::tape_type::TRUE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("false");
   if (!atomparsing::is_valid_false_atom(value)) { return F_ATOM_ERROR; }
   tape.append(0, internal::tape_type::FALSE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("false");
   if (!atomparsing::is_valid_false_atom(value, iter.remaining_len())) { return F_ATOM_ERROR; }
   tape.append(0, internal::tape_type::FALSE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("null");
   if (!atomparsing::is_valid_null_atom(value)) { return N_ATOM_ERROR; }
   tape.append(0, internal::tape_type::NULL_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("null");
   if (!atomparsing::is_valid_null_atom(value, iter.remaining_len())) { return N_ATOM_ERROR; }
   tape.append(0, internal::tape_type::NULL_VALUE);
@@ -14025,7 +14025,7 @@ simdjson_inline uint32_t tape_builder::next_tape_index(json_iterator &iter) cons
   return uint32_t(tape.next_tape_loc - iter.dom_parser.doc->tape.get());
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
   auto start_index = next_tape_index(iter);
   tape.append(start_index+2, start);
   tape.append(start_index, end);
@@ -14038,7 +14038,7 @@ simdjson_inline void tape_builder::start_container(json_iterator &iter) noexcept
   tape.skip(); // We don't actually *write* the start element until the end.
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
   // Write the ending tape element, pointing at the start location
   const uint32_t start_tape_index = iter.dom_parser.open_containers[iter.depth].tape_index;
   tape.append(start_tape_index, end);
@@ -14093,11 +14093,11 @@ simdjson_inline uint64_t json_string_scanner::find_escaped(uint64_t backslash) {
 } // namespace stage1
 } // unnamed namespace
 
-simdjson_warn_unused error_code implementation::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) const noexcept {
+simdjson_warn_unused simdjson_error_code implementation::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) const noexcept {
   return ppc64::stage1::json_minifier::minify<64>(buf, len, dst, dst_len);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage1(const uint8_t *_buf, size_t _len, stage1_mode streaming) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage1(const uint8_t *_buf, size_t _len, stage1_mode streaming) noexcept {
   this->buf = _buf;
   this->len = _len;
   return ppc64::stage1::json_structural_indexer::index<64>(buf, len, *this, streaming);
@@ -14107,11 +14107,11 @@ simdjson_warn_unused bool implementation::validate_utf8(const char *buf, size_t 
   return ppc64::stage1::generic_validate_utf8(buf,len);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage2(dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage2(dom::document &_doc) noexcept {
   return stage2::tape_builder::parse_document<false>(*this, _doc);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage2_next(dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage2_next(dom::document &_doc) noexcept {
   return stage2::tape_builder::parse_document<true>(*this, _doc);
 }
 
@@ -14123,7 +14123,7 @@ simdjson_warn_unused uint8_t *dom_parser_implementation::parse_wobbly_string(con
   return ppc64::stringparsing::parse_wobbly_string(src, dst);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::parse(const uint8_t *_buf, size_t _len, dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::parse(const uint8_t *_buf, size_t _len, dom::document &_doc) noexcept {
   auto error = stage1(_buf, _len, stage1_mode::regular);
   if (error) { return error; }
   return stage2(_doc);
@@ -14147,7 +14147,7 @@ SIMDJSON_TARGET_WESTMERE
 namespace simdjson {
 namespace westmere {
 
-simdjson_warn_unused error_code implementation::create_dom_parser_implementation(
+simdjson_warn_unused simdjson_error_code implementation::create_dom_parser_implementation(
   size_t capacity,
   size_t max_depth,
   std::unique_ptr<internal::dom_parser_implementation>& dst
@@ -14476,8 +14476,8 @@ using namespace simd;
       }
     }
     // do not forget to call check_eof!
-    simdjson_inline error_code errors() {
-      return this->error.any_bits_set_anywhere() ? error_code::UTF8_ERROR : error_code::SUCCESS;
+    simdjson_inline simdjson_error_code errors() {
+      return this->error.any_bits_set_anywhere() ? simdjson_error_code::UTF8_ERROR : simdjson_error_code::SUCCESS;
     }
 
   }; // struct utf8_checker
@@ -14634,7 +14634,7 @@ class json_string_scanner {
 public:
   simdjson_inline json_string_block next(const simd::simd8x64<uint8_t>& in);
   // Returns either UNCLOSED_STRING or SUCCESS
-  simdjson_inline error_code finish();
+  simdjson_inline simdjson_error_code finish();
 
 private:
   // Intended to be defined by the implementation
@@ -14732,7 +14732,7 @@ simdjson_inline json_string_block json_string_scanner::next(const simd::simd8x64
   );
 }
 
-simdjson_inline error_code json_string_scanner::finish() {
+simdjson_inline simdjson_error_code json_string_scanner::finish() {
   if (prev_in_string) {
     return UNCLOSED_STRING;
   }
@@ -14846,7 +14846,7 @@ public:
   json_scanner() = default;
   simdjson_inline json_block next(const simd::simd8x64<uint8_t>& in);
   // Returns either UNCLOSED_STRING or SUCCESS
-  simdjson_inline error_code finish();
+  simdjson_inline simdjson_error_code finish();
 
 private:
   // Whether the last character of the previous iteration is part of a scalar token
@@ -14894,7 +14894,7 @@ simdjson_inline json_block json_scanner::next(const simd::simd8x64<uint8_t>& in)
   );
 }
 
-simdjson_inline error_code json_scanner::finish() {
+simdjson_inline simdjson_error_code json_scanner::finish() {
   return string_scanner.finish();
 }
 
@@ -14917,7 +14917,7 @@ namespace stage1 {
 class json_minifier {
 public:
   template<size_t STEP_SIZE>
-  static error_code minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept;
+  static simdjson_error_code minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept;
 
 private:
   simdjson_inline json_minifier(uint8_t *_dst)
@@ -14926,7 +14926,7 @@ private:
   template<size_t STEP_SIZE>
   simdjson_inline void step(const uint8_t *block_buf, buf_block_reader<STEP_SIZE> &reader) noexcept;
   simdjson_inline void next(const simd::simd8x64<uint8_t>& in, const json_block& block);
-  simdjson_inline error_code finish(uint8_t *dst_start, size_t &dst_len);
+  simdjson_inline simdjson_error_code finish(uint8_t *dst_start, size_t &dst_len);
   json_scanner scanner{};
   uint8_t *dst;
 };
@@ -14936,8 +14936,8 @@ simdjson_inline void json_minifier::next(const simd::simd8x64<uint8_t>& in, cons
   dst += in.compress(mask, dst);
 }
 
-simdjson_inline error_code json_minifier::finish(uint8_t *dst_start, size_t &dst_len) {
-  error_code error = scanner.finish();
+simdjson_inline simdjson_error_code json_minifier::finish(uint8_t *dst_start, size_t &dst_len) {
+  simdjson_error_code error = scanner.finish();
   if (error) { dst_len = 0; return error; }
   dst_len = dst - dst_start;
   return SUCCESS;
@@ -14963,7 +14963,7 @@ simdjson_inline void json_minifier::step<64>(const uint8_t *block_buf, buf_block
 }
 
 template<size_t STEP_SIZE>
-error_code json_minifier::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept {
+simdjson_error_code json_minifier::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) noexcept {
   buf_block_reader<STEP_SIZE> reader(buf, len);
   json_minifier minifier(dst);
 
@@ -15222,14 +15222,14 @@ public:
    *   you are processing substrings, you may want to call on a function like trimmed_length_safe_utf8.
    */
   template<size_t STEP_SIZE>
-  static error_code index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept;
+  static simdjson_error_code index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept;
 
 private:
   simdjson_inline json_structural_indexer(uint32_t *structural_indexes);
   template<size_t STEP_SIZE>
   simdjson_inline void step(const uint8_t *block, buf_block_reader<STEP_SIZE> &reader) noexcept;
   simdjson_inline void next(const simd::simd8x64<uint8_t>& in, const json_block& block, size_t idx);
-  simdjson_inline error_code finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial);
+  simdjson_inline simdjson_error_code finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial);
 
   json_scanner scanner{};
   utf8_checker checker{};
@@ -15279,7 +15279,7 @@ simdjson_inline size_t trim_partial_utf8(const uint8_t *buf, size_t len) {
 // workout.
 //
 template<size_t STEP_SIZE>
-error_code json_structural_indexer::index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept {
+simdjson_error_code json_structural_indexer::index(const uint8_t *buf, size_t len, dom_parser_implementation &parser, stage1_mode partial) noexcept {
   if (simdjson_unlikely(len > parser.capacity())) { return CAPACITY; }
   // We guard the rest of the code so that we can assume that len > 0 throughout.
   if (len == 0) { return EMPTY; }
@@ -15334,10 +15334,10 @@ simdjson_inline void json_structural_indexer::next(const simd::simd8x64<uint8_t>
   unescaped_chars_error |= block.non_quote_inside_string(unescaped);
 }
 
-simdjson_inline error_code json_structural_indexer::finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial) {
+simdjson_inline simdjson_error_code json_structural_indexer::finish(dom_parser_implementation &parser, size_t idx, size_t len, stage1_mode partial) {
   // Write out the final iteration's structurals
   indexer.write(uint32_t(idx-64), prev_structurals);
-  error_code error = scanner.finish();
+  simdjson_error_code error = scanner.finish();
   // We deliberately break down the next expression so that it is
   // human readable.
   const bool should_we_exit = is_streaming(partial) ?
@@ -15464,7 +15464,7 @@ bool generic_validate_utf8(const uint8_t * input, size_t length) {
     c.check_next_input(in);
     reader.advance();
     c.check_eof();
-    return c.errors() == error_code::SUCCESS;
+    return c.errors() == simdjson_error_code::SUCCESS;
 }
 
 bool generic_validate_utf8(const char * input, size_t length) {
@@ -15849,7 +15849,7 @@ public:
    * - increment_count(iter) - each time a value is found in an array or object.
    */
   template<bool STREAMING, typename V>
-  simdjson_warn_unused simdjson_inline error_code walk_document(V &visitor) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code walk_document(V &visitor) noexcept;
 
   /**
    * Create an iterator capable of walking a JSON document.
@@ -15916,13 +15916,13 @@ public:
   simdjson_inline void log_error(const char *error) const noexcept;
 
   template<typename V>
-  simdjson_warn_unused simdjson_inline error_code visit_root_primitive(V &visitor, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_primitive(V &visitor, const uint8_t *value) noexcept;
   template<typename V>
-  simdjson_warn_unused simdjson_inline error_code visit_primitive(V &visitor, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_primitive(V &visitor, const uint8_t *value) noexcept;
 };
 
 template<bool STREAMING, typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::walk_document(V &visitor) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::walk_document(V &visitor) noexcept {
   logger::log_start();
 
   //
@@ -16092,7 +16092,7 @@ simdjson_inline void json_iterator::log_error(const char *error) const noexcept 
 }
 
 template<typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::visit_root_primitive(V &visitor, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::visit_root_primitive(V &visitor, const uint8_t *value) noexcept {
   switch (*value) {
     case '"': return visitor.visit_root_string(*this, value);
     case 't': return visitor.visit_root_true_atom(*this, value);
@@ -16108,7 +16108,7 @@ simdjson_warn_unused simdjson_inline error_code json_iterator::visit_root_primit
   }
 }
 template<typename V>
-simdjson_warn_unused simdjson_inline error_code json_iterator::visit_primitive(V &visitor, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code json_iterator::visit_primitive(V &visitor, const uint8_t *value) noexcept {
   switch (*value) {
     case '"': return visitor.visit_string(*this, value);
     case 't': return visitor.visit_true_atom(*this, value);
@@ -16244,40 +16244,40 @@ namespace stage2 {
 
 struct tape_builder {
   template<bool STREAMING>
-  simdjson_warn_unused static simdjson_inline error_code parse_document(
+  simdjson_warn_unused static simdjson_inline simdjson_error_code parse_document(
     dom_parser_implementation &dom_parser,
     dom::document &doc) noexcept;
 
   /** Called when a non-empty document starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_document_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_document_start(json_iterator &iter) noexcept;
   /** Called when a non-empty document ends without error. */
-  simdjson_warn_unused simdjson_inline error_code visit_document_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_document_end(json_iterator &iter) noexcept;
 
   /** Called when a non-empty array starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_array_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_array_start(json_iterator &iter) noexcept;
   /** Called when a non-empty array ends. */
-  simdjson_warn_unused simdjson_inline error_code visit_array_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_array_end(json_iterator &iter) noexcept;
   /** Called when an empty array is found. */
-  simdjson_warn_unused simdjson_inline error_code visit_empty_array(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_empty_array(json_iterator &iter) noexcept;
 
   /** Called when a non-empty object starts. */
-  simdjson_warn_unused simdjson_inline error_code visit_object_start(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_object_start(json_iterator &iter) noexcept;
   /**
    * Called when a key in a field is encountered.
    *
    * primitive, visit_object_start, visit_empty_object, visit_array_start, or visit_empty_array
    * will be called after this with the field value.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_key(json_iterator &iter, const uint8_t *key) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_key(json_iterator &iter, const uint8_t *key) noexcept;
   /** Called when a non-empty object ends. */
-  simdjson_warn_unused simdjson_inline error_code visit_object_end(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_object_end(json_iterator &iter) noexcept;
   /** Called when an empty object is found. */
-  simdjson_warn_unused simdjson_inline error_code visit_empty_object(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_empty_object(json_iterator &iter) noexcept;
 
   /**
    * Called when a string, number, boolean or null is found.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_primitive(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_primitive(json_iterator &iter, const uint8_t *value) noexcept;
   /**
    * Called when a string, number, boolean or null is found at the top level of a document (i.e.
    * when there is no array or object and the entire document is a single string, number, boolean or
@@ -16286,22 +16286,22 @@ struct tape_builder {
    * This is separate from primitive() because simdjson's normal primitive parsing routines assume
    * there is at least one more token after the value, which is only true in an array or object.
    */
-  simdjson_warn_unused simdjson_inline error_code visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept;
 
-  simdjson_warn_unused simdjson_inline error_code visit_string(json_iterator &iter, const uint8_t *value, bool key = false) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_number(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_string(json_iterator &iter, const uint8_t *value, bool key = false) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_number(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
 
-  simdjson_warn_unused simdjson_inline error_code visit_root_string(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_number(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
-  simdjson_warn_unused simdjson_inline error_code visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_string(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_number(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept;
 
   /** Called each time a new field or element in an array or object is found. */
-  simdjson_warn_unused simdjson_inline error_code increment_count(json_iterator &iter) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code increment_count(json_iterator &iter) noexcept;
 
   /** Next location to write to tape */
   tape_writer tape;
@@ -16313,14 +16313,14 @@ private:
 
   simdjson_inline uint32_t next_tape_index(json_iterator &iter) const noexcept;
   simdjson_inline void start_container(json_iterator &iter) noexcept;
-  simdjson_warn_unused simdjson_inline error_code end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
-  simdjson_warn_unused simdjson_inline error_code empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
+  simdjson_warn_unused simdjson_inline simdjson_error_code empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept;
   simdjson_inline uint8_t *on_start_string(json_iterator &iter) noexcept;
   simdjson_inline void on_end_string(uint8_t *dst) noexcept;
 }; // class tape_builder
 
 template<bool STREAMING>
-simdjson_warn_unused simdjson_inline error_code tape_builder::parse_document(
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::parse_document(
     dom_parser_implementation &dom_parser,
     dom::document &doc) noexcept {
   dom_parser.doc = &doc;
@@ -16329,56 +16329,56 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::parse_document(
   return iter.walk_document<STREAMING>(builder);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_primitive(json_iterator &iter, const uint8_t *value) noexcept {
   return iter.visit_root_primitive(*this, value);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_primitive(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_primitive(json_iterator &iter, const uint8_t *value) noexcept {
   return iter.visit_primitive(*this, value);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_empty_object(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_empty_object(json_iterator &iter) noexcept {
   return empty_container(iter, internal::tape_type::START_OBJECT, internal::tape_type::END_OBJECT);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_empty_array(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_empty_array(json_iterator &iter) noexcept {
   return empty_container(iter, internal::tape_type::START_ARRAY, internal::tape_type::END_ARRAY);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_document_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_document_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_object_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_object_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_array_start(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_array_start(json_iterator &iter) noexcept {
   start_container(iter);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_object_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_object_end(json_iterator &iter) noexcept {
   return end_container(iter, internal::tape_type::START_OBJECT, internal::tape_type::END_OBJECT);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_array_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_array_end(json_iterator &iter) noexcept {
   return end_container(iter, internal::tape_type::START_ARRAY, internal::tape_type::END_ARRAY);
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_document_end(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_document_end(json_iterator &iter) noexcept {
   constexpr uint32_t start_tape_index = 0;
   tape.append(start_tape_index, internal::tape_type::ROOT);
   tape_writer::write(iter.dom_parser.doc->tape[start_tape_index], next_tape_index(iter), internal::tape_type::ROOT);
   return SUCCESS;
 }
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_key(json_iterator &iter, const uint8_t *key) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_key(json_iterator &iter, const uint8_t *key) noexcept {
   return visit_string(iter, key, true);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::increment_count(json_iterator &iter) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::increment_count(json_iterator &iter) noexcept {
   iter.dom_parser.open_containers[iter.depth].count++; // we have a key value pair in the object at parser.dom_parser.depth - 1
   return SUCCESS;
 }
 
 simdjson_inline tape_builder::tape_builder(dom::document &doc) noexcept : tape{doc.tape.get()}, current_string_buf_loc{doc.string_buf.get()} {}
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_string(json_iterator &iter, const uint8_t *value, bool key) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_string(json_iterator &iter, const uint8_t *value, bool key) noexcept {
   iter.log_value(key ? "key" : "string");
   uint8_t *dst = on_start_string(iter);
   dst = stringparsing::parse_string(value+1, dst, false); // We do not allow replacement when the escape characters are invalid.
@@ -16390,16 +16390,16 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::visit_string(json_
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_string(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_string(json_iterator &iter, const uint8_t *value) noexcept {
   return visit_string(iter, value);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_number(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_number(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("number");
   return numberparsing::parse_number(value, tape);
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_number(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_number(json_iterator &iter, const uint8_t *value) noexcept {
   //
   // We need to make a copy to make sure that the string is space terminated.
   // This is not about padding the input, which should already padded up
@@ -16417,46 +16417,46 @@ simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_number(
   if (copy.get() == nullptr) { return MEMALLOC; }
   std::memcpy(copy.get(), value, iter.remaining_len());
   std::memset(copy.get() + iter.remaining_len(), ' ', SIMDJSON_PADDING);
-  error_code error = visit_number(iter, copy.get());
+  simdjson_error_code error = visit_number(iter, copy.get());
   return error;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("true");
   if (!atomparsing::is_valid_true_atom(value)) { return T_ATOM_ERROR; }
   tape.append(0, internal::tape_type::TRUE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_true_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("true");
   if (!atomparsing::is_valid_true_atom(value, iter.remaining_len())) { return T_ATOM_ERROR; }
   tape.append(0, internal::tape_type::TRUE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("false");
   if (!atomparsing::is_valid_false_atom(value)) { return F_ATOM_ERROR; }
   tape.append(0, internal::tape_type::FALSE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_false_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("false");
   if (!atomparsing::is_valid_false_atom(value, iter.remaining_len())) { return F_ATOM_ERROR; }
   tape.append(0, internal::tape_type::FALSE_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("null");
   if (!atomparsing::is_valid_null_atom(value)) { return N_ATOM_ERROR; }
   tape.append(0, internal::tape_type::NULL_VALUE);
   return SUCCESS;
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::visit_root_null_atom(json_iterator &iter, const uint8_t *value) noexcept {
   iter.log_value("null");
   if (!atomparsing::is_valid_null_atom(value, iter.remaining_len())) { return N_ATOM_ERROR; }
   tape.append(0, internal::tape_type::NULL_VALUE);
@@ -16469,7 +16469,7 @@ simdjson_inline uint32_t tape_builder::next_tape_index(json_iterator &iter) cons
   return uint32_t(tape.next_tape_loc - iter.dom_parser.doc->tape.get());
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::empty_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
   auto start_index = next_tape_index(iter);
   tape.append(start_index+2, start);
   tape.append(start_index, end);
@@ -16482,7 +16482,7 @@ simdjson_inline void tape_builder::start_container(json_iterator &iter) noexcept
   tape.skip(); // We don't actually *write* the start element until the end.
 }
 
-simdjson_warn_unused simdjson_inline error_code tape_builder::end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
+simdjson_warn_unused simdjson_inline simdjson_error_code tape_builder::end_container(json_iterator &iter, internal::tape_type start, internal::tape_type end) noexcept {
   // Write the ending tape element, pointing at the start location
   const uint32_t start_tape_index = iter.dom_parser.open_containers[iter.depth].tape_index;
   tape.append(start_tape_index, end);
@@ -16536,11 +16536,11 @@ simdjson_inline uint64_t json_string_scanner::find_escaped(uint64_t backslash) {
 } // namespace stage1
 } // unnamed namespace
 
-simdjson_warn_unused error_code implementation::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) const noexcept {
+simdjson_warn_unused simdjson_error_code implementation::minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) const noexcept {
   return westmere::stage1::json_minifier::minify<64>(buf, len, dst, dst_len);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage1(const uint8_t *_buf, size_t _len, stage1_mode streaming) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage1(const uint8_t *_buf, size_t _len, stage1_mode streaming) noexcept {
   this->buf = _buf;
   this->len = _len;
   return westmere::stage1::json_structural_indexer::index<64>(_buf, _len, *this, streaming);
@@ -16550,11 +16550,11 @@ simdjson_warn_unused bool implementation::validate_utf8(const char *buf, size_t 
   return westmere::stage1::generic_validate_utf8(buf,len);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage2(dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage2(dom::document &_doc) noexcept {
   return stage2::tape_builder::parse_document<false>(*this, _doc);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::stage2_next(dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::stage2_next(dom::document &_doc) noexcept {
   return stage2::tape_builder::parse_document<true>(*this, _doc);
 }
 
@@ -16566,7 +16566,7 @@ simdjson_warn_unused uint8_t *dom_parser_implementation::parse_wobbly_string(con
   return westmere::stringparsing::parse_wobbly_string(src, dst);
 }
 
-simdjson_warn_unused error_code dom_parser_implementation::parse(const uint8_t *_buf, size_t _len, dom::document &_doc) noexcept {
+simdjson_warn_unused simdjson_error_code dom_parser_implementation::parse(const uint8_t *_buf, size_t _len, dom::document &_doc) noexcept {
   auto error = stage1(_buf, _len, stage1_mode::regular);
   if (error) { return error; }
   return stage2(_doc);

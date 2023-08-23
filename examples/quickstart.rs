@@ -1,4 +1,4 @@
-use simdjson_rust::error::Result;
+use simdjson_rust::{error::Result, padded_string::PaddedString};
 
 fn main() -> Result<()> {
     // let mut parser = dom::Parser::default();
@@ -10,5 +10,8 @@ fn main() -> Result<()> {
     //         .at_key("count")?
     //         .get_u64()?
     // );
+
+    let ps = PaddedString::load("json-examples/twitter.json")?;
+
     Ok(())
 }

@@ -10,4 +10,19 @@ macro_rules! impl_drop {
     };
 }
 
+macro_rules! check_result {
+    ($func_call:expr, $get_code:expr, $get_value:expr) => {
+        unsafe {
+            let ptr = $func_call;
+            let code = $get_code(ptr);
+            if code == 0 {
+                Ok($get_value(ptr))
+            } else {
+                Err(crate::error::SimdJsonError::from(code))
+            }
+        }
+    };
+}
+
+pub(crate) use check_result;
 pub(crate) use impl_drop;

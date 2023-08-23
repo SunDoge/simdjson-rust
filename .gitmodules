@@ -1,0 +1,3 @@
+[submodule "simdjson"]
+	path = simdjson
+	url = https://ghproxy.com/https://github.com/simdjson/simdjson.git

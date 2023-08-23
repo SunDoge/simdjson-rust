@@ -9,8 +9,8 @@ license = "Apache-2.0"
 # [dependencies]
 # simdjson-sys = {path="simdjson-sys"}
 
-# [workspace]
-# members = ["simdjson-sys"]
+[workspace]
+members = ["simdjson-sys"]
 
 
 [dependencies]
@@ -31,3 +31,4 @@ default = ["serde_impl"]
 
 # serde compatibility
 serde_impl = ["serde", "serde_json"]
+

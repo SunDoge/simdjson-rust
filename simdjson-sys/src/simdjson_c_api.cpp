@@ -68,19 +68,14 @@ IMPL_PRIMITIVE_RESULT(bool)
 IMPL_PRIMITIVE_RESULT(size_t)
 
 SJ_padded_string *SJ_padded_string_new(const char *s, size_t len) {
-  // return reinterpret_cast<SJ_padded_string *>(new simdjson::padded_string(s,
-  // len));
   return object_to_pointer<SJ_padded_string>(padded_string(s, len));
 }
+
 SJ_padded_string_result *SJ_padded_string_load(const char *path) {
-  // return reinterpret_cast<SJ_padded_string_result *>(new
-  // simdjson_result<padded_string>(padded_string::load(path)));
   return object_to_pointer<SJ_padded_string_result>(padded_string::load(path));
 }
 
 SJ_OD_parser *SJ_OD_parser_new(size_t max_capacity) {
-  // return reinterpret_cast<SJ_OD_parser *>(new
-  // ondemand::parser(max_capacity));
   return object_to_pointer<SJ_OD_parser>(ondemand::parser(max_capacity));
 }
 
@@ -121,6 +116,7 @@ IMPL_GET(SJ_OD_value, ondemand::value, int64_t, get_int64)
 IMPL_GET(SJ_OD_value, ondemand::value, double, get_double)
 IMPL_GET(SJ_OD_value, ondemand::value, SJ_OD_raw_json_string,
          get_raw_json_string)
+IMPL_GET(SJ_OD_value, ondemand::value, STD_string_view, get_wobbly_string)
 
 IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_object, get_object)
 IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_array, get_array)
@@ -129,6 +125,7 @@ IMPL_GET(SJ_OD_document, ondemand::document, int64_t, get_int64)
 IMPL_GET(SJ_OD_document, ondemand::document, double, get_double)
 IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_raw_json_string,
          get_raw_json_string)
+IMPL_GET(SJ_OD_document, ondemand::document, STD_string_view, get_wobbly_string)
 
 STD_string_view_result *SJ_OD_value_get_string(SJ_OD_value *self,
                                                bool allow_replacement) {
@@ -141,17 +138,6 @@ STD_string_view_result *SJ_OD_document_get_string(SJ_OD_document *self,
                                                   bool allow_replacement) {
   auto result = reinterpret_cast<ondemand::document *>(self)->get_string(
       allow_replacement);
-  return object_to_pointer<STD_string_view_result>(std::move(result));
-}
-
-STD_string_view_result *SJ_OD_value_get_wobbly_string(SJ_OD_value *self) {
-  auto result = reinterpret_cast<ondemand::value *>(self)->get_wobbly_string();
-  return object_to_pointer<STD_string_view_result>(std::move(result));
-}
-
-STD_string_view_result *SJ_OD_document_get_wobbly_string(SJ_OD_document *self) {
-  auto result =
-      reinterpret_cast<ondemand::document *>(self)->get_wobbly_string();
   return object_to_pointer<STD_string_view_result>(std::move(result));
 }
 

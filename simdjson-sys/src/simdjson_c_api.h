@@ -20,7 +20,7 @@
   int name##_result_error(const name##_result *r);                             \
   name name##_result_value(name##_result *r);
 
-#define DEFINE_GET_WITH(self, value, method)                                   \
+#define DEFINE_GET(self, value, method)                                        \
   value##_result *self##_##method(self *r);
 
 #ifdef __cplusplus
@@ -56,10 +56,12 @@ DEFINE_PRIMITIVE_RESULT(double)
 DEFINE_PRIMITIVE_RESULT(bool)
 DEFINE_PRIMITIVE_RESULT(size_t)
 
+// padded_string
 SJ_padded_string *SJ_padded_string_new(const char *s, size_t len);
 SJ_padded_string_result *
 SJ_padded_string_load(const char *path); // null terminated string.
 
+// ondemand::parser
 SJ_OD_parser *SJ_OD_parser_new(size_t max_capacity);
 SJ_OD_document_result *
 SJ_OD_parser_iterate_padded_string(SJ_OD_parser *parser,
@@ -68,37 +70,40 @@ SJ_OD_document_result *
 SJ_OD_parser_iterate_padded_string_view(SJ_OD_parser *parser, const char *json,
                                         size_t len, size_t allocated);
 
+// ondemand::value
+DEFINE_GET(SJ_OD_value, uint64_t, get_uint64)
+DEFINE_GET(SJ_OD_value, int64_t, get_int64)
+DEFINE_GET(SJ_OD_value, double, get_double)
+DEFINE_GET(SJ_OD_value, bool, get_bool)
+DEFINE_GET(SJ_OD_value, SJ_OD_array, get_array)
+DEFINE_GET(SJ_OD_value, SJ_OD_object, get_object)
+DEFINE_GET(SJ_OD_value, SJ_OD_raw_json_string, get_raw_json_string)
+DEFINE_GET(SJ_OD_value, STD_string_view, get_wobbly_string)
+
+// ondemand::document
 SJ_OD_value_result *SJ_OD_document_get_value(SJ_OD_document *doc);
-DEFINE_GET_WITH(SJ_OD_value, uint64_t, get_uint64)
-DEFINE_GET_WITH(SJ_OD_value, int64_t, get_int64)
-DEFINE_GET_WITH(SJ_OD_value, double, get_double)
-DEFINE_GET_WITH(SJ_OD_value, bool, get_bool)
-DEFINE_GET_WITH(SJ_OD_value, SJ_OD_array, get_array)
-DEFINE_GET_WITH(SJ_OD_value, SJ_OD_object, get_object)
-DEFINE_GET_WITH(SJ_OD_value, SJ_OD_raw_json_string, get_raw_json_string)
+DEFINE_GET(SJ_OD_document, uint64_t, get_uint64)
+DEFINE_GET(SJ_OD_document, int64_t, get_int64)
+DEFINE_GET(SJ_OD_document, double, get_double)
+DEFINE_GET(SJ_OD_document, bool, get_bool)
+DEFINE_GET(SJ_OD_document, SJ_OD_array, get_array)
+DEFINE_GET(SJ_OD_document, SJ_OD_object, get_object)
+DEFINE_GET(SJ_OD_document, SJ_OD_raw_json_string, get_raw_json_string)
+DEFINE_GET(SJ_OD_document, STD_string_view, get_wobbly_string)
 
-DEFINE_GET_WITH(SJ_OD_document, uint64_t, get_uint64)
-DEFINE_GET_WITH(SJ_OD_document, int64_t, get_int64)
-DEFINE_GET_WITH(SJ_OD_document, double, get_double)
-DEFINE_GET_WITH(SJ_OD_document, bool, get_bool)
-DEFINE_GET_WITH(SJ_OD_document, SJ_OD_array, get_array)
-DEFINE_GET_WITH(SJ_OD_document, SJ_OD_object, get_object)
-DEFINE_GET_WITH(SJ_OD_document, SJ_OD_raw_json_string, get_raw_json_string)
-
+// get_string is special.
 STD_string_view_result *SJ_OD_value_get_string(SJ_OD_value *value,
                                                bool allow_replacement);
 STD_string_view_result *SJ_OD_document_get_string(SJ_OD_document *doc);
 
-STD_string_view_result *SJ_OD_value_get_wobbly_string(SJ_OD_value *value);
-STD_string_view_result *SJ_OD_document_get_wobbly_string(SJ_OD_document *doc);
-
+// std::string_view
 const char *STD_string_view_data(STD_string_view *sv);
 size_t STD_string_view_size(STD_string_view *sv);
 
-DEFINE_GET_WITH(SJ_OD_array, size_t, count_elements)
-DEFINE_GET_WITH(SJ_OD_array, bool, is_empty)
-DEFINE_GET_WITH(SJ_OD_array, bool, reset)
-
+// ondemand::array
+DEFINE_GET(SJ_OD_array, size_t, count_elements)
+DEFINE_GET(SJ_OD_array, bool, is_empty)
+DEFINE_GET(SJ_OD_array, bool, reset)
 SJ_OD_value_result *SJ_OD_array_at(SJ_OD_array *array, size_t index);
 
 #ifdef __cplusplus

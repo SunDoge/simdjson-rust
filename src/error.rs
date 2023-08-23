@@ -1,15 +1,9 @@
-use serde::de;
-use std::fmt::Display;
-
 use thiserror::Error;
 
-pub type SimdJsonResult<T> = Result<T, SimdJsonError>;
+pub type Result<T> = std::result::Result<T, SimdJsonError>;
 
 #[derive(Debug, Error)]
 pub enum SimdJsonError {
-    #[error("Message: {0}")]
-    Message(String),
-
     #[error("This parser can't support a document that big")]
     Capacity,
 
@@ -76,50 +70,69 @@ pub enum SimdJsonError {
     #[error("Invalid URI fragment syntax.")]
     InvalidUriFragment,
 
-    #[error(
-        "Unexpected error, consider reporting this problem as you may have found a bug in simdjson"
-    )]
+    #[error("todo")]
     UnexpectedError,
+
+    #[error("todo")]
+    ParserInUse,
+
+    #[error("todo")]
+    OutOfOrderIteration,
+
+    #[error("todo")]
+    InsufficientPadding,
+
+    #[error("todo")]
+    IncompleteArrayOrObject,
+
+    #[error("todo")]
+    ScalarDocumentAsValue,
+
+    #[error("todo")]
+    OutOfBounds,
+
+    #[error("todo")]
+    TailingContent,
+
+    #[error("todo")]
+    NumErrorCodes,
 }
 
 impl From<i32> for SimdJsonError {
     fn from(error_code: i32) -> Self {
         match error_code {
-            0 => panic!("No error"),
-            1 => panic!("No error and buffer still has more data"),
-            2 => SimdJsonError::Capacity,
-            3 => SimdJsonError::MemAlloc,
-            4 => SimdJsonError::TapeError,
-            5 => SimdJsonError::DepthError,
-            6 => SimdJsonError::StringError,
-            7 => SimdJsonError::TAtomError,
-            8 => SimdJsonError::FAtomError,
-            9 => SimdJsonError::NAtomError,
-            10 => SimdJsonError::NumberError,
-            11 => SimdJsonError::Utf8Error,
-            12 => SimdJsonError::Uninitialized,
-            13 => SimdJsonError::Empty,
-            14 => SimdJsonError::UnescapedChars,
-            15 => SimdJsonError::UnclosedString,
-            16 => SimdJsonError::UnsupportedArchitecture,
-            17 => SimdJsonError::IncorrectType,
-            18 => SimdJsonError::NumberOutOfRange,
-            19 => SimdJsonError::IndexOutOfBounds,
-            20 => SimdJsonError::NoSuchField,
-            21 => SimdJsonError::IoError,
-            22 => SimdJsonError::InvalidJsonPointer,
-            23 => SimdJsonError::InvalidUriFragment,
-            24 => SimdJsonError::UnexpectedError,
+            1 => SimdJsonError::Capacity,
+            2 => SimdJsonError::MemAlloc,
+            3 => SimdJsonError::TapeError,
+            4 => SimdJsonError::DepthError,
+            5 => SimdJsonError::StringError,
+            6 => SimdJsonError::TAtomError,
+            7 => SimdJsonError::FAtomError,
+            8 => SimdJsonError::NAtomError,
+            9 => SimdJsonError::NumberError,
+            10 => SimdJsonError::Utf8Error,
+            11 => SimdJsonError::Uninitialized,
+            12 => SimdJsonError::Empty,
+            13 => SimdJsonError::UnescapedChars,
+            14 => SimdJsonError::UnclosedString,
+            15 => SimdJsonError::UnsupportedArchitecture,
+            16 => SimdJsonError::IncorrectType,
+            17 => SimdJsonError::NumberOutOfRange,
+            18 => SimdJsonError::IndexOutOfBounds,
+            19 => SimdJsonError::NoSuchField,
+            20 => SimdJsonError::IoError,
+            21 => SimdJsonError::InvalidJsonPointer,
+            22 => SimdJsonError::InvalidUriFragment,
+            23 => SimdJsonError::UnexpectedError,
+            24 => SimdJsonError::ParserInUse,
+            25 => SimdJsonError::OutOfOrderIteration,
+            26 => SimdJsonError::InsufficientPadding,
+            27 => SimdJsonError::IncompleteArrayOrObject,
+            28 => SimdJsonError::ScalarDocumentAsValue,
+            29 => SimdJsonError::OutOfBounds,
+            30 => SimdJsonError::TailingContent,
+            31 => SimdJsonError::NumErrorCodes,
             x => panic!("Unknown error code: {}", x),
         }
-    }
-}
-
-impl de::Error for SimdJsonError {
-    fn custom<T>(msg: T) -> Self
-    where
-        T: Display,
-    {
-        Self::Message(msg.to_string())
     }
 }

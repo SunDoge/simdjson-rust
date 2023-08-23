@@ -2,7 +2,7 @@
 name = "simdjson-rust"
 version = "0.3.0"
 authors = ["SunDoge <384813529@qq.com>"]
-edition = "2018"
+edition = "2021"
 links = "simdjson-rust"
 license = "Apache-2.0"
 

@@ -1,24 +1,13 @@
-use super::libsimdjson::ffi;
+use std::ptr::NonNull;
 
-pub type PaddedStringPtr = cxx::UniquePtr<ffi::padded_string>;
+use simdjson_sys as ffi;
+
+use crate::macros::impl_drop;
 
 pub struct PaddedString {
-    ptr: PaddedStringPtr,
+    ptr: NonNull<ffi::SJ_padded_string>,
 }
 
-impl PaddedString {
-    pub fn new(ptr: PaddedStringPtr) -> Self {
-        PaddedString { ptr }
-    }
+impl PaddedString {}
 
-    pub fn as_ptr(&self) -> &PaddedStringPtr {
-        &self.ptr
-    }
-}
-
-impl From<&str> for PaddedString {
-    fn from(s: &str) -> Self {
-        let ptr = ffi::padded_string_from_string(s);
-        PaddedString { ptr }
-    }
-}
+impl_drop!(PaddedString, ffi::SJ_padded_string_free);

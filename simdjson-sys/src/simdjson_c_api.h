@@ -12,13 +12,13 @@
 #define DEFINE_RESULT(name)                                                    \
   DEFINE_CLASS(name##_result)                                                  \
   int name##_result_error(const name##_result *r);                             \
-  name *name##_result_value(name##_result *r);
+  name *name##_result_value_unsafe(name##_result *r);
 
 // `value` method will free simdjson_result.
 #define DEFINE_PRIMITIVE_RESULT(name)                                          \
   DEFINE_CLASS(name##_result)                                                  \
   int name##_result_error(const name##_result *r);                             \
-  name name##_result_value(name##_result *r);
+  name name##_result_value_unsafe(name##_result *r);
 
 #define DEFINE_GET(self, value, method)                                        \
   value##_result *self##_##method(self *r);

@@ -17,7 +17,7 @@ impl PaddedString {
         check_result!(
             ffi::SJ_padded_string_load(c_path.as_ptr()),
             ffi::SJ_padded_string_result_error,
-            ffi::SJ_padded_string_result_value
+            ffi::SJ_padded_string_result_value_unsafe
         )
         .map(|ptr| PaddedString {
             ptr: NonNull::new(ptr).unwrap(),

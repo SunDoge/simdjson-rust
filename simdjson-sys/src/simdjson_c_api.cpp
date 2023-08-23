@@ -23,7 +23,7 @@ template <typename U, typename T> U *object_to_pointer(T &&t) {
     auto code = reinterpret_cast<const simdjson_result<type> *>(r)->error();   \
     return static_cast<int>(code);                                             \
   }                                                                            \
-  name *name##_result_value(name##_result *r) {                                \
+  name *name##_result_value_unsafe(name##_result *r) {                                \
     auto result = reinterpret_cast<simdjson_result<type> *>(r);                \
     return object_to_pointer<name>(std::move(*result).value_unsafe());         \
   }
@@ -34,7 +34,7 @@ template <typename U, typename T> U *object_to_pointer(T &&t) {
     auto code = reinterpret_cast<const simdjson_result<name> *>(r)->error();   \
     return static_cast<int>(code);                                             \
   }                                                                            \
-  name name##_result_value(name##_result *r) {                                 \
+  name name##_result_value_unsafe(name##_result *r) {                                 \
     auto result = reinterpret_cast<simdjson_result<name> *>(r);                \
     return std::move(*result).value_unsafe();                                  \
   }

@@ -9,16 +9,16 @@ use crate::{
 
 use super::parser::Parser;
 
-pub struct Array<'a> {
+pub struct Array {
     ptr: NonNull<ffi::SJ_OD_array>,
-    _document: PhantomData<&'a mut Document<'a, 'a>>,
+    // _document: PhantomData<&'a mut Document<'a>>,
 }
 
-impl<'a> Array<'a> {
+impl Array {
     pub fn new(ptr: NonNull<ffi::SJ_OD_array>) -> Self {
         Self {
             ptr,
-            _document: PhantomData,
+            // _document: PhantomData,
         }
     }
 
@@ -73,4 +73,4 @@ impl<'a> Array<'a> {
     }
 }
 
-impl_drop!(Array<'a>, ffi::SJ_OD_array_free);
+impl_drop!(Array, ffi::SJ_OD_array_free);

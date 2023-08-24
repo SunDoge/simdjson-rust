@@ -5,14 +5,14 @@ use crate::{error::Result, macros::map_result};
 
 use super::{field::Field, object::Object, value::Value};
 
-pub struct ObjectIterator<'a> {
+pub struct ObjectIterator {
     begin: NonNull<ffi::SJ_OD_object_iterator>,
     end: NonNull<ffi::SJ_OD_object_iterator>,
     running: bool,
-    _object: PhantomData<&'a mut Object<'a>>,
+    // _object: PhantomData<&'a mut Object>,
 }
 
-impl<'a> ObjectIterator<'a> {
+impl ObjectIterator {
     pub fn new(
         begin: NonNull<ffi::SJ_OD_object_iterator>,
         end: NonNull<ffi::SJ_OD_object_iterator>,
@@ -21,11 +21,11 @@ impl<'a> ObjectIterator<'a> {
             begin,
             end,
             running: false,
-            _object: PhantomData,
+            // _object: PhantomData,
         }
     }
 
-    pub fn get(&mut self) -> Result<Field<'a>> {
+    pub fn get(&mut self) -> Result<Field> {
         map_result!(
             ffi::SJ_OD_object_iterator_get(self.begin.as_mut()),
             ffi::SJ_OD_field_result_error,
@@ -43,7 +43,7 @@ impl<'a> ObjectIterator<'a> {
     }
 }
 
-impl<'a> Drop for ObjectIterator<'a> {
+impl Drop for ObjectIterator {
     fn drop(&mut self) {
         unsafe {
             ffi::SJ_OD_object_iterator_free(self.begin.as_mut());
@@ -52,8 +52,8 @@ impl<'a> Drop for ObjectIterator<'a> {
     }
 }
 
-impl<'a> Iterator for ObjectIterator<'a> {
-    type Item = Result<Field<'a>>;
+impl Iterator for ObjectIterator {
+    type Item = Result<Field>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.running {

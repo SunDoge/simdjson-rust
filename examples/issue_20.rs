@@ -7,20 +7,19 @@ fn main() -> Result<()> {
     let padded_string = make_padded_string(data);
     let mut doc = parser.iterate(&padded_string)?;
 
-    // let mut arr = doc.get_object()?.at_pointer("/ingredients")?.get_array()?;
+    let mut arr = doc.get_object()?.at_pointer("/ingredients")?.get_array()?;
 
-    // for value in arr.iter()? {
-    //     let mut object = value?.get_object()?;
+    for value in arr.iter()? {
+        let mut object = value?.get_object()?;
 
-    //     for field in object.iter()? {
-    //         let mut field = field?;
+        for field in object.iter()? {
+            let mut field = field?;
 
-            
-    //         let key = field.unescaped_key(false)?.to_owned();
-    //         let mut value = field.take_value();
-    //         println!("key: {} | value: {}", key, value.get_object()?.raw_json()?);
-    //     }
-    // }
+            let key = field.unescaped_key(false)?.to_owned();
+            let mut value = field.take_value();
+            println!("key: {} | value: {}", key, value.get_object()?.raw_json()?);
+        }
+    }
 
     Ok(())
 }

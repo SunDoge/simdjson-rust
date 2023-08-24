@@ -40,6 +40,14 @@ template <typename U, typename T> inline U object_to_pointer(T &&t) {
     return std::move(*result).value_unsafe();                                  \
   }
 
+#define IMPL_AT_POINTER(self, type)                                            \
+  SJ_OD_value_result *self##_at_pointer(self *self, const char *s,             \
+                                        size_t len) {                          \
+    auto result =                                                              \
+        reinterpret_cast<type *>(self)->at_pointer(std::string_view(s, len));  \
+    return object_to_pointer<SJ_OD_value_result *>(std::move(result));         \
+  }
+
 // IMPL_CLASS(SJ_padded_string, padded_string)
 // IMPL_RESULT(SJ_padded_string, padded_string)
 IMPL_CLASS(SJ_OD_parser, ondemand::parser)
@@ -117,6 +125,7 @@ SJ_OD_value_result *SJ_OD_document_get_value(SJ_OD_document *doc) {
     return object_to_pointer<value##_result *>(std::move(result));             \
   }
 
+// ondemand::value
 IMPL_GET(SJ_OD_value, ondemand::value, SJ_OD_object, get_object)
 IMPL_GET(SJ_OD_value, ondemand::value, SJ_OD_array, get_array)
 IMPL_GET(SJ_OD_value, ondemand::value, uint64_t, get_uint64)
@@ -125,7 +134,9 @@ IMPL_GET(SJ_OD_value, ondemand::value, double, get_double)
 IMPL_GET(SJ_OD_value, ondemand::value, SJ_OD_raw_json_string,
          get_raw_json_string)
 IMPL_GET(SJ_OD_value, ondemand::value, STD_string_view, get_wobbly_string)
+IMPL_AT_POINTER(SJ_OD_value, ondemand::value)
 
+// ondemand::document
 IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_object, get_object)
 IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_array, get_array)
 IMPL_GET(SJ_OD_document, ondemand::document, uint64_t, get_uint64)
@@ -134,6 +145,7 @@ IMPL_GET(SJ_OD_document, ondemand::document, double, get_double)
 IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_raw_json_string,
          get_raw_json_string)
 IMPL_GET(SJ_OD_document, ondemand::document, STD_string_view, get_wobbly_string)
+IMPL_AT_POINTER(SJ_OD_document, ondemand::document)
 
 STD_string_view_result *SJ_OD_value_get_string(SJ_OD_value *self,
                                                bool allow_replacement) {
@@ -163,16 +175,10 @@ IMPL_GET(SJ_OD_array, ondemand::array, bool, reset)
 IMPL_GET(SJ_OD_array, ondemand::array, SJ_OD_array_iterator, begin)
 IMPL_GET(SJ_OD_array, ondemand::array, SJ_OD_array_iterator, end)
 IMPL_GET(SJ_OD_array, ondemand::array, STD_string_view, raw_json)
+IMPL_AT_POINTER(SJ_OD_array, ondemand::array)
 
 SJ_OD_value_result *SJ_OD_array_at(SJ_OD_array *array, size_t index) {
   auto result = reinterpret_cast<ondemand::array *>(array)->at(index);
-  return object_to_pointer<SJ_OD_value_result *>(std::move(result));
-}
-
-SJ_OD_value_result *SJ_OD_array_at_pointer(SJ_OD_array *self, const char *s,
-                                           size_t len) {
-  auto result = reinterpret_cast<ondemand::array *>(self)->at_pointer(
-      std::string_view(s, len));
   return object_to_pointer<SJ_OD_value_result *>(std::move(result));
 }
 
@@ -198,12 +204,7 @@ IMPL_GET(SJ_OD_object, ondemand::object, STD_string_view, raw_json)
 IMPL_GET(SJ_OD_object, ondemand::object, bool, is_empty)
 IMPL_GET(SJ_OD_object, ondemand::object, bool, reset)
 IMPL_GET(SJ_OD_object, ondemand::object, size_t, count_fields)
-SJ_OD_value_result *SJ_OD_object_at_pointer(SJ_OD_object *self, const char *s,
-                                            size_t len) {
-  auto result = reinterpret_cast<ondemand::object *>(self)->at_pointer(
-      std::string_view(s, len));
-  return object_to_pointer<SJ_OD_value_result *>(std::move(result));
-}
+IMPL_AT_POINTER(SJ_OD_object, ondemand::object)
 
 SJ_OD_value_result *SJ_OD_object_find_field(SJ_OD_object *object,
                                             const char *data, size_t len) {

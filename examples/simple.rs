@@ -1,6 +1,6 @@
-use simdjson_rust::{ondemand::parser::Parser, padded_string::make_padded_string, Result};
+use simdjson_rust::{ondemand::Parser, prelude::*};
 
-fn main() -> Result<()> {
+fn main() -> simdjson_rust::Result<()> {
     let mut parser = Parser::default();
     let ps = make_padded_string("[0,1,2,3]");
     let mut doc = parser.iterate(&ps)?;

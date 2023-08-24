@@ -103,6 +103,19 @@ impl<'p, 's> Document<'p, 's> {
         )?;
         Ok(string_view_to_str(sv))
     }
+
+    pub fn at_pointer<'a>(&mut self, json_pointer: &str) -> Result<Value<'a>> {
+        map_result!(
+            ffi::SJ_OD_document_at_pointer(
+                self.ptr.as_mut(),
+                json_pointer.as_ptr().cast(),
+                json_pointer.len()
+            ),
+            ffi::SJ_OD_value_result_error,
+            ffi::SJ_OD_value_result_value_unsafe
+        )
+        .map(Value::new)
+    }
 }
 
 impl_drop!(Document<'p, 's>, ffi::SJ_OD_document_free);

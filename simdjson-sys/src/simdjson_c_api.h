@@ -23,6 +23,9 @@
 #define DEFINE_GET(self, value, method)                                        \
   value##_result *self##_##method(self *r);
 
+#define DEFINE_AT_POINTER(self)                                                \
+  SJ_OD_value_result *self##_at_pointer(self *self, const char *s, size_t len);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -81,6 +84,7 @@ DEFINE_GET(SJ_OD_value, SJ_OD_array, get_array)
 DEFINE_GET(SJ_OD_value, SJ_OD_object, get_object)
 DEFINE_GET(SJ_OD_value, SJ_OD_raw_json_string, get_raw_json_string)
 DEFINE_GET(SJ_OD_value, STD_string_view, get_wobbly_string)
+DEFINE_AT_POINTER(SJ_OD_value)
 
 // ondemand::document
 SJ_OD_value_result *SJ_OD_document_get_value(SJ_OD_document *doc);
@@ -92,6 +96,7 @@ DEFINE_GET(SJ_OD_document, SJ_OD_array, get_array)
 DEFINE_GET(SJ_OD_document, SJ_OD_object, get_object)
 DEFINE_GET(SJ_OD_document, SJ_OD_raw_json_string, get_raw_json_string)
 DEFINE_GET(SJ_OD_document, STD_string_view, get_wobbly_string)
+DEFINE_AT_POINTER(SJ_OD_document)
 
 // get_string is special.
 STD_string_view_result *SJ_OD_value_get_string(SJ_OD_value *value,
@@ -109,9 +114,9 @@ DEFINE_GET(SJ_OD_array, bool, reset)
 DEFINE_GET(SJ_OD_array, SJ_OD_array_iterator, begin)
 DEFINE_GET(SJ_OD_array, SJ_OD_array_iterator, end)
 DEFINE_GET(SJ_OD_array, STD_string_view, raw_json)
+DEFINE_AT_POINTER(SJ_OD_array)
+
 SJ_OD_value_result *SJ_OD_array_at(SJ_OD_array *array, size_t index);
-SJ_OD_value_result *SJ_OD_array_at_pointer(SJ_OD_array *self, const char *s,
-                                           size_t len);
 
 // ondemand::array_iterator
 DEFINE_GET(SJ_OD_array_iterator, SJ_OD_value, get)
@@ -126,8 +131,8 @@ DEFINE_GET(SJ_OD_object, STD_string_view, raw_json)
 DEFINE_GET(SJ_OD_object, bool, is_empty)
 DEFINE_GET(SJ_OD_object, bool, reset)
 DEFINE_GET(SJ_OD_object, size_t, count_fields)
-SJ_OD_value_result *SJ_OD_object_at_pointer(SJ_OD_object *self, const char *s,
-                                            size_t len);
+DEFINE_AT_POINTER(SJ_OD_object)
+
 SJ_OD_value_result *SJ_OD_object_find_field(SJ_OD_object *object,
                                             const char *data, size_t len);
 SJ_OD_value_result *SJ_OD_object_find_field_unordered(SJ_OD_object *object,

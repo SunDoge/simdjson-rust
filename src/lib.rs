@@ -4,9 +4,10 @@ mod error;
 pub mod ondemand;
 pub mod padded_string;
 pub mod prelude;
-pub mod utils;
+mod utils;
 
 pub use error::{Result, SimdJsonError};
+pub use simdjson_sys::{SIMDJSON_MAXSIZE_BYTES, SIMDJSON_PADDING};
 
 // pub mod serde;
 

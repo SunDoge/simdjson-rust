@@ -6,19 +6,20 @@ use crate::error::Result;
 use crate::macros::{impl_drop, map_result};
 use crate::utils::string_view_to_str;
 
+use super::document::Document;
 use super::object::Object;
 use super::value::Value;
 
-pub struct Field {
+pub struct Field<'a> {
     ptr: NonNull<ffi::SJ_OD_field>,
-    // _object: PhantomData<&'a mut Object>,
+    _doc: PhantomData<&'a mut Document<'a, 'a>>,
 }
 
-impl Field {
+impl<'a> Field<'a> {
     pub fn new(ptr: NonNull<ffi::SJ_OD_field>) -> Self {
         Self {
             ptr,
-            // _object: PhantomData,
+            _doc: PhantomData,
         }
     }
 
@@ -50,7 +51,7 @@ impl Field {
     //     Value::new(ptr)
     // }
 
-    pub fn take_value(self) -> Value {
+    pub fn take_value(self) -> Value<'a> {
         let ptr = unsafe {
             let ptr = ffi::SJ_OD_field_take_value(self.ptr.as_ptr());
             NonNull::new_unchecked(ptr)
@@ -60,4 +61,4 @@ impl Field {
     }
 }
 
-impl_drop!(Field, ffi::SJ_OD_field_free);
+impl_drop!(Field<'a>, ffi::SJ_OD_field_free);

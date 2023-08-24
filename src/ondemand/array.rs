@@ -7,18 +7,16 @@ use crate::{
     macros::{impl_drop, map_result},
 };
 
-use super::parser::Parser;
-
-pub struct Array {
+pub struct Array<'a> {
     ptr: NonNull<ffi::SJ_OD_array>,
-    // _document: PhantomData<&'a mut Document<'a>>,
+    _doc: PhantomData<&'a mut Document<'a, 'a>>,
 }
 
-impl Array {
+impl<'a> Array<'a> {
     pub fn new(ptr: NonNull<ffi::SJ_OD_array>) -> Self {
         Self {
             ptr,
-            // _document: PhantomData,
+            _doc: PhantomData,
         }
     }
 
@@ -40,7 +38,7 @@ impl Array {
         )
     }
 
-    pub fn at(&mut self, index: usize) -> Result<Value> {
+    pub fn at(&mut self, index: usize) -> Result<Value<'a>> {
         map_result!(
             ffi::SJ_OD_array_at(self.ptr.as_mut(), index),
             ffi::SJ_OD_value_result_error,
@@ -73,4 +71,4 @@ impl Array {
     }
 }
 
-impl_drop!(Array, ffi::SJ_OD_array_free);
+impl_drop!(Array<'a>, ffi::SJ_OD_array_free);

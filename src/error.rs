@@ -96,6 +96,9 @@ pub enum SimdJsonError {
 
     #[error("todo")]
     NumErrorCodes,
+
+    #[error("todo")]
+    StdIoError(#[from] std::io::Error),
 }
 
 impl From<i32> for SimdJsonError {

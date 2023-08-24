@@ -10,20 +10,20 @@ use super::parser::Parser;
 use super::value::Value;
 use crate::error::Result;
 
-pub struct Object {
+pub struct Object<'a> {
     ptr: NonNull<ffi::SJ_OD_object>,
-    // _document: PhantomData<&'a mut Document<'a, 'a>>,
+    _doc: PhantomData<&'a mut Document<'a, 'a>>,
 }
 
-impl Object {
+impl<'a> Object<'a> {
     pub fn new(ptr: NonNull<ffi::SJ_OD_object>) -> Self {
         Self {
             ptr,
-            // _document: PhantomData,
+            _doc: PhantomData,
         }
     }
 
-    pub fn at_pointer(&mut self, json_pointer: &str) -> Result<Value> {
+    pub fn at_pointer(&mut self, json_pointer: &str) -> Result<Value<'a>> {
         map_result!(
             ffi::SJ_OD_object_at_pointer(
                 self.ptr.as_mut(),
@@ -36,7 +36,7 @@ impl Object {
         .map(Value::new)
     }
 
-    pub fn iter(&mut self) -> Result<ObjectIterator> {
+    pub fn iter(&mut self) -> Result<ObjectIterator<'a>> {
         let begin = map_result!(
             ffi::SJ_OD_object_begin(self.ptr.as_mut()),
             ffi::SJ_OD_object_iterator_result_error,
@@ -50,7 +50,7 @@ impl Object {
         Ok(ObjectIterator::new(begin, end))
     }
 
-    pub fn raw_json(&mut self) -> Result<&str> {
+    pub fn raw_json(&mut self) -> Result<&'a str> {
         let sv = map_result!(
             ffi::SJ_OD_object_raw_json(self.ptr.as_mut()),
             ffi::STD_string_view_result_error,
@@ -60,4 +60,4 @@ impl Object {
     }
 }
 
-impl_drop!(Object, ffi::SJ_OD_object_free);
+impl_drop!(Object<'a>, ffi::SJ_OD_object_free);

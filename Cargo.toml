@@ -13,7 +13,6 @@ members = ["simdjson-sys"]
 
 [dependencies]
 thiserror = "1.0"
-# anyhow = "1.0"
 simdjson-sys = { path = "simdjson-sys" }
 
 # serde compatibilty

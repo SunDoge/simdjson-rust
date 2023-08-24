@@ -187,10 +187,20 @@ void SJ_OD_array_iterator_step(SJ_OD_array_iterator *self) {
 IMPL_GET(SJ_OD_object, ondemand::object, SJ_OD_object_iterator, begin)
 IMPL_GET(SJ_OD_object, ondemand::object, SJ_OD_object_iterator, end)
 IMPL_GET(SJ_OD_object, ondemand::object, STD_string_view, raw_json)
+IMPL_GET(SJ_OD_object, ondemand::object, bool, is_empty)
+IMPL_GET(SJ_OD_object, ondemand::object, bool, reset)
+IMPL_GET(SJ_OD_object, ondemand::object, size_t, count_fields)
 SJ_OD_value_result *SJ_OD_object_at_pointer(SJ_OD_object *self, const char *s,
                                             size_t len) {
   auto result = reinterpret_cast<ondemand::object *>(self)->at_pointer(
       std::string_view(s, len));
+  return object_to_pointer<SJ_OD_value_result *>(std::move(result));
+}
+
+SJ_OD_value_result *SJ_OD_object_find_field(SJ_OD_object *object,
+                                            const char *data, size_t len) {
+  auto result = reinterpret_cast<ondemand::object *>(object)->find_field(
+      std::string_view(data, len));
   return object_to_pointer<SJ_OD_value_result *>(std::move(result));
 }
 

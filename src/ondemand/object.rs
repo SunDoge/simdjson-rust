@@ -58,6 +58,42 @@ impl<'a> Object<'a> {
         )?;
         Ok(string_view_to_str(sv))
     }
+
+    pub fn find_field(&mut self, key: &str) -> Result<Value<'a>> {
+        map_result!(
+            ffi::SJ_OD_object_find_field(self.ptr.as_mut(), key.as_ptr().cast(), key.len()),
+            ffi::SJ_OD_value_result_error,
+            ffi::SJ_OD_value_result_value_unsafe
+        )
+        .map(Value::new)
+    }
+
+    pub fn count_fields(&mut self) -> Result<usize> {
+        map_result!(
+            primitive,
+            ffi::SJ_OD_object_count_fields(self.ptr.as_mut()),
+            ffi::size_t_result_error,
+            ffi::size_t_result_value_unsafe
+        )
+    }
+
+    pub fn is_empty(&mut self) -> Result<bool> {
+        map_result!(
+            primitive,
+            ffi::SJ_OD_object_is_empty(self.ptr.as_mut()),
+            ffi::bool_result_error,
+            ffi::bool_result_value_unsafe
+        )
+    }
+
+    pub fn reset(&mut self) -> Result<bool> {
+        map_result!(
+            primitive,
+            ffi::SJ_OD_object_reset(self.ptr.as_mut()),
+            ffi::bool_result_error,
+            ffi::bool_result_value_unsafe
+        )
+    }
 }
 
 impl_drop!(Object<'a>, ffi::SJ_OD_object_free);

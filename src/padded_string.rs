@@ -8,6 +8,7 @@ use crate::{
     macros::{impl_drop, map_result},
 };
 
+// TODO: we will remove PaddedString because String is enough.
 pub struct PaddedString {
     ptr: NonNull<ffi::SJ_padded_string>,
 }

@@ -55,6 +55,7 @@ mod tests {
         let ps = make_padded_string("[1,2,3]");
         let mut doc = parser.iterate(&ps).unwrap();
         doc.get_array().unwrap();
+        // doc.get_value().unwrap();
         drop(doc);
         let ps2 = make_padded_string("1");
         let mut doc2 = parser.iterate(&ps2).unwrap();

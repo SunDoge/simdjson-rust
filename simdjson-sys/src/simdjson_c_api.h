@@ -112,8 +112,11 @@ SJ_OD_value_result *SJ_OD_array_at(SJ_OD_array *array, size_t index);
 
 // ondemand::array_iterator
 DEFINE_GET(SJ_OD_array_iterator, SJ_OD_value, get)
-bool SJ_OD_array_iterator_not_equal(SJ_OD_array_iterator* rhs);
+bool SJ_OD_array_iterator_not_equal(const SJ_OD_array_iterator* lhs,const SJ_OD_array_iterator* rhs);
 void SJ_OD_array_iterator_step(SJ_OD_array_iterator* self);
+
+// ondemand::object
+SJ_OD_value_result* SJ_OD_object_at_pointer(SJ_OD_object* self, const char *s, size_t len);
 
 #ifdef __cplusplus
 }

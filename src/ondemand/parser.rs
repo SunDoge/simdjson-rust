@@ -26,7 +26,7 @@ impl Parser {
         Self { ptr }
     }
 
-    pub fn iterate<'p, 's>(&'p mut self, padded_string: &'s String) -> Result<Document<'p, 's>> {
+    pub fn iterate(&mut self, padded_string: &String) -> Result<Document> {
         map_result!(
             ffi::SJ_OD_parser_iterate_padded_string_view(
                 self.ptr.as_mut(),

@@ -1,7 +1,7 @@
 use simdjson_sys as ffi;
 use std::{marker::PhantomData, ptr::NonNull};
 
-use super::{document::Document, value::Value};
+use super::{array_iterator::ArrayIterator, document::Document, value::Value};
 use crate::{
     error::Result,
     macros::{impl_drop, map_result},
@@ -9,16 +9,16 @@ use crate::{
 
 use super::parser::Parser;
 
-pub struct Array<'d> {
+pub struct Array {
     ptr: NonNull<ffi::SJ_OD_array>,
-    _document: PhantomData<&'d mut Document<'d, 'd>>,
+    // _document: PhantomData<&'d mut Document<'d, 'd>>,
 }
 
-impl<'d> Array<'d> {
+impl Array {
     pub fn new(ptr: NonNull<ffi::SJ_OD_array>) -> Self {
         Self {
             ptr,
-            _document: PhantomData,
+            // _document: PhantomData,
         }
     }
 
@@ -58,14 +58,19 @@ impl<'d> Array<'d> {
         )
     }
 
-    fn begin(&mut self) {
-
+    pub fn iter(&mut self) -> Result<ArrayIterator> {
+        let begin = map_result!(
+            ffi::SJ_OD_array_begin(self.ptr.as_mut()),
+            ffi::SJ_OD_array_iterator_result_error,
+            ffi::SJ_OD_array_iterator_result_value_unsafe
+        )?;
+        let end = map_result!(
+            ffi::SJ_OD_array_end(self.ptr.as_mut()),
+            ffi::SJ_OD_array_iterator_result_error,
+            ffi::SJ_OD_array_iterator_result_value_unsafe
+        )?;
+        Ok(ArrayIterator::new(begin, end))
     }
-
-    fn end(&self) {
-        
-    }
-    
 }
 
-impl_drop!(Array<'d>, ffi::SJ_OD_array_free);
+impl_drop!(Array, ffi::SJ_OD_array_free);

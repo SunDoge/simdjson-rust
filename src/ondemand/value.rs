@@ -7,16 +7,16 @@ use super::document::Document;
 use super::{array::Array, object::Object};
 use crate::error::Result;
 
-pub struct Value<'d> {
+pub struct Value {
     ptr: NonNull<ffi::SJ_OD_value>,
-    _document: PhantomData<&'d mut Document<'d, 'd>>,
+    // _document: PhantomData<&'d mut Document<'d, 'd>>,
 }
 
-impl<'d> Value<'d> {
+impl Value {
     pub fn new(ptr: NonNull<ffi::SJ_OD_value>) -> Self {
         Self {
             ptr,
-            _document: PhantomData,
+            // _document: PhantomData,
         }
     }
 
@@ -56,7 +56,7 @@ impl<'d> Value<'d> {
         )
     }
 
-    pub fn get_array(&mut self) -> Result<Array<'d>> {
+    pub fn get_array(&mut self) -> Result<Array> {
         map_result!(
             ffi::SJ_OD_value_get_array(self.ptr.as_mut()),
             ffi::SJ_OD_array_result_error,
@@ -65,7 +65,7 @@ impl<'d> Value<'d> {
         .map(Array::new)
     }
 
-    pub fn get_object(&mut self) -> Result<Object<'d>> {
+    pub fn get_object(&mut self) -> Result<Object> {
         map_result!(
             ffi::SJ_OD_value_get_object(self.ptr.as_mut()),
             ffi::SJ_OD_object_result_error,
@@ -75,4 +75,4 @@ impl<'d> Value<'d> {
     }
 }
 
-impl_drop!(Value<'d>, ffi::SJ_OD_value_free);
+impl_drop!(Value, ffi::SJ_OD_value_free);

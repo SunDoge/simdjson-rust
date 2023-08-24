@@ -9,17 +9,17 @@ use crate::{
 
 use super::{array::Array, object::Object, parser::Parser, value::Value};
 
-pub struct Document<'p, 's> {
+pub struct Document {
     ptr: NonNull<ffi::SJ_OD_document>,
-    _parser: PhantomData<&'p mut Parser>,
-    _padded_string: PhantomData<&'s String>,
+    // _parser: PhantomData<&'p mut Parser>,
+    // _padded_string: PhantomData<&'s String>,
 }
-impl<'p, 's> Document<'p, 's> {
+impl Document {
     pub fn new(ptr: NonNull<ffi::SJ_OD_document>) -> Self {
         Self {
             ptr,
-            _parser: PhantomData,
-            _padded_string: PhantomData,
+            // _parser: PhantomData,
+            // _padded_string: PhantomData,
         }
     }
 
@@ -59,7 +59,7 @@ impl<'p, 's> Document<'p, 's> {
         )
     }
 
-    pub fn get_value(&mut self) -> Result<Value<'_>> {
+    pub fn get_value(&mut self) -> Result<Value> {
         map_result!(
             ffi::SJ_OD_document_get_value(self.ptr.as_mut()),
             ffi::SJ_OD_value_result_error,
@@ -68,7 +68,7 @@ impl<'p, 's> Document<'p, 's> {
         .map(Value::new)
     }
 
-    pub fn get_array(&mut self) -> Result<Array<'_>> {
+    pub fn get_array(&mut self) -> Result<Array> {
         map_result!(
             ffi::SJ_OD_document_get_array(self.ptr.as_mut()),
             ffi::SJ_OD_array_result_error,
@@ -77,7 +77,7 @@ impl<'p, 's> Document<'p, 's> {
         .map(Array::new)
     }
 
-    pub fn get_object(&mut self) -> Result<Object<'_>> {
+    pub fn get_object(&mut self) -> Result<Object> {
         map_result!(
             ffi::SJ_OD_document_get_object(self.ptr.as_mut()),
             ffi::SJ_OD_object_result_error,
@@ -87,4 +87,4 @@ impl<'p, 's> Document<'p, 's> {
     }
 }
 
-impl_drop!(Document<'p, 's>, ffi::SJ_OD_document_free);
+impl_drop!(Document, ffi::SJ_OD_document_free);

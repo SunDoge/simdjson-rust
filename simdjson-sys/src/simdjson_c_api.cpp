@@ -171,3 +171,17 @@ SJ_OD_value_result* SJ_OD_array_iterator_get(SJ_OD_array_iterator* self) {
   auto ptr = reinterpret_cast<ondemand::array_iterator*>(self);
   return object_to_pointer<SJ_OD_value_result>(**ptr);
 }
+bool SJ_OD_array_iterator_not_equal(const SJ_OD_array_iterator* lhs, const SJ_OD_array_iterator* rhs) {
+  return *reinterpret_cast<const ondemand::array_iterator*>(lhs) != *reinterpret_cast<const ondemand::array_iterator* >(rhs);
+}
+void SJ_OD_array_iterator_step(SJ_OD_array_iterator* self) {
+  auto ptr = reinterpret_cast<ondemand::array_iterator*>(self);
+  ++(*ptr);
+}
+
+
+// ondemand::object
+SJ_OD_value_result* SJ_OD_object_at_pointer(SJ_OD_object* self, const char *s, size_t len) {
+  auto result = reinterpret_cast<ondemand::object*>(self)->at_pointer(std::string_view(s, len));
+  return object_to_pointer<SJ_OD_value_result>(std::move(result));
+}

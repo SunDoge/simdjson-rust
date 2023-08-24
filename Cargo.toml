@@ -4,6 +4,7 @@ version = "0.3.0"
 authors = ["SunDoge <384813529@qq.com>"]
 edition = "2021"
 license = "Apache-2.0"
+exclude = [".github/"]
 
 
 [workspace]

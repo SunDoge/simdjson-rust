@@ -11,7 +11,7 @@ fn main() -> Result<()> {
     //         .get_u64()?
     // );
 
-    let ps = load_padded_string("json-examples/twitter.json").unwrap();
+    let ps = load_padded_string("simdjson-sys/simdjson/jsonexamples/twitter.json").unwrap();
     let mut parser = Parser::default();
     let tweets = parser.iterate(&ps)?;
 

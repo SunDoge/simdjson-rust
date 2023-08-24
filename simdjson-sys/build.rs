@@ -5,9 +5,12 @@ fn main() {
     cc::Build::new()
         .cpp(true)
         .flag_if_supported("-std=c++17")
-        .include("../simdjson/singleheader")
+        .flag_if_supported("/std:c++17")
+        .flag_if_supported("-pthread")
+        .flag_if_supported("-O3")
+        .include("simdjson/singleheader")
         .file("src/simdjson_c_api.cpp")
-        .file("../simdjson/singleheader/simdjson.cpp")
+        .file("simdjson/singleheader/simdjson.cpp")
         .cargo_metadata(true)
         .compile("simdjson_c_api");
 
@@ -28,10 +31,6 @@ fn main() {
 
     // Write the bindings to the $OUT_DIR/bindings.rs file.
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
-    // println!(
-    //     "cargo:rustc-link-lib=static={}",
-    //     out_path.join("libsimdjson_c_api").display()
-    // );
 
     bindings
         .write_to_file(out_path.join("bindings.rs"))

@@ -3,22 +3,21 @@ use std::{marker::PhantomData, ptr::NonNull};
 
 use crate::macros::{impl_drop, map_result};
 
+use super::document::Document;
 use super::parser::Parser;
 use super::{array::Array, object::Object};
 use crate::error::Result;
 
-pub struct Value<'p, 's> {
+pub struct Value<'d> {
     ptr: NonNull<ffi::SJ_OD_value>,
-    _parser: PhantomData<&'p mut Parser>,
-    _padded_string: PhantomData<&'s String>,
+    _document: PhantomData<&'d mut Document<'d, 'd>>,
 }
 
-impl<'p, 's> Value<'p, 's> {
+impl<'d> Value<'d> {
     pub fn new(ptr: NonNull<ffi::SJ_OD_value>) -> Self {
         Self {
             ptr,
-            _parser: PhantomData,
-            _padded_string: PhantomData,
+            _document: PhantomData,
         }
     }
 
@@ -58,7 +57,7 @@ impl<'p, 's> Value<'p, 's> {
         )
     }
 
-    pub fn get_array(&mut self) -> Result<Array<'p, 's>> {
+    pub fn get_array(&mut self) -> Result<Array<'d>> {
         map_result!(
             ffi::SJ_OD_value_get_array(self.ptr.as_mut()),
             ffi::SJ_OD_array_result_error,
@@ -67,7 +66,7 @@ impl<'p, 's> Value<'p, 's> {
         .map(Array::new)
     }
 
-    pub fn get_object(&mut self) -> Result<Object<'p, 's>> {
+    pub fn get_object(&mut self) -> Result<Object<'d>> {
         map_result!(
             ffi::SJ_OD_value_get_object(self.ptr.as_mut()),
             ffi::SJ_OD_object_result_error,
@@ -77,4 +76,4 @@ impl<'p, 's> Value<'p, 's> {
     }
 }
 
-impl_drop!(Value<'p, 's>, ffi::SJ_OD_value_free);
+impl_drop!(Value<'d>, ffi::SJ_OD_value_free);

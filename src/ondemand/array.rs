@@ -1,6 +1,7 @@
 use simdjson_sys as ffi;
 use std::{marker::PhantomData, ptr::NonNull};
 
+use super::document::Document;
 use crate::{
     error::Result,
     macros::{impl_drop, map_result},
@@ -8,18 +9,16 @@ use crate::{
 
 use super::parser::Parser;
 
-pub struct Array<'p, 's> {
+pub struct Array<'d> {
     ptr: NonNull<ffi::SJ_OD_array>,
-    _parser: PhantomData<&'p mut Parser>,
-    _padded_string: PhantomData<&'s String>,
+    _document: PhantomData<&'d mut Document<'d, 'd>>,
 }
 
-impl<'p, 's> Array<'p, 's> {
+impl<'d> Array<'d> {
     pub fn new(ptr: NonNull<ffi::SJ_OD_array>) -> Self {
         Self {
             ptr,
-            _parser: PhantomData,
-            _padded_string: PhantomData,
+            _document: PhantomData,
         }
     }
 
@@ -42,4 +41,4 @@ impl<'p, 's> Array<'p, 's> {
     }
 }
 
-impl_drop!(Array<'p, 's>, ffi::SJ_OD_array_free);
+impl_drop!(Array<'d>, ffi::SJ_OD_array_free);

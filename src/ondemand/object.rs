@@ -3,22 +3,21 @@ use std::{marker::PhantomData, ptr::NonNull};
 
 use crate::macros::impl_drop;
 
+use super::document::Document;
 use super::parser::Parser;
 
-pub struct Object<'p, 's> {
+pub struct Object<'d> {
     ptr: NonNull<ffi::SJ_OD_object>,
-    _parser: PhantomData<&'p mut Parser>,
-    _padded_string: PhantomData<&'s String>,
+    _document: PhantomData<&'d mut Document<'d, 'd>>,
 }
 
-impl<'p, 's> Object<'p, 's> {
+impl<'d> Object<'d> {
     pub fn new(ptr: NonNull<ffi::SJ_OD_object>) -> Self {
         Self {
             ptr,
-            _parser: PhantomData,
-            _padded_string: PhantomData,
+            _document: PhantomData,
         }
     }
 }
 
-impl_drop!(Object<'p, 's>, ffi::SJ_OD_object_free);
+impl_drop!(Object<'d>, ffi::SJ_OD_object_free);

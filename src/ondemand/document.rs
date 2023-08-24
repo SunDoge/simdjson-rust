@@ -59,7 +59,7 @@ impl<'p, 's> Document<'p, 's> {
         )
     }
 
-    pub fn get_value(&mut self) -> Result<Value<'p, 's>> {
+    pub fn get_value(&mut self) -> Result<Value<'_>> {
         map_result!(
             ffi::SJ_OD_document_get_value(self.ptr.as_mut()),
             ffi::SJ_OD_value_result_error,
@@ -68,7 +68,7 @@ impl<'p, 's> Document<'p, 's> {
         .map(Value::new)
     }
 
-    pub fn get_array(&mut self) -> Result<Array<'p, 's>> {
+    pub fn get_array(&mut self) -> Result<Array<'_>> {
         map_result!(
             ffi::SJ_OD_document_get_array(self.ptr.as_mut()),
             ffi::SJ_OD_array_result_error,
@@ -77,7 +77,7 @@ impl<'p, 's> Document<'p, 's> {
         .map(Array::new)
     }
 
-    pub fn get_object(&mut self) -> Result<Object<'p, 's>> {
+    pub fn get_object(&mut self) -> Result<Object<'_>> {
         map_result!(
             ffi::SJ_OD_document_get_object(self.ptr.as_mut()),
             ffi::SJ_OD_object_result_error,

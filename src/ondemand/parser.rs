@@ -3,7 +3,6 @@ use std::ptr::NonNull;
 use simdjson_sys as ffi;
 
 use crate::{
-    constants::SIMDJSON_MAXSIZE_BYTES,
     error::Result,
     macros::{impl_drop, map_result},
 };
@@ -16,7 +15,7 @@ pub struct Parser {
 
 impl Default for Parser {
     fn default() -> Self {
-        Parser::new(SIMDJSON_MAXSIZE_BYTES)
+        Parser::new(ffi::SIMDJSON_MAXSIZE_BYTES)
     }
 }
 
@@ -26,7 +25,7 @@ impl Parser {
         Self { ptr }
     }
 
-    pub fn iterate(&mut self, padded_string: &String) -> Result<Document> {
+    pub fn iterate<'p, 's>(&'p mut self, padded_string: &'s String) -> Result<Document<'p, 's>> {
         map_result!(
             ffi::SJ_OD_parser_iterate_padded_string_view(
                 self.ptr.as_mut(),
@@ -54,9 +53,18 @@ mod tests {
         let mut parser = Parser::default();
         let ps = make_padded_string("[1,2,3]");
         let mut doc = parser.iterate(&ps).unwrap();
-        doc.get_array().unwrap();
+        // drop(ps);
+        // doc.get_array().unwrap();
+        let mut arr = doc.get_array().unwrap();
+        // drop(doc);
+        // for v in arr.iter().unwrap() {
+        //     let _ = v.unwrap().get_uint64().unwrap();
+        // }
         // doc.get_value().unwrap();
+
+        drop(arr);
         drop(doc);
+
         let ps2 = make_padded_string("1");
         let mut doc2 = parser.iterate(&ps2).unwrap();
         let v = doc2.get_int64().unwrap();

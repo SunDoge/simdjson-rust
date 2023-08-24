@@ -10,16 +10,16 @@ use super::parser::Parser;
 use super::value::Value;
 use crate::error::Result;
 
-pub struct Object {
+pub struct Object<'a> {
     ptr: NonNull<ffi::SJ_OD_object>,
-    // _document: PhantomData<&'d mut Document<'d, 'd>>,
+    _document: PhantomData<&'a mut Document<'a, 'a>>,
 }
 
-impl Object {
+impl<'a> Object<'a> {
     pub fn new(ptr: NonNull<ffi::SJ_OD_object>) -> Self {
         Self {
             ptr,
-            // _document: PhantomData,
+            _document: PhantomData,
         }
     }
 
@@ -60,4 +60,4 @@ impl Object {
     }
 }
 
-impl_drop!(Object, ffi::SJ_OD_object_free);
+impl_drop!(Object<'a>, ffi::SJ_OD_object_free);

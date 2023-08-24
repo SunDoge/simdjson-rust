@@ -3,16 +3,16 @@ use std::{marker::PhantomData, ptr::NonNull};
 
 use crate::{error::Result, macros::map_result};
 
-use super::{array::Array, value::Value};
+use super::{array::Array, document::Document, value::Value};
 
-pub struct ArrayIterator {
+pub struct ArrayIterator<'a> {
     begin: NonNull<ffi::SJ_OD_array_iterator>,
     end: NonNull<ffi::SJ_OD_array_iterator>,
     running: bool,
-    // _array: PhantomData<&'a mut Array<'a>>,
+    _array: PhantomData<&'a mut Array<'a>>,
 }
 
-impl ArrayIterator {
+impl<'a> ArrayIterator<'a> {
     pub fn new(
         begin: NonNull<ffi::SJ_OD_array_iterator>,
         end: NonNull<ffi::SJ_OD_array_iterator>,
@@ -21,11 +21,11 @@ impl ArrayIterator {
             begin,
             end,
             running: false,
-            // _array: PhantomData,
+            _array: PhantomData,
         }
     }
 
-    pub fn get(&mut self) -> Result<Value> {
+    pub fn get(&mut self) -> Result<Value<'a>> {
         map_result!(
             ffi::SJ_OD_array_iterator_get(self.begin.as_mut()),
             ffi::SJ_OD_value_result_error,
@@ -43,7 +43,7 @@ impl ArrayIterator {
     }
 }
 
-impl Drop for ArrayIterator {
+impl<'a> Drop for ArrayIterator<'a> {
     fn drop(&mut self) {
         unsafe {
             ffi::SJ_OD_array_iterator_free(self.begin.as_mut());
@@ -52,8 +52,8 @@ impl Drop for ArrayIterator {
     }
 }
 
-impl Iterator for ArrayIterator {
-    type Item = Result<Value>;
+impl<'a> Iterator for ArrayIterator<'a> {
+    type Item = Result<Value<'a>>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.running {

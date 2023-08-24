@@ -9,17 +9,17 @@ use crate::{
 
 use super::{array::Array, object::Object, parser::Parser, value::Value};
 
-pub struct Document {
+pub struct Document<'p, 's> {
     ptr: NonNull<ffi::SJ_OD_document>,
-    // _parser: PhantomData<&'p mut Parser>,
-    // _padded_string: PhantomData<&'s String>,
+    _parser: PhantomData<&'p mut Parser>,
+    _padded_string: PhantomData<&'s String>,
 }
-impl Document {
+impl<'p, 's> Document<'p, 's> {
     pub fn new(ptr: NonNull<ffi::SJ_OD_document>) -> Self {
         Self {
             ptr,
-            // _parser: PhantomData,
-            // _padded_string: PhantomData,
+            _parser: PhantomData,
+            _padded_string: PhantomData,
         }
     }
 
@@ -87,4 +87,4 @@ impl Document {
     }
 }
 
-impl_drop!(Document, ffi::SJ_OD_document_free);
+impl_drop!(Document<'p, 's>, ffi::SJ_OD_document_free);

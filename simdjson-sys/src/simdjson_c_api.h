@@ -112,24 +112,28 @@ SJ_OD_value_result *SJ_OD_array_at(SJ_OD_array *array, size_t index);
 
 // ondemand::array_iterator
 DEFINE_GET(SJ_OD_array_iterator, SJ_OD_value, get)
-bool SJ_OD_array_iterator_not_equal(const SJ_OD_array_iterator* lhs,const SJ_OD_array_iterator* rhs);
-void SJ_OD_array_iterator_step(SJ_OD_array_iterator* self);
+bool SJ_OD_array_iterator_not_equal(const SJ_OD_array_iterator *lhs,
+                                    const SJ_OD_array_iterator *rhs);
+void SJ_OD_array_iterator_step(SJ_OD_array_iterator *self);
 
 // ondemand::object
 DEFINE_GET(SJ_OD_object, SJ_OD_object_iterator, begin)
 DEFINE_GET(SJ_OD_object, SJ_OD_object_iterator, end)
 DEFINE_GET(SJ_OD_object, STD_string_view, raw_json)
-SJ_OD_value_result* SJ_OD_object_at_pointer(SJ_OD_object* self, const char *s, size_t len);
+SJ_OD_value_result *SJ_OD_object_at_pointer(SJ_OD_object *self, const char *s,
+                                            size_t len);
 
 // ondemand::object_iterator
 DEFINE_GET(SJ_OD_object_iterator, SJ_OD_field, get)
-bool SJ_OD_object_iterator_not_equal(const SJ_OD_object_iterator* lhs,const SJ_OD_object_iterator* rhs);
-void SJ_OD_object_iterator_step(SJ_OD_object_iterator* self);
+bool SJ_OD_object_iterator_not_equal(const SJ_OD_object_iterator *lhs,
+                                     const SJ_OD_object_iterator *rhs);
+void SJ_OD_object_iterator_step(SJ_OD_object_iterator *self);
 
 // ondemand::field
-STD_string_view_result* SJ_OD_field_unescaped_key(SJ_OD_field* self, bool allow_replacement);
-SJ_OD_value* SJ_OD_field_value(SJ_OD_field* self);
-SJ_OD_value* SJ_OD_field_take_value(SJ_OD_field* self);
+STD_string_view_result *SJ_OD_field_unescaped_key(SJ_OD_field *self,
+                                                  bool allow_replacement);
+SJ_OD_value *SJ_OD_field_value(SJ_OD_field *self);
+SJ_OD_value *SJ_OD_field_take_value(SJ_OD_field *self);
 
 #ifdef __cplusplus
 }

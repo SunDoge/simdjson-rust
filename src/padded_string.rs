@@ -1,4 +1,4 @@
-use std::{os::unix::prelude::OsStrExt, path::Path, ptr::NonNull};
+use std::{io::Read, os::unix::prelude::OsStrExt, path::Path, ptr::NonNull};
 
 use simdjson_sys as ffi;
 
@@ -51,6 +51,14 @@ pub fn make_padded_string(s: &str) -> String {
     let mut ps = String::with_capacity(s.len() + SIMDJSON_PADDING);
     ps.push_str(s);
     ps
+}
+
+pub fn load_padded_string<P: AsRef<Path>>(path: P) -> std::io::Result<String> {
+    let mut file = std::fs::File::open(path)?;
+    let len = file.metadata()?.len() as usize;
+    let mut buf = String::with_capacity(len + SIMDJSON_PADDING);
+    file.read_to_string(&mut buf)?;
+    Ok(buf)
 }
 
 #[cfg(test)]

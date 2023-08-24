@@ -1,4 +1,4 @@
-use std::{marker::PhantomData, ptr::NonNull};
+use std::ptr::NonNull;
 
 use simdjson_sys as ffi;
 

@@ -1,7 +1,10 @@
 use simdjson_sys as ffi;
 use std::{marker::PhantomData, ptr::NonNull};
 
-use crate::macros::impl_drop;
+use crate::{
+    error::Result,
+    macros::{impl_drop, map_result},
+};
 
 use super::parser::Parser;
 
@@ -18,6 +21,24 @@ impl<'p, 's> Array<'p, 's> {
             _parser: PhantomData,
             _padded_string: PhantomData,
         }
+    }
+
+    pub fn count_elements(&mut self) -> Result<usize> {
+        map_result!(
+            primitive,
+            ffi::SJ_OD_array_count_elements(self.ptr.as_mut()),
+            ffi::size_t_result_error,
+            ffi::size_t_result_value_unsafe
+        )
+    }
+
+    pub fn is_empty(&mut self) -> Result<bool> {
+        map_result!(
+            primitive,
+            ffi::SJ_OD_array_is_empty(self.ptr.as_mut()),
+            ffi::bool_result_error,
+            ffi::bool_result_value_unsafe
+        )
     }
 }
 

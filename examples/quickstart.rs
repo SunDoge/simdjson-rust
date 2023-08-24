@@ -1,4 +1,4 @@
-use simdjson_rust::{error::Result, padded_string::PaddedString};
+use simdjson_rust::{error::Result, ondemand::parser::Parser, padded_string::load_padded_string};
 
 fn main() -> Result<()> {
     // let mut parser = dom::Parser::default();
@@ -11,7 +11,9 @@ fn main() -> Result<()> {
     //         .get_u64()?
     // );
 
-    let ps = PaddedString::load("json-examples/twitter.json")?;
+    let ps = load_padded_string("json-examples/twitter.json").unwrap();
+    let mut parser = Parser::default();
+    let tweets = parser.iterate(&ps)?;
 
     Ok(())
 }

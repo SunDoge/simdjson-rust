@@ -162,9 +162,17 @@ IMPL_GET(SJ_OD_array, ondemand::array, bool, is_empty)
 IMPL_GET(SJ_OD_array, ondemand::array, bool, reset)
 IMPL_GET(SJ_OD_array, ondemand::array, SJ_OD_array_iterator, begin)
 IMPL_GET(SJ_OD_array, ondemand::array, SJ_OD_array_iterator, end)
+IMPL_GET(SJ_OD_array, ondemand::array, STD_string_view, raw_json)
 
 SJ_OD_value_result *SJ_OD_array_at(SJ_OD_array *array, size_t index) {
   auto result = reinterpret_cast<ondemand::array *>(array)->at(index);
+  return object_to_pointer<SJ_OD_value_result *>(std::move(result));
+}
+
+SJ_OD_value_result *SJ_OD_array_at_pointer(SJ_OD_array *self, const char *s,
+                                           size_t len) {
+  auto result = reinterpret_cast<ondemand::array *>(self)->at_pointer(
+      std::string_view(s, len));
   return object_to_pointer<SJ_OD_value_result *>(std::move(result));
 }
 
@@ -201,6 +209,14 @@ SJ_OD_value_result *SJ_OD_object_find_field(SJ_OD_object *object,
                                             const char *data, size_t len) {
   auto result = reinterpret_cast<ondemand::object *>(object)->find_field(
       std::string_view(data, len));
+  return object_to_pointer<SJ_OD_value_result *>(std::move(result));
+}
+SJ_OD_value_result *SJ_OD_object_find_field_unordered(SJ_OD_object *object,
+                                                      const char *data,
+                                                      size_t len) {
+  auto result =
+      reinterpret_cast<ondemand::object *>(object)->find_field_unordered(
+          std::string_view(data, len));
   return object_to_pointer<SJ_OD_value_result *>(std::move(result));
 }
 

@@ -5,6 +5,7 @@ use super::{array_iterator::ArrayIterator, document::Document, value::Value};
 use crate::{
     error::Result,
     macros::{impl_drop, map_result},
+    utils::string_view_to_str,
 };
 
 pub struct Array<'a> {
@@ -47,6 +48,15 @@ impl<'a> Array<'a> {
         .map(Value::new)
     }
 
+    pub fn at_pointer(&mut self, key: &str) -> Result<Value<'a>> {
+        map_result!(
+            ffi::SJ_OD_array_at_pointer(self.ptr.as_mut(), key.as_ptr().cast(), key.len()),
+            ffi::SJ_OD_value_result_error,
+            ffi::SJ_OD_value_result_value_unsafe
+        )
+        .map(Value::new)
+    }
+
     pub fn reset(&mut self) -> Result<bool> {
         map_result!(
             primitive,
@@ -68,6 +78,15 @@ impl<'a> Array<'a> {
             ffi::SJ_OD_array_iterator_result_value_unsafe
         )?;
         Ok(ArrayIterator::new(begin, end))
+    }
+
+    pub fn raw_json(&mut self) -> Result<&'a str> {
+        let sv = map_result!(
+            ffi::SJ_OD_array_raw_json(self.ptr.as_mut()),
+            ffi::STD_string_view_result_error,
+            ffi::STD_string_view_result_value_unsafe
+        )?;
+        Ok(string_view_to_str(sv))
     }
 }
 

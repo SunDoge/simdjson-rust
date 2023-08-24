@@ -68,6 +68,19 @@ impl<'a> Object<'a> {
         .map(Value::new)
     }
 
+    pub fn find_field_unordered(&mut self, key: &str) -> Result<Value<'a>> {
+        map_result!(
+            ffi::SJ_OD_object_find_field_unordered(
+                self.ptr.as_mut(),
+                key.as_ptr().cast(),
+                key.len()
+            ),
+            ffi::SJ_OD_value_result_error,
+            ffi::SJ_OD_value_result_value_unsafe
+        )
+        .map(Value::new)
+    }
+
     pub fn count_fields(&mut self) -> Result<usize> {
         map_result!(
             primitive,

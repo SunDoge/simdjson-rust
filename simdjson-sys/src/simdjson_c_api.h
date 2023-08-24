@@ -108,7 +108,10 @@ DEFINE_GET(SJ_OD_array, bool, is_empty)
 DEFINE_GET(SJ_OD_array, bool, reset)
 DEFINE_GET(SJ_OD_array, SJ_OD_array_iterator, begin)
 DEFINE_GET(SJ_OD_array, SJ_OD_array_iterator, end)
+DEFINE_GET(SJ_OD_array, STD_string_view, raw_json)
 SJ_OD_value_result *SJ_OD_array_at(SJ_OD_array *array, size_t index);
+SJ_OD_value_result *SJ_OD_array_at_pointer(SJ_OD_array *self, const char *s,
+                                           size_t len);
 
 // ondemand::array_iterator
 DEFINE_GET(SJ_OD_array_iterator, SJ_OD_value, get)
@@ -127,6 +130,9 @@ SJ_OD_value_result *SJ_OD_object_at_pointer(SJ_OD_object *self, const char *s,
                                             size_t len);
 SJ_OD_value_result *SJ_OD_object_find_field(SJ_OD_object *object,
                                             const char *data, size_t len);
+SJ_OD_value_result *SJ_OD_object_find_field_unordered(SJ_OD_object *object,
+                                                      const char *data,
+                                                      size_t len);
 
 // ondemand::object_iterator
 DEFINE_GET(SJ_OD_object_iterator, SJ_OD_field, get)

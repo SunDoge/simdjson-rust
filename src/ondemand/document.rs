@@ -5,6 +5,7 @@ use simdjson_sys as ffi;
 use crate::{
     error::Result,
     macros::{impl_drop, map_result},
+    utils::string_view_to_str,
 };
 
 use super::{array::Array, object::Object, parser::Parser, value::Value};
@@ -84,6 +85,24 @@ impl<'p, 's> Document<'p, 's> {
             ffi::SJ_OD_object_result_value_unsafe
         )
         .map(Object::new)
+    }
+
+    pub fn get_wobbly_string<'a>(&mut self) -> Result<&'a str> {
+        let sv = map_result!(
+            ffi::SJ_OD_document_get_wobbly_string(self.ptr.as_mut()),
+            ffi::STD_string_view_result_error,
+            ffi::STD_string_view_result_value_unsafe
+        )?;
+        Ok(string_view_to_str(sv))
+    }
+
+    pub fn get_string<'a>(&mut self) -> Result<&'a str> {
+        let sv = map_result!(
+            ffi::SJ_OD_document_get_string(self.ptr.as_mut()),
+            ffi::STD_string_view_result_error,
+            ffi::STD_string_view_result_value_unsafe
+        )?;
+        Ok(string_view_to_str(sv))
     }
 }
 

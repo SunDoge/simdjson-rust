@@ -2,6 +2,7 @@ use simdjson_sys as ffi;
 use std::{marker::PhantomData, ptr::NonNull};
 
 use crate::macros::{impl_drop, map_result};
+use crate::utils::string_view_to_str;
 
 use super::document::Document;
 use super::{array::Array, object::Object};
@@ -72,6 +73,15 @@ impl<'a> Value<'a> {
             ffi::SJ_OD_object_result_value_unsafe
         )
         .map(Object::new)
+    }
+
+    pub fn get_string(&mut self, allow_replacement: bool) -> Result<&'a str> {
+        let sv = map_result!(
+            ffi::SJ_OD_value_get_string(self.ptr.as_mut(), allow_replacement),
+            ffi::STD_string_view_result_error,
+            ffi::STD_string_view_result_value_unsafe
+        )?;
+        Ok(string_view_to_str(sv))
     }
 }
 

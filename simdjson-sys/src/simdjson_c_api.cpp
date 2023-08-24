@@ -23,7 +23,7 @@ template <typename U, typename T> U *object_to_pointer(T &&t) {
     auto code = reinterpret_cast<const simdjson_result<type> *>(r)->error();   \
     return static_cast<int>(code);                                             \
   }                                                                            \
-  name *name##_result_value_unsafe(name##_result *r) {                                \
+  name *name##_result_value_unsafe(name##_result *r) {                         \
     auto result = reinterpret_cast<simdjson_result<type> *>(r);                \
     return object_to_pointer<name>(std::move(*result).value_unsafe());         \
   }
@@ -34,7 +34,7 @@ template <typename U, typename T> U *object_to_pointer(T &&t) {
     auto code = reinterpret_cast<const simdjson_result<name> *>(r)->error();   \
     return static_cast<int>(code);                                             \
   }                                                                            \
-  name name##_result_value_unsafe(name##_result *r) {                                 \
+  name name##_result_value_unsafe(name##_result *r) {                          \
     auto result = reinterpret_cast<simdjson_result<name> *>(r);                \
     return std::move(*result).value_unsafe();                                  \
   }
@@ -74,6 +74,12 @@ SJ_padded_string *SJ_padded_string_new(const char *s, size_t len) {
 SJ_padded_string_result *SJ_padded_string_load(const char *path) {
   return object_to_pointer<SJ_padded_string_result>(padded_string::load(path));
 }
+size_t SJ_padded_string_length(const SJ_padded_string *ps) {
+  return reinterpret_cast<const padded_string *>(ps)->length();
+}
+const uint8_t *SJ_padded_string_u8data(const SJ_padded_string *ps) {
+  return reinterpret_cast<const padded_string *>(ps)->u8data();
+}
 
 SJ_OD_parser *SJ_OD_parser_new(size_t max_capacity) {
   return object_to_pointer<SJ_OD_parser>(ondemand::parser(max_capacity));
@@ -92,8 +98,8 @@ SJ_OD_parser_iterate_padded_string(SJ_OD_parser *parser,
 SJ_OD_document_result *
 SJ_OD_parser_iterate_padded_string_view(SJ_OD_parser *parser, const char *json,
                                         size_t len, size_t allocated) {
-  auto doc = reinterpret_cast<ondemand::parser *>(parser)->iterate(
-      padded_string_view(json, len, allocated));
+  auto doc = reinterpret_cast<ondemand::parser *>(parser)->iterate(json, len,
+                                                                   allocated);
   return object_to_pointer<SJ_OD_document_result>(std::move(doc));
 }
 

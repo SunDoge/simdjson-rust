@@ -60,6 +60,8 @@ DEFINE_PRIMITIVE_RESULT(size_t)
 SJ_padded_string *SJ_padded_string_new(const char *s, size_t len);
 SJ_padded_string_result *
 SJ_padded_string_load(const char *path); // null terminated string.
+size_t SJ_padded_string_length(const SJ_padded_string *ps);
+const uint8_t *SJ_padded_string_u8data(const SJ_padded_string *ps);
 
 // ondemand::parser
 SJ_OD_parser *SJ_OD_parser_new(size_t max_capacity);

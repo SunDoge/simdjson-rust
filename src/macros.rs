@@ -10,13 +10,13 @@ macro_rules! impl_drop {
     };
 }
 
-macro_rules! check_result {
+macro_rules! map_result {
     ($func_call:expr, $get_code:expr, $get_value:expr) => {
         unsafe {
             let ptr = $func_call;
             let code = $get_code(ptr);
             if code == 0 {
-                Ok($get_value(ptr))
+                Ok(std::ptr::NonNull::new_unchecked($get_value(ptr)))
             } else {
                 Err(crate::error::SimdJsonError::from(code))
             }
@@ -24,5 +24,5 @@ macro_rules! check_result {
     };
 }
 
-pub(crate) use check_result;
 pub(crate) use impl_drop;
+pub(crate) use map_result;

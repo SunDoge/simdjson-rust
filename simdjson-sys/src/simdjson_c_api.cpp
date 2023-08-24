@@ -181,7 +181,38 @@ void SJ_OD_array_iterator_step(SJ_OD_array_iterator* self) {
 
 
 // ondemand::object
+IMPL_GET(SJ_OD_object, ondemand::object, SJ_OD_object_iterator, begin)
+IMPL_GET(SJ_OD_object, ondemand::object, SJ_OD_object_iterator, end)
+IMPL_GET(SJ_OD_object, ondemand::object, STD_string_view, raw_json)
 SJ_OD_value_result* SJ_OD_object_at_pointer(SJ_OD_object* self, const char *s, size_t len) {
   auto result = reinterpret_cast<ondemand::object*>(self)->at_pointer(std::string_view(s, len));
   return object_to_pointer<SJ_OD_value_result>(std::move(result));
+}
+
+// ondemand::object_iterator
+SJ_OD_field_result* SJ_OD_object_iterator_get(SJ_OD_object_iterator* self) {
+  auto ptr = reinterpret_cast<ondemand::object_iterator*>(self);
+  return object_to_pointer<SJ_OD_field_result>(**ptr);
+}
+bool SJ_OD_object_iterator_not_equal(const SJ_OD_object_iterator* lhs, const SJ_OD_object_iterator* rhs) {
+  return *reinterpret_cast<const ondemand::object_iterator*>(lhs) != *reinterpret_cast<const ondemand::object_iterator* >(rhs);
+}
+void SJ_OD_object_iterator_step(SJ_OD_object_iterator* self) {
+  auto ptr = reinterpret_cast<ondemand::object_iterator*>(self);
+  ++(*ptr);
+}
+
+// ondemand::field
+STD_string_view_result* SJ_OD_field_unescaped_key(SJ_OD_field* self, bool allow_replacement) {
+  auto result = reinterpret_cast<ondemand::field*>(self)->unescaped_key(allow_replacement);
+  return object_to_pointer<STD_string_view_result>(std::move(result));
+}
+SJ_OD_value* SJ_OD_field_value(SJ_OD_field* self) {
+  ondemand::value& value = reinterpret_cast<ondemand::field*>(self)->value();
+  return reinterpret_cast<SJ_OD_value*>(&value);
+}
+SJ_OD_value* SJ_OD_field_take_value(SJ_OD_field* self) {
+  auto field = reinterpret_cast<ondemand::field*>(self);
+  auto value = std::move(*field).value();
+  return object_to_pointer<SJ_OD_value>(std::move(value));
 }

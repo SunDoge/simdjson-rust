@@ -18,6 +18,7 @@ pub mod ondemand;
 // pub mod libsimdjson;
 pub mod padded_string;
 // pub mod serde;
+pub mod utils;
 
 #[cfg(test)]
 mod tests {

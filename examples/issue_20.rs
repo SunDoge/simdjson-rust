@@ -10,16 +10,16 @@ fn main() -> Result<()> {
     let mut arr = doc.get_object()?.at_pointer("/ingredients")?.get_array()?;
 
     for value in arr.iter()? {
-        dbg!(value.is_ok());
-        // let mut object = value?.get_object()?;
+        let mut object = value?.get_object()?;
 
-        // for field in object.iter()? {
-        //     let mut field = field?;
+        for field in object.iter()? {
+            let mut field = field?;
 
-        //     let mut value = field.value();
-        //     let key = field.unescaped_key()?;
-        //     println!("key: {} | value: {}", key, value.get_object()?.raw_json()?);
-        // }
+            
+            let key = field.unescaped_key(false)?.to_owned();
+            let mut value = field.take_value();
+            println!("key: {} | value: {}", key, value.get_object()?.raw_json()?);
+        }
     }
 
     Ok(())

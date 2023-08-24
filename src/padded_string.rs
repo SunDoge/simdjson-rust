@@ -3,6 +3,7 @@ use std::{os::unix::prelude::OsStrExt, path::Path, ptr::NonNull};
 use simdjson_sys as ffi;
 
 use crate::{
+    constants::SIMDJSON_PADDING,
     error::Result,
     macros::{impl_drop, map_result},
 };
@@ -45,6 +46,12 @@ impl PaddedString {
 }
 
 impl_drop!(PaddedString, ffi::SJ_padded_string_free);
+
+pub fn make_padded_string(s: &str) -> String {
+    let mut ps = String::with_capacity(s.len() + SIMDJSON_PADDING);
+    ps.push_str(s);
+    ps
+}
 
 #[cfg(test)]
 mod tests {

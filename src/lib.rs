@@ -11,9 +11,10 @@
 
 mod macros;
 
+pub mod constants;
 // pub mod dom;
 pub mod error;
-
+pub mod ondemand;
 // pub mod libsimdjson;
 pub mod padded_string;
 // pub mod serde;

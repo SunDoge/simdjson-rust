@@ -74,7 +74,7 @@ impl<'a> Iterator for ArrayIterator<'a> {
 mod tests {
     use crate::{ondemand::parser::Parser, padded_string::make_padded_string};
 
-    use super::*;
+    
 
     #[test]
     fn test_iter() {

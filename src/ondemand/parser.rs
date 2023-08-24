@@ -55,7 +55,7 @@ mod tests {
         let mut doc = parser.iterate(&ps).unwrap();
         // drop(ps);
         // doc.get_array().unwrap();
-        let mut arr = doc.get_array().unwrap();
+        let arr = doc.get_array().unwrap();
         // drop(doc);
         // for v in arr.iter().unwrap() {
         //     let _ = v.unwrap().get_uint64().unwrap();

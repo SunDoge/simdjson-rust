@@ -6,7 +6,7 @@ use crate::utils::string_view_to_str;
 
 use super::document::Document;
 use super::object_iterator::ObjectIterator;
-use super::parser::Parser;
+
 use super::value::Value;
 use crate::error::Result;
 

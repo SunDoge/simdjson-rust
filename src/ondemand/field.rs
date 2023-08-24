@@ -7,7 +7,7 @@ use crate::macros::{impl_drop, map_result};
 use crate::utils::string_view_to_str;
 
 use super::document::Document;
-use super::object::Object;
+
 use super::value::Value;
 
 pub struct Field<'a> {

@@ -13,7 +13,7 @@ fn main() -> Result<()> {
 
     let ps = load_padded_string("simdjson-sys/simdjson/jsonexamples/twitter.json")?;
     let mut parser = Parser::default();
-    let tweets = parser.iterate(&ps)?;
+    let _tweets = parser.iterate(&ps)?;
 
     Ok(())
 }

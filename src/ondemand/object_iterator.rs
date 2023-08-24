@@ -3,7 +3,7 @@ use std::{marker::PhantomData, ptr::NonNull};
 
 use crate::{error::Result, macros::map_result};
 
-use super::{document::Document, field::Field, object::Object, value::Value};
+use super::{document::Document, field::Field};
 
 pub struct ObjectIterator<'a> {
     begin: NonNull<ffi::SJ_OD_object_iterator>,

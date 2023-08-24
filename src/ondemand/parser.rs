@@ -2,12 +2,11 @@ use std::ptr::NonNull;
 
 use simdjson_sys as ffi;
 
+use super::document::Document;
 use crate::{
     error::Result,
     macros::{impl_drop, map_result},
 };
-
-use super::document::Document;
 
 pub struct Parser {
     ptr: NonNull<ffi::SJ_OD_parser>,
@@ -44,9 +43,8 @@ impl_drop!(Parser, ffi::SJ_OD_parser_free);
 
 #[cfg(test)]
 mod tests {
-    use crate::padded_string::make_padded_string;
-
     use super::*;
+    use crate::padded_string::make_padded_string;
 
     #[test]
     fn test_new() {

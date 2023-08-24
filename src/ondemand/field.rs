@@ -1,14 +1,13 @@
+use std::{marker::PhantomData, ptr::NonNull};
+
 use simdjson_sys as ffi;
-use std::marker::PhantomData;
-use std::ptr::NonNull;
 
-use crate::error::Result;
-use crate::macros::{impl_drop, map_result};
-use crate::utils::string_view_to_str;
-
-use super::document::Document;
-
-use super::value::Value;
+use super::{document::Document, value::Value};
+use crate::{
+    error::Result,
+    macros::{impl_drop, map_result},
+    utils::string_view_to_str,
+};
 
 pub struct Field<'a> {
     ptr: NonNull<ffi::SJ_OD_field>,
@@ -23,23 +22,13 @@ impl<'a> Field<'a> {
         }
     }
 
-    pub fn unescaped_key(&mut self, allow_replacement: bool) -> Result<&str> {
+    pub fn unescaped_key(&mut self, allow_replacement: bool) -> Result<&'a str> {
         let sv = map_result!(
             ffi::SJ_OD_field_unescaped_key(self.ptr.as_mut(), allow_replacement),
             ffi::STD_string_view_result_error,
             ffi::STD_string_view_result_value_unsafe
         )?;
-        // let s = unsafe {
-        //     let s = std::slice::from_raw_parts(
-        //         ffi::STD_string_view_data(sv.as_ptr()).cast(),
-        //         ffi::STD_string_view_size(sv.as_ptr()),
-        //     );
-        //     std::str::from_utf8_unchecked(s)
-        // };
-        // unsafe { ffi::STD_string_view_free(sv.as_ptr()) };
-
-        let s = string_view_to_str(sv);
-        Ok(s)
+        Ok(string_view_to_str(sv))
     }
 
     // Double free error.

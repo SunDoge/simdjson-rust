@@ -1,12 +1,13 @@
-use simdjson_sys as ffi;
 use std::{marker::PhantomData, ptr::NonNull};
 
-use crate::macros::{impl_drop, map_result};
-use crate::utils::string_view_to_str;
+use simdjson_sys as ffi;
 
-use super::document::Document;
-use super::{array::Array, object::Object};
-use crate::error::Result;
+use super::{array::Array, document::Document, object::Object};
+use crate::{
+    error::Result,
+    macros::{impl_drop, map_result},
+    utils::string_view_to_str,
+};
 
 pub struct Value<'a> {
     ptr: NonNull<ffi::SJ_OD_value>,

@@ -1,5 +1,6 @@
-use simdjson_sys as ffi;
 use std::ptr::NonNull;
+
+use simdjson_sys as ffi;
 
 #[inline]
 pub fn string_view_to_str<'a>(sv: NonNull<ffi::STD_string_view>) -> &'a str {

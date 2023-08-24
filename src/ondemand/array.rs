@@ -1,5 +1,6 @@
-use simdjson_sys as ffi;
 use std::{marker::PhantomData, ptr::NonNull};
+
+use simdjson_sys as ffi;
 
 use super::{array_iterator::ArrayIterator, document::Document, value::Value};
 use crate::{

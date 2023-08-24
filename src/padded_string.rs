@@ -16,5 +16,34 @@ pub fn load_padded_string<P: AsRef<Path>>(path: P) -> std::io::Result<String> {
     Ok(buf)
 }
 
+pub trait ToPaddedString {
+    fn to_padded_string(&self) -> String;
+}
+
+pub trait IntoPaddedString {
+    fn into_padded_string(self) -> String;
+}
+
+impl ToPaddedString for &str {
+    fn to_padded_string(&self) -> String {
+        make_padded_string(self)
+    }
+}
+
+impl ToPaddedString for &mut str {
+    fn to_padded_string(&self) -> String {
+        make_padded_string(self)
+    }
+}
+
+impl IntoPaddedString for String {
+    fn into_padded_string(mut self) -> String {
+        if self.capacity() < self.len() + ffi::SIMDJSON_PADDING {
+            self.reserve(ffi::SIMDJSON_PADDING);
+        }
+        self
+    }
+}
+
 #[cfg(test)]
 mod tests {}

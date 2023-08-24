@@ -46,7 +46,10 @@ pub enum SimdJsonError {
     #[error("A string is opened, but never closed.")]
     UnclosedString,
 
-    #[error("simdjson does not have an implementation supported by this CPU architecture (perhaps it's a non-SIMD CPU?).")]
+    #[error(
+        "simdjson does not have an implementation supported by this CPU architecture (perhaps \
+         it's a non-SIMD CPU?)."
+    )]
     UnsupportedArchitecture,
 
     #[error("The JSON element does not have the requested type.")]

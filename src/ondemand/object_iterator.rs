@@ -1,9 +1,9 @@
-use simdjson_sys as ffi;
 use std::{marker::PhantomData, ptr::NonNull};
 
-use crate::{error::Result, macros::map_result};
+use simdjson_sys as ffi;
 
 use super::{document::Document, field::Field};
+use crate::{error::Result, macros::map_result};
 
 pub struct ObjectIterator<'a> {
     begin: NonNull<ffi::SJ_OD_object_iterator>,

@@ -2,13 +2,12 @@ use std::{marker::PhantomData, ptr::NonNull};
 
 use simdjson_sys as ffi;
 
+use super::{array::Array, object::Object, parser::Parser, value::Value};
 use crate::{
     error::Result,
     macros::{impl_drop, map_result},
     utils::string_view_to_str,
 };
-
-use super::{array::Array, object::Object, parser::Parser, value::Value};
 
 pub struct Document<'p, 's> {
     ptr: NonNull<ffi::SJ_OD_document>,

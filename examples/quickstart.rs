@@ -1,4 +1,4 @@
-use simdjson_rust::{error::Result, ondemand::parser::Parser, padded_string::load_padded_string};
+use simdjson_rust::{ondemand::parser::Parser, padded_string::load_padded_string, Result};
 
 fn main() -> Result<()> {
     // let mut parser = dom::Parser::default();

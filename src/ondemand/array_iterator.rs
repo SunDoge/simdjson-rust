@@ -1,9 +1,9 @@
-use simdjson_sys as ffi;
 use std::{marker::PhantomData, ptr::NonNull};
 
-use crate::{error::Result, macros::map_result};
+use simdjson_sys as ffi;
 
 use super::{document::Document, value::Value};
+use crate::{error::Result, macros::map_result};
 
 pub struct ArrayIterator<'a> {
     begin: NonNull<ffi::SJ_OD_array_iterator>,
@@ -73,8 +73,6 @@ impl<'a> Iterator for ArrayIterator<'a> {
 #[cfg(test)]
 mod tests {
     use crate::{ondemand::parser::Parser, padded_string::make_padded_string};
-
-    
 
     #[test]
     fn test_iter() {

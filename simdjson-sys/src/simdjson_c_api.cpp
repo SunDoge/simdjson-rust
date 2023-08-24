@@ -158,8 +158,16 @@ size_t STD_string_view_size(STD_string_view *sv) {
 IMPL_GET(SJ_OD_array, ondemand::array, size_t, count_elements)
 IMPL_GET(SJ_OD_array, ondemand::array, bool, is_empty)
 IMPL_GET(SJ_OD_array, ondemand::array, bool, reset)
+IMPL_GET(SJ_OD_array, ondemand::array, SJ_OD_array_iterator, begin)
+IMPL_GET(SJ_OD_array, ondemand::array, SJ_OD_array_iterator, end)
 
 SJ_OD_value_result *SJ_OD_array_at(SJ_OD_array *array, size_t index) {
   auto result = reinterpret_cast<ondemand::array *>(array)->at(index);
   return object_to_pointer<SJ_OD_value_result>(std::move(result));
+}
+
+// ondemand::array_iterator
+SJ_OD_value_result* SJ_OD_array_iterator_get(SJ_OD_array_iterator* self) {
+  auto ptr = reinterpret_cast<ondemand::array_iterator*>(self);
+  return object_to_pointer<SJ_OD_value_result>(**ptr);
 }

@@ -4,7 +4,6 @@ use std::{marker::PhantomData, ptr::NonNull};
 use crate::macros::{impl_drop, map_result};
 
 use super::document::Document;
-use super::parser::Parser;
 use super::{array::Array, object::Object};
 use crate::error::Result;
 

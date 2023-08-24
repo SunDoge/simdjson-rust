@@ -1,7 +1,7 @@
 use simdjson_sys as ffi;
 use std::{marker::PhantomData, ptr::NonNull};
 
-use super::document::Document;
+use super::{document::Document, value::Value};
 use crate::{
     error::Result,
     macros::{impl_drop, map_result},
@@ -39,6 +39,33 @@ impl<'d> Array<'d> {
             ffi::bool_result_value_unsafe
         )
     }
+
+    pub fn at(&mut self, index: usize) -> Result<Value> {
+        map_result!(
+            ffi::SJ_OD_array_at(self.ptr.as_mut(), index),
+            ffi::SJ_OD_value_result_error,
+            ffi::SJ_OD_value_result_value_unsafe
+        )
+        .map(Value::new)
+    }
+
+    pub fn reset(&mut self) -> Result<bool> {
+        map_result!(
+            primitive,
+            ffi::SJ_OD_array_reset(self.ptr.as_mut()),
+            ffi::bool_result_error,
+            ffi::bool_result_value_unsafe
+        )
+    }
+
+    fn begin(&mut self) {
+
+    }
+
+    fn end(&self) {
+        
+    }
+    
 }
 
 impl_drop!(Array<'d>, ffi::SJ_OD_array_free);

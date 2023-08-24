@@ -1,24 +1,20 @@
-use super::libsimdjson::ffi;
+use std::{io::Read, path::Path};
 
-pub type PaddedStringPtr = cxx::UniquePtr<ffi::padded_string>;
+use simdjson_sys as ffi;
 
-pub struct PaddedString {
-    ptr: PaddedStringPtr,
+pub fn make_padded_string(s: &str) -> String {
+    let mut ps = String::with_capacity(s.len() + ffi::SIMDJSON_PADDING);
+    ps.push_str(s);
+    ps
 }
 
-impl PaddedString {
-    pub fn new(ptr: PaddedStringPtr) -> Self {
-        PaddedString { ptr }
-    }
-
-    pub fn as_ptr(&self) -> &PaddedStringPtr {
-        &self.ptr
-    }
+pub fn load_padded_string<P: AsRef<Path>>(path: P) -> std::io::Result<String> {
+    let mut file = std::fs::File::open(path)?;
+    let len = file.metadata()?.len() as usize;
+    let mut buf = String::with_capacity(len + ffi::SIMDJSON_PADDING);
+    file.read_to_string(&mut buf)?;
+    Ok(buf)
 }
 
-impl From<&str> for PaddedString {
-    fn from(s: &str) -> Self {
-        let ptr = ffi::padded_string_from_string(s);
-        PaddedString { ptr }
-    }
-}
+#[cfg(test)]
+mod tests {}

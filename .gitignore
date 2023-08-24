@@ -5,4 +5,5 @@ Cargo.lock
 
 .vscode/
 .idea/
-
+.cache/
+build/

@@ -1,33 +1,27 @@
 [package]
 name = "simdjson-rust"
-version = "0.2.0-alpha"
+version = "0.3.0"
 authors = ["SunDoge <384813529@qq.com>"]
-edition = "2018"
-links = "simdjson-rust"
+edition = "2021"
 license = "Apache-2.0"
+exclude = [".github/", "examples/"]
 
-# [dependencies]
-# simdjson-sys = {path="simdjson-sys"}
 
-# [workspace]
-# members = ["simdjson-sys"]
+[workspace]
+members = ["simdjson-sys"]
 
 
 [dependencies]
-cxx = "1.0.74"
 thiserror = "1.0"
-# anyhow = "1.0"
+simdjson-sys = { path = "simdjson-sys" }
 
 # serde compatibilty
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
 
-[build-dependencies]
-cxx-build = "1.0.74"
-
 
 [features]
-default = ["serde_impl"]
+default = []
 
 # serde compatibility
 serde_impl = ["serde", "serde_json"]

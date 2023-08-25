@@ -14,3 +14,11 @@ pub fn string_view_to_str<'a>(sv: NonNull<ffi::STD_string_view>) -> &'a str {
     unsafe { ffi::STD_string_view_free(sv.as_ptr()) };
     s
 }
+
+#[inline]
+pub fn string_view_struct_to_str<'a>(sv: ffi::SJ_string_view) -> &'a str {
+    unsafe {
+        let s = std::slice::from_raw_parts(sv.data.cast(), sv.len);
+        std::str::from_utf8_unchecked(s)
+    }
+}

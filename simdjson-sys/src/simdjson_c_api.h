@@ -198,6 +198,8 @@ DEFINE_HANDLE(SJ_DOM_array)
 DEFINE_HANDLE_RESULT(SJ_DOM_array)
 DEFINE_HANDLE(SJ_DOM_object)
 DEFINE_HANDLE_RESULT(SJ_DOM_object)
+DEFINE_HANDLE(SJ_DOM_array_iterator)
+DEFINE_HANDLE(SJ_DOM_object_iterator)
 
 DEFINE_PRIMITIVE_RESULT_V2(uint64_t)
 DEFINE_PRIMITIVE_RESULT_V2(int64_t)
@@ -221,11 +223,6 @@ typedef struct SJ_DOM_key_value_pair {
   SJ_DOM_element *value;
 } SJ_DOM_key_value_pair;
 
-typedef struct SJ_DOM_key_value_pair_result {
-  int error;
-  SJ_DOM_key_value_pair value;
-} SJ_DOM_key_value_pair_result;
-
 // dom::parser
 SJ_DOM_parser *SJ_DOM_parser_new(size_t max_capacity);
 SJ_DOM_element_result SJ_DOM_parser_parse(SJ_DOM_parser *parser,
@@ -240,8 +237,42 @@ DEFINE_GET_V2(SJ_DOM_element, SJ_int64_t_result, get_int64)
 DEFINE_GET_V2(SJ_DOM_element, SJ_uint64_t_result, get_uint64)
 DEFINE_GET_V2(SJ_DOM_element, SJ_double_result, get_double)
 DEFINE_GET_V2(SJ_DOM_element, SJ_bool_result, get_bool)
+SJ_DOM_element_result SJ_DOM_element_at_pointer(SJ_DOM_element *element,
+                                                const char *s, size_t len);
 
 // dom::array
+DEFINE_GET_V2(SJ_DOM_array, SJ_DOM_array_iterator *, begin)
+DEFINE_GET_V2(SJ_DOM_array, SJ_DOM_array_iterator *, end)
+DEFINE_GET_V2(SJ_DOM_array, size_t, size)
+DEFINE_GET_V2(SJ_DOM_array, size_t, number_of_slots)
+
+SJ_DOM_element_result SJ_DOM_array_at(SJ_DOM_array *array, size_t index);
+SJ_DOM_element_result SJ_DOM_array_at_pointer(SJ_DOM_array *array,
+                                              const char *s, size_t len);
+
+// dom::object
+DEFINE_GET_V2(SJ_DOM_object, SJ_DOM_object_iterator *, begin)
+DEFINE_GET_V2(SJ_DOM_object, SJ_DOM_object_iterator *, end)
+DEFINE_GET_V2(SJ_DOM_object, size_t, size)
+
+SJ_DOM_element_result SJ_DOM_object_at_pointer(SJ_DOM_object *object,
+                                               const char *s, size_t len);
+SJ_DOM_element_result SJ_DOM_object_at_key(SJ_DOM_object *object, const char *s,
+                                           size_t len);
+SJ_DOM_element_result
+SJ_DOM_object_at_key_case_insensitive(SJ_DOM_object *object, const char *s,
+                                      size_t len);
+
+// dom::iterator
+DEFINE_GET_V2(SJ_DOM_array_iterator, SJ_DOM_element *, get)
+DEFINE_GET_V2(SJ_DOM_array_iterator, void, step)
+bool SJ_DOM_array_iterator_not_equal(SJ_DOM_array_iterator *lhs,
+                                     SJ_DOM_array_iterator *rhs);
+
+DEFINE_GET_V2(SJ_DOM_object_iterator, SJ_DOM_key_value_pair, get)
+DEFINE_GET_V2(SJ_DOM_object_iterator, void, step)
+bool SJ_DOM_object_iterator_not_equal(SJ_DOM_object_iterator *lhs,
+                                      SJ_DOM_object_iterator *rhs);
 
 #ifdef __cplusplus
 }

@@ -181,11 +181,12 @@ DEFINE_GET_PRIMITIVE(SJ_OD_number, double, get_double)
     name *value;                                                               \
   } name##_result;
 
-#define DEFINE_PRIMITIVE_RESULT(name)                                          \
+// Add prefix SJ_ so we can use allowlist.
+#define DEFINE_PRIMITIVE_RESULT_V2(name)                                       \
   typedef struct SJ_##name##_result {                                          \
     int error;                                                                 \
     name value;                                                                \
-  } name##_result;
+  } SJ_##name##_result;
 
 #define DEFINE_GET_V2(self, value, method) value self##_##method(self *r);
 
@@ -198,12 +199,12 @@ DEFINE_HANDLE_RESULT(SJ_DOM_array)
 DEFINE_HANDLE(SJ_DOM_object)
 DEFINE_HANDLE_RESULT(SJ_DOM_object)
 
-DEFINE_PRIMITIVE_RESULT(uint64_t)
-DEFINE_PRIMITIVE_RESULT(int64_t)
-DEFINE_PRIMITIVE_RESULT(double)
-DEFINE_PRIMITIVE_RESULT(bool)
-DEFINE_PRIMITIVE_RESULT(size_t)
-DEFINE_PRIMITIVE_RESULT(int)
+DEFINE_PRIMITIVE_RESULT_V2(uint64_t)
+DEFINE_PRIMITIVE_RESULT_V2(int64_t)
+DEFINE_PRIMITIVE_RESULT_V2(double)
+DEFINE_PRIMITIVE_RESULT_V2(bool)
+DEFINE_PRIMITIVE_RESULT_V2(size_t)
+DEFINE_PRIMITIVE_RESULT_V2(int)
 
 typedef struct SJ_string_view {
   const char *data;
@@ -241,7 +242,6 @@ DEFINE_GET_V2(SJ_DOM_element, SJ_double_result, get_double)
 DEFINE_GET_V2(SJ_DOM_element, SJ_bool_result, get_bool)
 
 // dom::array
-
 
 #ifdef __cplusplus
 }

@@ -1,26 +1,32 @@
-use crate::{macros::impl_drop, utils::string_view_struct_to_str};
+use std::{marker::PhantomData, ptr::NonNull};
+
 use simdjson_sys as ffi;
-use std::ptr::NonNull;
 
-use super::Element;
+use super::{Element, Parser};
+use crate::{macros::impl_drop, utils::string_view_struct_to_str};
 
-pub struct Object {
+pub struct Object<'a> {
     ptr: NonNull<ffi::SJ_DOM_object>,
+    _parser: PhantomData<&'a Parser>,
 }
 
-impl Object {
+impl<'a> Object<'a> {
     pub fn new(ptr: NonNull<ffi::SJ_DOM_object>) -> Self {
-        Self { ptr }
+        Self {
+            ptr,
+            _parser: PhantomData,
+        }
     }
 }
 
-pub struct ObjectIter {
+pub struct ObjectIter<'a> {
     begin: NonNull<ffi::SJ_DOM_object_iterator>,
     end: NonNull<ffi::SJ_DOM_object_iterator>,
     running: bool,
+    _parser: PhantomData<&'a Parser>,
 }
 
-impl ObjectIter {
+impl<'a> ObjectIter<'a> {
     pub fn new(
         begin: NonNull<ffi::SJ_DOM_object_iterator>,
         end: NonNull<ffi::SJ_DOM_object_iterator>,
@@ -29,10 +35,11 @@ impl ObjectIter {
             begin,
             end,
             running: false,
+            _parser: PhantomData,
         }
     }
 
-    pub fn get(&self) -> (&'static str, Element) {
+    pub fn get(&self) -> (&'a str, Element<'a>) {
         let kv = unsafe { ffi::SJ_DOM_object_iterator_get(self.begin.as_ptr()) };
         let key = string_view_struct_to_str(kv.key);
         let value = Element::new(unsafe { NonNull::new_unchecked(kv.value) });
@@ -48,7 +55,7 @@ impl ObjectIter {
     }
 }
 
-impl Drop for ObjectIter {
+impl<'a> Drop for ObjectIter<'a> {
     fn drop(&mut self) {
         unsafe {
             ffi::SJ_DOM_object_iterator_free(self.begin.as_ptr());
@@ -57,8 +64,8 @@ impl Drop for ObjectIter {
     }
 }
 
-impl Iterator for ObjectIter {
-    type Item = (&'static str, Element);
+impl<'a> Iterator for ObjectIter<'a> {
+    type Item = (&'a str, Element<'a>);
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.running {
@@ -74,4 +81,4 @@ impl Iterator for ObjectIter {
     }
 }
 
-impl_drop!(Object, ffi::SJ_DOM_object_free);
+impl_drop!(Object<'a>, ffi::SJ_DOM_object_free);

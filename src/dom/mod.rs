@@ -1,4 +1,5 @@
 mod array;
+mod document;
 mod element;
 mod object;
 mod parser;

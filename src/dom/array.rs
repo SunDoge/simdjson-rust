@@ -1,17 +1,24 @@
-use crate::macros::{impl_drop, map_ptr_result};
+use std::{marker::PhantomData, ptr::NonNull};
+
 use simdjson_sys as ffi;
-use std::ptr::NonNull;
 
-use super::element::Element;
-use crate::Result;
+use super::{element::Element, Parser};
+use crate::{
+    macros::{impl_drop, map_ptr_result},
+    Result,
+};
 
-pub struct Array {
+pub struct Array<'a> {
     ptr: NonNull<ffi::SJ_DOM_array>,
+    _parser: PhantomData<&'a Parser>,
 }
 
-impl Array {
+impl<'a> Array<'a> {
     pub fn new(ptr: NonNull<ffi::SJ_DOM_array>) -> Self {
-        Self { ptr }
+        Self {
+            ptr,
+            _parser: PhantomData,
+        }
     }
 
     pub fn iter(&self) -> ArrayIter {
@@ -28,7 +35,7 @@ impl Array {
         unsafe { ffi::SJ_DOM_array_number_of_slots(self.ptr.as_ptr()) }
     }
 
-    pub fn at_pointer(&self, json_pointer: &str) -> Result<Element> {
+    pub fn at_pointer(&self, json_pointer: &str) -> Result<Element<'a>> {
         map_ptr_result!(ffi::SJ_DOM_array_at_pointer(
             self.ptr.as_ptr(),
             json_pointer.as_ptr().cast(),
@@ -37,20 +44,21 @@ impl Array {
         .map(Element::new)
     }
 
-    pub fn at(&self, index: usize) -> Result<Element> {
+    pub fn at(&self, index: usize) -> Result<Element<'a>> {
         map_ptr_result!(ffi::SJ_DOM_array_at(self.ptr.as_ptr(), index)).map(Element::new)
     }
 }
 
-impl_drop!(Array, ffi::SJ_DOM_array_free);
+impl_drop!(Array<'a>, ffi::SJ_DOM_array_free);
 
-pub struct ArrayIter {
+pub struct ArrayIter<'a> {
     begin: NonNull<ffi::SJ_DOM_array_iterator>,
     end: NonNull<ffi::SJ_DOM_array_iterator>,
     running: bool,
+    _parser: PhantomData<&'a Parser>,
 }
 
-impl ArrayIter {
+impl<'a> ArrayIter<'a> {
     pub fn new(
         begin: NonNull<ffi::SJ_DOM_array_iterator>,
         end: NonNull<ffi::SJ_DOM_array_iterator>,
@@ -59,10 +67,11 @@ impl ArrayIter {
             begin,
             end,
             running: false,
+            _parser: PhantomData,
         }
     }
 
-    pub fn get(&self) -> Element {
+    pub fn get(&self) -> Element<'a> {
         let ptr = unsafe { ffi::SJ_DOM_array_iterator_get(self.begin.as_ptr()) };
         Element::new(unsafe { NonNull::new_unchecked(ptr) })
     }
@@ -76,7 +85,7 @@ impl ArrayIter {
     }
 }
 
-impl Drop for ArrayIter {
+impl<'a> Drop for ArrayIter<'a> {
     fn drop(&mut self) {
         unsafe {
             ffi::SJ_DOM_array_iterator_free(self.begin.as_ptr());
@@ -85,8 +94,8 @@ impl Drop for ArrayIter {
     }
 }
 
-impl Iterator for ArrayIter {
-    type Item = Element;
+impl<'a> Iterator for ArrayIter<'a> {
+    type Item = Element<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.running {

@@ -2,12 +2,11 @@ use std::ptr::NonNull;
 
 use simdjson_sys as ffi;
 
+use super::element::Element;
 use crate::{
     macros::{impl_drop, map_ptr_result},
     Result,
 };
-
-use super::element::Element;
 
 pub struct Parser {
     ptr: NonNull<ffi::SJ_DOM_parser>,

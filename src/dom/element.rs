@@ -1,23 +1,23 @@
-use simdjson_sys as ffi;
-use std::ptr::NonNull;
+use std::{marker::PhantomData, ptr::NonNull};
 
+use simdjson_sys as ffi;
+
+use super::{array::Array, object::Object, Parser};
 use crate::{
     macros::{impl_drop, map_primitive_result, map_ptr_result},
     utils::string_view_struct_to_str,
     Result,
 };
 
-use super::{array::Array, object::Object};
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ElementType {
-    Array = '[' as _,
-    Object = '{' as _,
-    Int64 = 'l' as _,
-    UInt64 = 'u' as _,
-    Double = 'd' as _,
-    String = '"' as _,
-    Bool = 't' as _,
+    Array     = '[' as _,
+    Object    = '{' as _,
+    Int64     = 'l' as _,
+    UInt64    = 'u' as _,
+    Double    = 'd' as _,
+    String    = '"' as _,
+    Bool      = 't' as _,
     NullValue = 'n' as _,
 }
 
@@ -37,13 +37,17 @@ impl From<i32> for ElementType {
     }
 }
 
-pub struct Element {
+pub struct Element<'a> {
     ptr: NonNull<ffi::SJ_DOM_element>,
+    _parser: PhantomData<&'a Parser>,
 }
 
-impl Element {
+impl<'a> Element<'a> {
     pub fn new(ptr: NonNull<ffi::SJ_DOM_element>) -> Self {
-        Self { ptr }
+        Self {
+            ptr,
+            _parser: PhantomData,
+        }
     }
 
     pub fn get_type(&self) -> ElementType {
@@ -58,7 +62,7 @@ impl Element {
         map_ptr_result!(ffi::SJ_DOM_element_get_object(self.ptr.as_ptr())).map(Object::new)
     }
 
-    pub fn get_string(&self) -> Result<&str> {
+    pub fn get_string(&self) -> Result<&'a str> {
         map_primitive_result!(ffi::SJ_DOM_element_get_string(self.ptr.as_ptr()))
             .map(|sv| string_view_struct_to_str(sv))
     }
@@ -89,4 +93,4 @@ impl Element {
     }
 }
 
-impl_drop!(Element, ffi::SJ_DOM_element_free);
+impl_drop!(Element<'a>, ffi::SJ_DOM_element_free);

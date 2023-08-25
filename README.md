@@ -4,6 +4,14 @@
 
 This crate currently uses `simdjson 3.2.3`. You can have a try and give feedback.
 
+If you
+
+- find certain APIs are missing
+- encounter memory errors
+- experience performance degradation
+
+Please submit an issue.
+
 ## Usage
 
 Add this to your `Cargo.toml`
@@ -16,9 +24,9 @@ simdjson-rust = {git = "https://github.com/SunDoge/simdjson-rust"}
 Then, get started.
 
 ```rust
-use simdjson_rust::{error::Result, ondemand::parser::Parser, padded_string::make_padded_string};
+use simdjson_rust::{ondemand::Parser, prelude::*};
 
-fn main() -> Result<()> {
+fn main() -> simdjson_rust::Result<()> {
     let mut parser = Parser::default();
     let ps = make_padded_string("[0,1,2,3]");
     let mut doc = parser.iterate(&ps)?;

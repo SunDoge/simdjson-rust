@@ -12,6 +12,15 @@ template <typename U, typename T> inline U object_to_pointer(T &&t) {
   return reinterpret_cast<U>(new T(std::move(t)));
 }
 
+// template <typename T>
+// inline int enum_result_to_number_result(simdjson_result<T>&& enum_result) {
+//   T inner;
+//   auto error = std::move(enum_result).get(inner);
+//   if (error == error_code::SUCCESS) {
+
+//   }
+// }
+
 } // namespace
 
 #define IMPL_CLASS(name, type)                                                 \
@@ -41,10 +50,9 @@ template <typename U, typename T> inline U object_to_pointer(T &&t) {
   }
 
 #define IMPL_AT_POINTER(self, type)                                            \
-  SJ_OD_value_result *self##_at_pointer(self *self, const char *s,             \
-                                        size_t len) {                          \
+  SJ_OD_value_result *self##_at_pointer(self *r, const char *s, size_t len) {  \
     auto result =                                                              \
-        reinterpret_cast<type *>(self)->at_pointer(std::string_view(s, len));  \
+        reinterpret_cast<type *>(r)->at_pointer(std::string_view(s, len));     \
     return object_to_pointer<SJ_OD_value_result *>(std::move(result));         \
   }
 
@@ -69,12 +77,15 @@ IMPL_CLASS(SJ_OD_object_iterator, ondemand::object_iterator)
 IMPL_RESULT(SJ_OD_object_iterator, ondemand::object_iterator)
 IMPL_CLASS(SJ_OD_field, ondemand::field)
 IMPL_RESULT(SJ_OD_field, ondemand::field)
+IMPL_CLASS(SJ_OD_number, ondemand::number)
+IMPL_RESULT(SJ_OD_number, ondemand::number)
 
 IMPL_PRIMITIVE_RESULT(uint64_t)
 IMPL_PRIMITIVE_RESULT(int64_t)
 IMPL_PRIMITIVE_RESULT(double)
 IMPL_PRIMITIVE_RESULT(bool)
 IMPL_PRIMITIVE_RESULT(size_t)
+IMPL_PRIMITIVE_RESULT(int)
 
 // SJ_padded_string *SJ_padded_string_new(const char *s, size_t len) {
 //   return object_to_pointer<SJ_padded_string *>(padded_string(s, len));
@@ -134,6 +145,9 @@ IMPL_GET(SJ_OD_value, ondemand::value, double, get_double)
 IMPL_GET(SJ_OD_value, ondemand::value, SJ_OD_raw_json_string,
          get_raw_json_string)
 IMPL_GET(SJ_OD_value, ondemand::value, STD_string_view, get_wobbly_string)
+IMPL_GET(SJ_OD_value, ondemand::value, bool, is_null)
+IMPL_GET(SJ_OD_value, ondemand::value, int, type)
+IMPL_GET(SJ_OD_value, ondemand::value, SJ_OD_number, get_number)
 IMPL_AT_POINTER(SJ_OD_value, ondemand::value)
 
 // ondemand::document
@@ -145,6 +159,9 @@ IMPL_GET(SJ_OD_document, ondemand::document, double, get_double)
 IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_raw_json_string,
          get_raw_json_string)
 IMPL_GET(SJ_OD_document, ondemand::document, STD_string_view, get_wobbly_string)
+IMPL_GET(SJ_OD_document, ondemand::document, bool, is_null)
+IMPL_GET(SJ_OD_document, ondemand::document, int, type)
+IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_number, get_number)
 IMPL_AT_POINTER(SJ_OD_document, ondemand::document)
 
 STD_string_view_result *SJ_OD_value_get_string(SJ_OD_value *self,
@@ -251,4 +268,19 @@ SJ_OD_value *SJ_OD_field_take_value(SJ_OD_field *self) {
   auto field = reinterpret_cast<ondemand::field *>(self);
   auto value = std::move(*field).value();
   return object_to_pointer<SJ_OD_value *>(std::move(value));
+}
+
+// ondemand::number
+#define IMPL_GET_PRIMITIVE(self, real_name, value, method)                     \
+  value self##_##method(self *r) {                                             \
+    return reinterpret_cast<real_name *>(r)->method();                         \
+  }
+
+IMPL_GET_PRIMITIVE(SJ_OD_number, ondemand::number, uint64_t, get_uint64)
+IMPL_GET_PRIMITIVE(SJ_OD_number, ondemand::number, int64_t, get_int64)
+IMPL_GET_PRIMITIVE(SJ_OD_number, ondemand::number, double, get_double)
+
+int SJ_OD_number_get_number_type(SJ_OD_number *self) {
+  return static_cast<int>(
+      reinterpret_cast<ondemand::number *>(self)->get_number_type());
 }

@@ -1,9 +1,14 @@
 [package]
 name = "simdjson-rust"
-version = "0.3.0"
+version = "0.3.0-alpha"
 authors = ["SunDoge <384813529@qq.com>"]
 edition = "2021"
 license = "Apache-2.0"
+description = "Rust bindings for the simdjson project."
+homepage = "https://crates.io/crates/simdjson-rust"
+documentation = "https://docs.rs/simdjson-rust"
+repository = "https://github.com/SunDoge/simdjson-rust"
+readme = "README.md"
 exclude = [".github/", "examples/"]
 
 

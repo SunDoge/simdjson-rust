@@ -2,7 +2,7 @@ use std::{marker::PhantomData, ptr::NonNull};
 
 use simdjson_sys as ffi;
 
-use super::{array::Array, document::Document, object::Object};
+use super::{array::Array, document::Document, number::Number, object::Object, JsonType};
 use crate::{
     error::Result,
     macros::{impl_drop, map_result},
@@ -76,6 +76,15 @@ impl<'a> Value<'a> {
         .map(Object::new)
     }
 
+    pub fn get_number(&mut self) -> Result<Number<'a>> {
+        map_result!(
+            ffi::SJ_OD_value_get_number(self.ptr.as_mut()),
+            ffi::SJ_OD_number_result_error,
+            ffi::SJ_OD_number_result_value_unsafe
+        )
+        .map(Number::new)
+    }
+
     pub fn get_string(&mut self, allow_replacement: bool) -> Result<&'a str> {
         let sv = map_result!(
             ffi::SJ_OD_value_get_string(self.ptr.as_mut(), allow_replacement),
@@ -96,6 +105,25 @@ impl<'a> Value<'a> {
             ffi::SJ_OD_value_result_value_unsafe
         )
         .map(Value::new)
+    }
+
+    pub fn is_null(&mut self) -> Result<bool> {
+        map_result!(
+            primitive,
+            ffi::SJ_OD_value_is_null(self.ptr.as_mut()),
+            ffi::bool_result_error,
+            ffi::bool_result_value_unsafe
+        )
+    }
+
+    pub fn json_type(&mut self) -> Result<JsonType> {
+        let json_type = map_result!(
+            primitive,
+            ffi::SJ_OD_value_type(self.ptr.as_mut()),
+            ffi::int_result_error,
+            ffi::int_result_value_unsafe
+        )?;
+        Ok(JsonType::from(json_type))
     }
 }
 

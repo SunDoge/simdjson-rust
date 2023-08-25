@@ -142,27 +142,15 @@ IMPL_GET(SJ_OD_value, ondemand::value, SJ_OD_array, get_array)
 IMPL_GET(SJ_OD_value, ondemand::value, uint64_t, get_uint64)
 IMPL_GET(SJ_OD_value, ondemand::value, int64_t, get_int64)
 IMPL_GET(SJ_OD_value, ondemand::value, double, get_double)
+IMPL_GET(SJ_OD_value, ondemand::value, bool, get_bool)
 IMPL_GET(SJ_OD_value, ondemand::value, SJ_OD_raw_json_string,
          get_raw_json_string)
 IMPL_GET(SJ_OD_value, ondemand::value, STD_string_view, get_wobbly_string)
 IMPL_GET(SJ_OD_value, ondemand::value, bool, is_null)
 IMPL_GET(SJ_OD_value, ondemand::value, int, type)
 IMPL_GET(SJ_OD_value, ondemand::value, SJ_OD_number, get_number)
-IMPL_AT_POINTER(SJ_OD_value, ondemand::value)
 
-// ondemand::document
-IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_object, get_object)
-IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_array, get_array)
-IMPL_GET(SJ_OD_document, ondemand::document, uint64_t, get_uint64)
-IMPL_GET(SJ_OD_document, ondemand::document, int64_t, get_int64)
-IMPL_GET(SJ_OD_document, ondemand::document, double, get_double)
-IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_raw_json_string,
-         get_raw_json_string)
-IMPL_GET(SJ_OD_document, ondemand::document, STD_string_view, get_wobbly_string)
-IMPL_GET(SJ_OD_document, ondemand::document, bool, is_null)
-IMPL_GET(SJ_OD_document, ondemand::document, int, type)
-IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_number, get_number)
-IMPL_AT_POINTER(SJ_OD_document, ondemand::document)
+IMPL_AT_POINTER(SJ_OD_value, ondemand::value)
 
 STD_string_view_result *SJ_OD_value_get_string(SJ_OD_value *self,
                                                bool allow_replacement) {
@@ -170,6 +158,22 @@ STD_string_view_result *SJ_OD_value_get_string(SJ_OD_value *self,
       reinterpret_cast<ondemand::value *>(self)->get_string(allow_replacement);
   return object_to_pointer<STD_string_view_result *>(std::move(result));
 }
+
+// ondemand::document
+IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_object, get_object)
+IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_array, get_array)
+IMPL_GET(SJ_OD_document, ondemand::document, uint64_t, get_uint64)
+IMPL_GET(SJ_OD_document, ondemand::document, int64_t, get_int64)
+IMPL_GET(SJ_OD_document, ondemand::document, double, get_double)
+IMPL_GET(SJ_OD_document, ondemand::document, bool, get_bool)
+IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_raw_json_string,
+         get_raw_json_string)
+IMPL_GET(SJ_OD_document, ondemand::document, STD_string_view, get_wobbly_string)
+IMPL_GET(SJ_OD_document, ondemand::document, bool, is_null)
+IMPL_GET(SJ_OD_document, ondemand::document, int, type)
+IMPL_GET(SJ_OD_document, ondemand::document, SJ_OD_number, get_number)
+
+IMPL_AT_POINTER(SJ_OD_document, ondemand::document)
 
 STD_string_view_result *SJ_OD_document_get_string(SJ_OD_document *self,
                                                   bool allow_replacement) {

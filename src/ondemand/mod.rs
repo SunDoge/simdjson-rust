@@ -1,19 +1,20 @@
-pub(crate) mod array;
-pub(crate) mod array_iterator;
-pub(crate) mod document;
-pub(crate) mod field;
+mod array;
+mod array_iterator;
+mod document;
+mod field;
 mod json_type;
 mod number;
-pub(crate) mod object;
-pub(crate) mod object_iterator;
-pub(crate) mod parser;
-pub(crate) mod value;
+mod object;
+mod object_iterator;
+mod parser;
+mod value;
 
 pub use array::Array;
 pub use array_iterator::ArrayIterator;
 pub use document::Document;
 pub use field::Field;
 pub use json_type::{JsonType, NumberType};
+pub use number::Number;
 pub use object::Object;
 pub use object_iterator::ObjectIterator;
 pub use parser::Parser;

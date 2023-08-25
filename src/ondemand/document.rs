@@ -147,3 +147,29 @@ impl<'p, 's> Document<'p, 's> {
 }
 
 impl_drop!(Document<'p, 's>, ffi::SJ_OD_document_free);
+
+#[cfg(test)]
+mod tests {
+    use crate::prelude::*;
+
+    #[test]
+    fn get_bool() {
+        let mut parser = ondemand::Parser::default();
+
+        {
+            let json = "true".to_padded_string();
+            let mut doc = parser.iterate(&json).unwrap();
+            assert_eq!(doc.get_bool().unwrap(), true);
+        }
+        {
+            let json = "false".to_padded_string();
+            let mut doc = parser.iterate(&json).unwrap();
+            assert_eq!(doc.get_bool().unwrap(), false);
+        }
+        {
+            let json = "1".to_padded_string();
+            let mut doc = parser.iterate(&json).unwrap();
+            assert!(doc.get_bool().is_err());
+        }
+    }
+}

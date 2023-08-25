@@ -13,12 +13,19 @@ exclude = [".github/", "examples/"]
 
 
 [workspace]
+resolver = "2"
 members = ["simdjson-sys"]
+
+[workspace.package]
+version = "0.3.0-alpha"
+
+[workspace.dependencies]
+simdjson-sys = { path = "simdjson-sys" }
 
 
 [dependencies]
 thiserror = "1.0"
-simdjson-sys = { path = "simdjson-sys" }
+simdjson-sys = { workspace = true }
 
 # serde compatibilty
 serde = { version = "1", features = ["derive"], optional = true }

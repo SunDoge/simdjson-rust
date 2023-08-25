@@ -1,6 +1,6 @@
 [package]
 name = "simdjson-sys"
-version = { workspace = true }
+version = "0.1.0-alpha"
 edition = "2021"
 authors = ["SunDoge <384813529@qq.com>"]
 license = "Apache-2.0"

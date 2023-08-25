@@ -7,6 +7,7 @@ fn main() {
         .flag_if_supported("/std:c++17")
         .flag_if_supported("-pthread")
         .flag_if_supported("-O3")
+        .flag("-DNDEBUG")
         .include("simdjson/singleheader")
         .file("src/simdjson_c_api.cpp")
         .file("simdjson/singleheader/simdjson.cpp")

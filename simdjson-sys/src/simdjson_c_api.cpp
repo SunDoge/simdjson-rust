@@ -288,3 +288,21 @@ int SJ_OD_number_get_number_type(SJ_OD_number *self) {
   return static_cast<int>(
       reinterpret_cast<ondemand::number *>(self)->get_number_type());
 }
+
+// New macros for dom
+#define IMPL_HANDLE(name, type)                                                \
+  void name##_free(name *r) { delete reinterpret_cast<type *>(r); }            \
+  type *cast_ptr(name *r) { return reinterpret_cast<type *>(r); }
+
+IMPL_HANDLE(SJ_DOM_parser, dom::parser)
+
+SJ_DOM_parser *SJ_DOM_parser_new(size_t max_capacity) {
+  return object_to_pointer<SJ_DOM_parser *>(dom::parser(max_capacity));
+}
+
+SJ_DOM_element_result SJ_DOM_parser_parse(SJ_DOM_parser *parser,
+                                          const char *json, size_t len) {
+  auto result = cast_ptr(parser)->parse(json, len, false);
+  return {static_cast<int>(result.error()),
+          object_to_pointer<SJ_DOM_element *>(std::move(result.value()))};
+}

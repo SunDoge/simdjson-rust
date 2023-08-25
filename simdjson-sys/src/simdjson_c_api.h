@@ -169,6 +169,80 @@ DEFINE_GET_PRIMITIVE(SJ_OD_number, uint64_t, get_uint64)
 DEFINE_GET_PRIMITIVE(SJ_OD_number, int64_t, get_int64)
 DEFINE_GET_PRIMITIVE(SJ_OD_number, double, get_double)
 
+// New macros for dom
+
+#define DEFINE_HANDLE(name)                                                    \
+  typedef struct name name;                                                    \
+  void name##_free(name *r);
+
+#define DEFINE_HANDLE_RESULT(name)                                             \
+  typedef struct name##_result {                                               \
+    int error;                                                                 \
+    name *value;                                                               \
+  } name##_result;
+
+#define DEFINE_PRIMITIVE_RESULT(name)                                          \
+  typedef struct SJ_##name##_result {                                          \
+    int error;                                                                 \
+    name value;                                                                \
+  } name##_result;
+
+#define DEFINE_GET_V2(self, value, method) value self##_##method(self *r);
+
+DEFINE_HANDLE(SJ_DOM_parser)
+
+DEFINE_HANDLE(SJ_DOM_element)
+DEFINE_HANDLE_RESULT(SJ_DOM_element)
+DEFINE_HANDLE(SJ_DOM_array)
+DEFINE_HANDLE_RESULT(SJ_DOM_array)
+DEFINE_HANDLE(SJ_DOM_object)
+DEFINE_HANDLE_RESULT(SJ_DOM_object)
+
+DEFINE_PRIMITIVE_RESULT(uint64_t)
+DEFINE_PRIMITIVE_RESULT(int64_t)
+DEFINE_PRIMITIVE_RESULT(double)
+DEFINE_PRIMITIVE_RESULT(bool)
+DEFINE_PRIMITIVE_RESULT(size_t)
+DEFINE_PRIMITIVE_RESULT(int)
+
+typedef struct SJ_string_view {
+  const char *data;
+  size_t len;
+} SJ_string_view;
+
+typedef struct SJ_string_view_result {
+  int error;
+  SJ_string_view value;
+} SJ_string_view_result;
+
+typedef struct SJ_DOM_key_value_pair {
+  SJ_string_view key;
+  SJ_DOM_element *value;
+} SJ_DOM_key_value_pair;
+
+typedef struct SJ_DOM_key_value_pair_result {
+  int error;
+  SJ_DOM_key_value_pair value;
+} SJ_DOM_key_value_pair_result;
+
+// dom::parser
+SJ_DOM_parser *SJ_DOM_parser_new(size_t max_capacity);
+SJ_DOM_element_result SJ_DOM_parser_parse(SJ_DOM_parser *parser,
+                                          const char *json, size_t len);
+
+// dom::element
+DEFINE_GET_V2(SJ_DOM_element, int, type)
+DEFINE_GET_V2(SJ_DOM_element, SJ_DOM_array_result, get_array)
+DEFINE_GET_V2(SJ_DOM_element, SJ_DOM_object_result, get_object)
+DEFINE_GET_V2(SJ_DOM_element, SJ_string_view_result, get_string)
+DEFINE_GET_V2(SJ_DOM_element, SJ_int64_t_result, get_int64)
+DEFINE_GET_V2(SJ_DOM_element, SJ_uint64_t_result, get_uint64)
+DEFINE_GET_V2(SJ_DOM_element, SJ_double_result, get_double)
+DEFINE_GET_V2(SJ_DOM_element, SJ_bool_result, get_bool)
+
+// dom::array
+
+
 #ifdef __cplusplus
 }
 #endif

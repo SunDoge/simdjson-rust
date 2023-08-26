@@ -4,7 +4,7 @@
 [![Crates.io](https://img.shields.io/crates/v/simdjson-rust?style=for-the-badge)](https://crates.io/crates/simdjson-rust)
 [![docs.rs](https://img.shields.io/docsrs/simdjson-rust/latest?style=for-the-badge)](https://docs.rs/simdjson-rust)
 
-This crate currently uses `simdjson 3.2.3`. You can have a try and give feedback.
+This crate currently uses [`simdjson 3.2.3`][simdjson]. You can have a try and give feedback.
 
 If you
 
@@ -80,7 +80,7 @@ fn main() -> simdjson_rust::Result<()> {
 
 ### `dom` and `ondemand` 
 
-`simdjson` now offer two kinds of API, `dom` and `ondemand`.
+[`simdjson`][simdjson] now offer two kinds of API, `dom` and `ondemand`.
 `dom` will parsed the whole string while `ondemand` only parse what you request.
 Due to `ffi`, the overhead of `ondemand` API is relatively high. I have tested `lto` but it only improves a little :(
 
@@ -92,7 +92,7 @@ Thus it is suggestted that
 
 ### `padded_string`
 
-`simdjson` requires the input string to be padded. We must provide a string with `capacity = len + SIMDJSON_PADDING`.
+[`simdjson`][simdjson] requires the input string to be padded. We must provide a string with `capacity = len + SIMDJSON_PADDING`.
 We provide utils to do so.
 
 ```rust
@@ -112,4 +112,7 @@ fn main() -> simdjson_rust::Result<()> {
 
 ## Other interesting things
 
-There are also pure Rust port of `simdjson` available here [simd-json](https://github.com/simd-lite/simd-json).
+There are also pure Rust port of [`simdjson`][simdjson] available here [`simd-json`](https://github.com/simd-lite/simd-json).
+
+
+[simdjson]: https://github.com/simdjson/simdjson

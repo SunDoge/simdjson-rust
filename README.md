@@ -52,7 +52,7 @@ use simdjson_rust::prelude::*;
 use simdjson_rust::{dom, ondemand};
 
 fn main() -> simdjson_rust::Result<()> {
-    let ps = make_padded_string("[0,1,2,3]");
+    let ps = "[0,1,2,3]".to_padded_string();
 
     // ondemand api.
     {

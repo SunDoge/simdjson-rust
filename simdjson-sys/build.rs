@@ -7,7 +7,9 @@ fn main() {
         .flag_if_supported("/std:c++20") // error C7555: use of designated initializers requires at least '/std:c++20'
         .flag_if_supported("-pthread")
         .flag_if_supported("-O3")
-        .flag("-DNDEBUG")
+        .flag_if_supported("/O2")
+        .flag_if_supported("-DNDEBUG")
+        .flag_if_supported("/DNDEBUG")
         .include("simdjson/singleheader")
         .file("src/simdjson_c_api.cpp")
         .file("simdjson/singleheader/simdjson.cpp")

@@ -34,11 +34,11 @@ impl Parser {
         .map(Element::new)
     }
 
-    pub fn parse_into_document(
-        &mut self,
-        doc: &mut Document,
+    pub fn parse_into_document<'d>(
+        &self,
+        doc: &'d mut Document,
         padded_string: &String,
-    ) -> Result<Element> {
+    ) -> Result<Element<'d>> {
         map_ptr_result!(ffi::SJ_DOM_parser_parse_into_document(
             self.ptr.as_ptr(),
             doc.as_ptr(),
@@ -68,3 +68,34 @@ impl Parser {
 }
 
 impl_drop!(Parser, ffi::SJ_DOM_parser_free);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::prelude::*;
+
+    #[test]
+    fn parse() {
+        let ps = "1".to_padded_string();
+        let mut parser = Parser::default();
+        let elem = parser.parse(&ps).unwrap();
+        assert_eq!(elem.get_uint64().unwrap(), 1);
+    }
+
+    #[test]
+    fn parse_into_document() {
+        let ps = "[1,2,3]".to_padded_string();
+        let parser = Parser::default();
+        let mut doc = Document::new();
+        let elem = parser.parse_into_document(&mut doc, &ps).unwrap();
+        assert_eq!(
+            elem.get_array()
+                .unwrap()
+                .at(0)
+                .unwrap()
+                .get_uint64()
+                .unwrap(),
+            1
+        );
+    }
+}

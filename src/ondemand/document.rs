@@ -150,6 +150,7 @@ impl_drop!(Document<'p, 's>, ffi::SJ_OD_document_free);
 
 #[cfg(test)]
 mod tests {
+    use crate::ondemand;
     use crate::prelude::*;
 
     #[test]

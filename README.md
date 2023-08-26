@@ -20,22 +20,70 @@ Add this to your `Cargo.toml`
 
 ```toml
 # In the `[dependencies]` section
-simdjson-rust = {git = "https://github.com/SunDoge/simdjson-rust"}
+simdjson-rust = "0.3.0"
 ```
 
 Then, get started.
 
 ```rust
-use simdjson_rust::{ondemand::Parser, prelude::*};
+use simdjson_rust::prelude::*;
+use simdjson_rust::{dom, ondemand};
 
 fn main() -> simdjson_rust::Result<()> {
-    let mut parser = Parser::default();
     let ps = make_padded_string("[0,1,2,3]");
-    let mut doc = parser.iterate(&ps)?;
-    let mut array = doc.get_array()?;
-    for (index, value) in array.iter()?.enumerate() {
-        assert_eq!(index as u64, value?.get_uint64()?);
+
+    // ondemand api.
+    {
+        let mut parser = ondemand::Parser::default();
+        let mut doc = parser.iterate(&ps)?;
+        let mut array = doc.get_array()?;
+        for (index, value) in array.iter()?.enumerate() {
+            assert_eq!(index as u64, value?.get_uint64()?);
+        }
     }
+
+    // dom api.
+    {
+        let mut parser = dom::Parser::default();
+        let elem = parser.parse(&ps)?;
+        let arr = elem.get_array()?;
+        for (index, value) in arr.iter().enumerate() {
+            assert_eq!(index as u64, value.get_uint64()?);
+        }
+    }
+
+    Ok(())
+}
+```
+
+### `dom` and `ondemand` 
+
+`simdjson` now offer two kinds of API, `dom` and `ondemand`.
+`dom` will parsed the whole string while `ondemand` only parse what you request.
+Due to `ffi`, the overhead of `ondemand` API is relatively high. I have tested `lto` but it only improves a little :(
+
+Thus it is suggestted that
+
+- use `ondemand` if you only want to access a specific part of a large json,
+- use `dom` if you want to parse the whole json.
+
+
+### `padded_string`
+
+`simdjson` requires the input string to be padded. We must provide a string with `capacity = len + SIMDJSON_PADDING`.
+We provide utils to do so.
+
+```rust
+use simdjson_rust::prelude::*;
+
+fn main() -> simdjson_rust::Result<()> {
+    let ps = make_padded_string("[0,1,2,3]");
+    let ps = "[0,1,2,3]".to_padded_string();
+    // or reuse a buffer.
+    let unpadded = String::from("[1,2,3,4]");
+    let ps = unpadded.into_padded_string();
+    // or load from file.
+    let ps = load_padded_string("test.json")?;
     Ok(())
 }
 ```

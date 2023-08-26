@@ -17,10 +17,10 @@ resolver = "2"
 members = ["simdjson-sys"]
 
 [workspace.package]
-version = "0.3.0-alpha.1"
+version = "0.3.0-alpha.2"
 
 [workspace.dependencies]
-simdjson-sys = { path = "simdjson-sys", version = "0.1.0-alpha.1" }
+simdjson-sys = { path = "simdjson-sys", version = "0.1.0-alpha.2" }
 
 
 [dependencies]

@@ -44,5 +44,33 @@ macro_rules! map_result {
     };
 }
 
+macro_rules! map_ptr_result {
+    ($call:expr) => {
+        unsafe {
+            let res = $call;
+            if res.error == 0 {
+                Ok(std::ptr::NonNull::new_unchecked(res.value))
+            } else {
+                Err(crate::error::SimdJsonError::from(res.error))
+            }
+        }
+    };
+}
+
+macro_rules! map_primitive_result {
+    ($call:expr) => {
+        unsafe {
+            let res = $call;
+            if res.error == 0 {
+                Ok(res.value)
+            } else {
+                Err(crate::error::SimdJsonError::from(res.error))
+            }
+        }
+    };
+}
+
 pub(crate) use impl_drop;
+pub(crate) use map_primitive_result;
+pub(crate) use map_ptr_result;
 pub(crate) use map_result;

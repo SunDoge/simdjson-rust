@@ -1,5 +1,6 @@
 mod macros;
 
+pub mod dom;
 mod error;
 pub mod ondemand;
 pub mod padded_string;

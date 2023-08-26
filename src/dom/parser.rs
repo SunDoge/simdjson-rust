@@ -1,8 +1,9 @@
 use std::ptr::NonNull;
 
+use ffi::DEFAULT_BATCH_SIZE;
 use simdjson_sys as ffi;
 
-use super::element::Element;
+use super::{document::Document, document_stream::DocumentStream, element::Element};
 use crate::{
     macros::{impl_drop, map_ptr_result},
     Result,
@@ -31,6 +32,38 @@ impl Parser {
             padded_string.len()
         ))
         .map(Element::new)
+    }
+
+    pub fn parse_into_document(
+        &mut self,
+        doc: &mut Document,
+        padded_string: &String,
+    ) -> Result<Element> {
+        map_ptr_result!(ffi::SJ_DOM_parser_parse_into_document(
+            self.ptr.as_ptr(),
+            doc.as_ptr(),
+            padded_string.as_ptr().cast(),
+            padded_string.len()
+        ))
+        .map(Element::new)
+    }
+
+    pub fn parse_many(&mut self, padded_string: &String) -> Result<DocumentStream> {
+        self.parse_batch(padded_string, DEFAULT_BATCH_SIZE)
+    }
+
+    pub fn parse_batch(
+        &mut self,
+        padded_string: &String,
+        batch_size: usize,
+    ) -> Result<DocumentStream> {
+        map_ptr_result!(ffi::SJ_DOM_parser_parse_many(
+            self.ptr.as_ptr(),
+            padded_string.as_ptr().cast(),
+            padded_string.len(),
+            batch_size
+        ))
+        .map(DocumentStream::new)
     }
 }
 

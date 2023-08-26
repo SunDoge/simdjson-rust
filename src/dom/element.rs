@@ -2,7 +2,7 @@ use std::{marker::PhantomData, ptr::NonNull};
 
 use simdjson_sys as ffi;
 
-use super::{array::Array, object::Object, Parser};
+use super::{array::Array, document::Document, object::Object, Parser};
 use crate::{
     macros::{impl_drop, map_primitive_result, map_ptr_result},
     utils::string_view_struct_to_str,
@@ -11,13 +11,13 @@ use crate::{
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ElementType {
-    Array     = '[' as _,
-    Object    = '{' as _,
-    Int64     = 'l' as _,
-    UInt64    = 'u' as _,
-    Double    = 'd' as _,
-    String    = '"' as _,
-    Bool      = 't' as _,
+    Array = '[' as _,
+    Object = '{' as _,
+    Int64 = 'l' as _,
+    UInt64 = 'u' as _,
+    Double = 'd' as _,
+    String = '"' as _,
+    Bool = 't' as _,
     NullValue = 'n' as _,
 }
 
@@ -39,14 +39,14 @@ impl From<i32> for ElementType {
 
 pub struct Element<'a> {
     ptr: NonNull<ffi::SJ_DOM_element>,
-    _parser: PhantomData<&'a Parser>,
+    _doc: PhantomData<&'a Document>,
 }
 
 impl<'a> Element<'a> {
     pub fn new(ptr: NonNull<ffi::SJ_DOM_element>) -> Self {
         Self {
             ptr,
-            _parser: PhantomData,
+            _doc: PhantomData,
         }
     }
 

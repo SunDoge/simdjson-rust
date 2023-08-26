@@ -1,5 +1,6 @@
 mod array;
 mod document;
+mod document_stream;
 mod element;
 mod object;
 mod parser;

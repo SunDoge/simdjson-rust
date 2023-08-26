@@ -2,7 +2,7 @@ use std::{marker::PhantomData, ptr::NonNull};
 
 use simdjson_sys as ffi;
 
-use super::{element::Element, Parser};
+use super::{document::Document, element::Element, Parser};
 use crate::{
     macros::{impl_drop, map_ptr_result},
     Result,
@@ -10,14 +10,14 @@ use crate::{
 
 pub struct Array<'a> {
     ptr: NonNull<ffi::SJ_DOM_array>,
-    _parser: PhantomData<&'a Parser>,
+    _doc: PhantomData<&'a Document>,
 }
 
 impl<'a> Array<'a> {
     pub fn new(ptr: NonNull<ffi::SJ_DOM_array>) -> Self {
         Self {
             ptr,
-            _parser: PhantomData,
+            _doc: PhantomData,
         }
     }
 
@@ -55,7 +55,7 @@ pub struct ArrayIter<'a> {
     begin: NonNull<ffi::SJ_DOM_array_iterator>,
     end: NonNull<ffi::SJ_DOM_array_iterator>,
     running: bool,
-    _parser: PhantomData<&'a Parser>,
+    _doc: PhantomData<&'a Document>,
 }
 
 impl<'a> ArrayIter<'a> {
@@ -67,7 +67,7 @@ impl<'a> ArrayIter<'a> {
             begin,
             end,
             running: false,
-            _parser: PhantomData,
+            _doc: PhantomData,
         }
     }
 

@@ -12,6 +12,14 @@ template <typename U, typename T> inline U object_to_pointer(T &&t) {
   return reinterpret_cast<U>(new T(std::move(t)));
 }
 
+// template <typename U, typename T>
+// auto simdjson_result_to_struct(simdjson_result<T> &&sr) {
+//   T value;
+//   const error_code error = std::move(sr).get(value);
+//   return {static_cast<int>(error),
+//           reinterpret_cast<U>(new T(std::move(value)))};
+// }
+
 // template <typename T>
 // inline int enum_result_to_number_result(simdjson_result<T>&& enum_result) {
 //   T inner;
@@ -292,8 +300,8 @@ int SJ_OD_number_get_number_type(SJ_OD_number *self) {
 // New macros for dom
 #define IMPL_HANDLE(name, type)                                                \
   void name##_free(name *r) { delete reinterpret_cast<type *>(r); }            \
-  type *cast_to_type(name *r) { return reinterpret_cast<type *>(r); }          \
-  name *move_to_handle(type &&r) {                                             \
+  inline type *cast_to_type(name *r) { return reinterpret_cast<type *>(r); }   \
+  inline name *move_to_handle(type &&r) {                                      \
     return object_to_pointer<name *>(std::move(r));                            \
   }
 
@@ -303,6 +311,9 @@ IMPL_HANDLE(SJ_DOM_element, dom::element)
 IMPL_HANDLE(SJ_DOM_object, dom::object)
 IMPL_HANDLE(SJ_DOM_array_iterator, dom::array::iterator)
 IMPL_HANDLE(SJ_DOM_object_iterator, dom::object::iterator)
+IMPL_HANDLE(SJ_DOM_document, dom::document)
+IMPL_HANDLE(SJ_DOM_document_stream, dom::document_stream)
+IMPL_HANDLE(SJ_DOM_document_stream_iterator, dom::document_stream::iterator)
 
 // dom::parser
 SJ_DOM_parser *SJ_DOM_parser_new(size_t max_capacity) {
@@ -315,6 +326,26 @@ SJ_DOM_element_result SJ_DOM_parser_parse(SJ_DOM_parser *parser,
   const auto error = reinterpret_cast<dom::parser *>(parser)
                          ->parse(json, len, false)
                          .get(value); // The string is padded, so false.
+  return {static_cast<int>(error), move_to_handle(std::move(value))};
+}
+SJ_DOM_element_result SJ_DOM_parser_parse_into_document(SJ_DOM_parser *parser,
+                                                        SJ_DOM_document *doc,
+                                                        const char *json,
+                                                        size_t len) {
+  dom::element value;
+  const auto error = cast_to_type(parser)
+                         ->parse_into_document(
+                             *reinterpret_cast<dom::document *>(doc), json, len)
+                         .get(value);
+  return {static_cast<int>(error), move_to_handle(std::move(value))};
+}
+SJ_DOM_document_stream_result SJ_DOM_parser_parse_many(SJ_DOM_parser *parser,
+                                                       const char *json,
+                                                       size_t len,
+                                                       size_t batch_size) {
+  dom::document_stream value;
+  const auto error =
+      cast_to_type(parser)->parse_many(json, len, batch_size).get(value);
   return {static_cast<int>(error), move_to_handle(std::move(value))};
 }
 
@@ -448,4 +479,36 @@ bool SJ_DOM_object_iterator_not_equal(SJ_DOM_object_iterator *lhs,
 }
 void SJ_DOM_object_iterator_step(SJ_DOM_object_iterator *self) {
   ++(*cast_to_type(self));
+}
+
+// dom::document
+SJ_DOM_document *SJ_DOM_document_new() {
+  return object_to_pointer<SJ_DOM_document *>(dom::document());
+}
+
+SJ_DOM_element *SJ_DOM_document_root(SJ_DOM_document *self) {
+  return move_to_handle(cast_to_type(self)->root());
+}
+SJ_DOM_document_stream_iterator *
+SJ_DOM_document_stream_begin(SJ_DOM_document_stream *self) {
+  return move_to_handle(cast_to_type(self)->begin());
+}
+SJ_DOM_document_stream_iterator *
+SJ_DOM_document_stream_end(SJ_DOM_document_stream *self) {
+  return move_to_handle(cast_to_type(self)->end());
+}
+SJ_DOM_element_result
+SJ_DOM_document_stream_iterator_get(SJ_DOM_document_stream_iterator *self) {
+  dom::element res;
+  const error_code error = cast_to_type(self)->operator*().get(res);
+  return {static_cast<int>(error), move_to_handle(std::move(res))};
+}
+void SJ_DOM_document_stream_iterator_step(
+    SJ_DOM_document_stream_iterator *self) {
+  ++(*cast_to_type(self));
+}
+bool SJ_DOM_document_stream_iterator_not_equal(
+    SJ_DOM_document_stream_iterator *lhs,
+    SJ_DOM_document_stream_iterator *rhs) {
+  return *cast_to_type(lhs) != *cast_to_type(rhs);
 }

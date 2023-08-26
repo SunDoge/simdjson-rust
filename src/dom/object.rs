@@ -2,19 +2,19 @@ use std::{marker::PhantomData, ptr::NonNull};
 
 use simdjson_sys as ffi;
 
-use super::{Element, Parser};
+use super::{document::Document, Element, Parser};
 use crate::{macros::impl_drop, utils::string_view_struct_to_str};
 
 pub struct Object<'a> {
     ptr: NonNull<ffi::SJ_DOM_object>,
-    _parser: PhantomData<&'a Parser>,
+    _doc: PhantomData<&'a Document>,
 }
 
 impl<'a> Object<'a> {
     pub fn new(ptr: NonNull<ffi::SJ_DOM_object>) -> Self {
         Self {
             ptr,
-            _parser: PhantomData,
+            _doc: PhantomData,
         }
     }
 }
@@ -23,7 +23,7 @@ pub struct ObjectIter<'a> {
     begin: NonNull<ffi::SJ_DOM_object_iterator>,
     end: NonNull<ffi::SJ_DOM_object_iterator>,
     running: bool,
-    _parser: PhantomData<&'a Parser>,
+    _doc: PhantomData<&'a Document>,
 }
 
 impl<'a> ObjectIter<'a> {
@@ -35,7 +35,7 @@ impl<'a> ObjectIter<'a> {
             begin,
             end,
             running: false,
-            _parser: PhantomData,
+            _doc: PhantomData,
         }
     }
 

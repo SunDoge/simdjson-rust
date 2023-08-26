@@ -200,6 +200,11 @@ DEFINE_HANDLE(SJ_DOM_object)
 DEFINE_HANDLE_RESULT(SJ_DOM_object)
 DEFINE_HANDLE(SJ_DOM_array_iterator)
 DEFINE_HANDLE(SJ_DOM_object_iterator)
+DEFINE_HANDLE(SJ_DOM_document)
+DEFINE_HANDLE_RESULT(SJ_DOM_document)
+DEFINE_HANDLE(SJ_DOM_document_stream)
+DEFINE_HANDLE_RESULT(SJ_DOM_document_stream)
+DEFINE_HANDLE(SJ_DOM_document_stream_iterator)
 
 DEFINE_PRIMITIVE_RESULT_V2(uint64_t)
 DEFINE_PRIMITIVE_RESULT_V2(int64_t)
@@ -227,6 +232,14 @@ typedef struct SJ_DOM_key_value_pair {
 SJ_DOM_parser *SJ_DOM_parser_new(size_t max_capacity);
 SJ_DOM_element_result SJ_DOM_parser_parse(SJ_DOM_parser *parser,
                                           const char *json, size_t len);
+SJ_DOM_element_result SJ_DOM_parser_parse_into_document(SJ_DOM_parser *parser,
+                                                      SJ_DOM_document *doc,
+                                                      const char *json,
+                                                      size_t len);
+SJ_DOM_document_stream_result SJ_DOM_parser_parse_many(SJ_DOM_parser *parser,
+                                                       const char *json,
+                                                       size_t len,
+                                                       size_t batch_size);
 
 // dom::element
 DEFINE_GET_V2(SJ_DOM_element, int, type)
@@ -273,6 +286,16 @@ DEFINE_GET_V2(SJ_DOM_object_iterator, SJ_DOM_key_value_pair, get)
 DEFINE_GET_V2(SJ_DOM_object_iterator, void, step)
 bool SJ_DOM_object_iterator_not_equal(SJ_DOM_object_iterator *lhs,
                                       SJ_DOM_object_iterator *rhs);
+
+// dom::document
+SJ_DOM_document *SJ_DOM_document_new();
+DEFINE_GET_V2(SJ_DOM_document, SJ_DOM_element *, root)
+DEFINE_GET_V2(SJ_DOM_document_stream, SJ_DOM_document_stream_iterator *, begin)
+DEFINE_GET_V2(SJ_DOM_document_stream, SJ_DOM_document_stream_iterator *, end)
+DEFINE_GET_V2(SJ_DOM_document_stream_iterator, SJ_DOM_element_result, get)
+DEFINE_GET_V2(SJ_DOM_document_stream_iterator, void, step)
+bool SJ_DOM_document_stream_iterator_not_equal(
+    SJ_DOM_document_stream_iterator *lhs, SJ_DOM_document_stream_iterator *rhs);
 
 #ifdef __cplusplus
 }

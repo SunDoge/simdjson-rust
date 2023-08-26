@@ -16,7 +16,7 @@ Please submit an issue.
 
 ## Benchmark
 
-Check https://github.com/SunDoge/json-benchmark
+Check [SunDoge/json-benchmark](https://github.com/SunDoge/json-benchmark/tree/simdjson-rust)
 
 ```
                                 DOM                  STRUCT

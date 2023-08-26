@@ -14,6 +14,28 @@ If you
 
 Please submit an issue.
 
+## Benchmark
+
+Check https://github.com/SunDoge/json-benchmark
+
+```
+                                DOM                  STRUCT
+======= serde_json ======= parse|stringify ===== parse|stringify ====
+data/canada.json         400 MB/s   460 MB/s   500 MB/s   390 MB/s
+data/citm_catalog.json   540 MB/s   790 MB/s  1000 MB/s  1070 MB/s
+data/twitter.json        390 MB/s  1020 MB/s   680 MB/s  1090 MB/s
+
+======= simd-json ======== parse|stringify ===== parse|stringify ====
+data/canada.json         400 MB/s   540 MB/s   530 MB/s
+data/citm_catalog.json  1080 MB/s  1000 MB/s  1570 MB/s
+data/twitter.json       1100 MB/s  1460 MB/s  1180 MB/s
+
+===== simdjson-rust ====== parse|stringify ===== parse|stringify ====
+data/canada.json         960 MB/s
+data/citm_catalog.json  3110 MB/s
+data/twitter.json       3160 MB/s
+```
+
 ## Usage
 
 Add this to your `Cargo.toml`
@@ -87,3 +109,4 @@ fn main() -> simdjson_rust::Result<()> {
     Ok(())
 }
 ```
+

@@ -86,7 +86,7 @@ mod tests {
     fn parse_into_document() {
         let ps = "[1,2,3]".to_padded_string();
         let parser = Parser::default();
-        let mut doc = Document::new();
+        let mut doc = Document::default();
         let elem = parser.parse_into_document(&mut doc, &ps).unwrap();
         assert_eq!(
             elem.get_array()

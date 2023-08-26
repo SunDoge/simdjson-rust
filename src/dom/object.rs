@@ -2,7 +2,7 @@ use std::{marker::PhantomData, ptr::NonNull};
 
 use simdjson_sys as ffi;
 
-use super::{document::Document, Element, Parser};
+use super::{document::Document, Element};
 use crate::{macros::impl_drop, utils::string_view_struct_to_str};
 
 pub struct Object<'a> {

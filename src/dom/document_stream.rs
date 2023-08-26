@@ -2,10 +2,9 @@ use std::{marker::PhantomData, ptr::NonNull};
 
 use simdjson_sys as ffi;
 
-use super::{Element, Parser};
+use super::Element;
 use crate::{
     macros::{impl_drop, map_ptr_result},
-    utils::string_view_struct_to_str,
     Result,
 };
 

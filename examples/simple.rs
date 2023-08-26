@@ -1,5 +1,4 @@
-use simdjson_rust::prelude::*;
-use simdjson_rust::{dom, ondemand};
+use simdjson_rust::{dom, ondemand, prelude::*};
 
 fn main() -> simdjson_rust::Result<()> {
     let ps = make_padded_string("[0,1,2,3]");

@@ -1,19 +1,25 @@
-use std::{marker::PhantomData, ptr::NonNull};
+use std::ptr::NonNull;
 
 use simdjson_sys as ffi;
 
-use super::{Element, Parser};
-use crate::{macros::impl_drop, utils::string_view_struct_to_str};
+use super::Element;
+use crate::macros::impl_drop;
 
 pub struct Document {
     ptr: NonNull<ffi::SJ_DOM_document>,
 }
 
-impl Document {
-    pub fn new() -> Self {
+impl Default for Document {
+    fn default() -> Self {
         Self {
             ptr: unsafe { NonNull::new_unchecked(ffi::SJ_DOM_document_new()) },
         }
+    }
+}
+
+impl Document {
+    pub fn new(ptr: NonNull<ffi::SJ_DOM_document>) -> Self {
+        Self { ptr }
     }
 
     pub fn root(&self) -> Element<'_> {

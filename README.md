@@ -110,3 +110,6 @@ fn main() -> simdjson_rust::Result<()> {
 }
 ```
 
+## Other interesting things
+
+There are also pure Rust port of `simdjson` available here [simd-json](https://github.com/simd-lite/simd-json).

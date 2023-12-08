@@ -17,6 +17,12 @@ impl<'a> Object<'a> {
             _doc: PhantomData,
         }
     }
+
+    pub fn iter(&self) -> ObjectIter {
+        let begin = unsafe { NonNull::new_unchecked(ffi::SJ_DOM_object_begin(self.ptr.as_ptr())) };
+        let end = unsafe { NonNull::new_unchecked(ffi::SJ_DOM_object_end(self.ptr.as_ptr())) };
+        ObjectIter::new(begin, end)
+    }
 }
 
 pub struct ObjectIter<'a> {

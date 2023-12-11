@@ -386,6 +386,11 @@ SJ_double_result SJ_DOM_element_get_double(SJ_DOM_element *self) {
   const error_code error = cast_to_type(self)->get_double().get(res);
   return {static_cast<int>(error), res};
 }
+SJ_bool_result SJ_DOM_element_get_bool(SJ_DOM_element *self) {
+  bool res = false;
+  const error_code error = cast_to_type(self)->get_bool().get(res);
+  return {static_cast<int>(error), res};
+}
 SJ_DOM_element_result SJ_DOM_element_at_pointer(SJ_DOM_element *self,
                                                 const char *json, size_t len) {
   dom::element res;

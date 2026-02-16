@@ -4,7 +4,7 @@
 [![Crates.io](https://img.shields.io/crates/v/simdjson-rust?style=for-the-badge)](https://crates.io/crates/simdjson-rust)
 [![docs.rs](https://img.shields.io/docsrs/simdjson-rust/latest?style=for-the-badge)](https://docs.rs/simdjson-rust)
 
-This crate currently uses [`simdjson 3.2.3`][simdjson]. You can have a try and give feedback.
+This crate currently uses [`simdjson 4.2.4`][simdjson]. You can have a try and give feedback.
 
 If you
 
@@ -108,6 +108,59 @@ fn main() -> simdjson_rust::Result<()> {
     let ps = load_padded_string("test.json")?;
     Ok(())
 }
+```
+
+### Serde Integration
+
+This crate provides optional serde compatibility with SIMD-accelerated JSON serialization and deserialization.
+
+Enable serde support by adding the feature:
+
+```toml
+simdjson-rust = { version = "0.4.0-alpha", features = ["serde_impl"] }
+```
+
+#### Deserialization (Parsing JSON to Rust structs)
+
+```rust
+use serde::Deserialize;
+use simdjson_rust::dom::Parser;
+use simdjson_rust::serde::de::from_element;
+
+#[derive(Deserialize)]
+struct User {
+    name: String,
+    age: u32,
+    active: bool,
+}
+
+let mut parser = Parser::default();
+let ps = r#"{"name": "Alice", "age": 30, "active": true}"#.to_padded_string();
+let elm = parser.parse(&ps)?;
+let user: User = from_element(&elm)?;
+```
+
+#### Serialization (Rust structs to JSON)
+
+```rust
+use serde::Serialize;
+use simdjson_rust::serde::ser::to_string;
+
+#[derive(Serialize)]
+struct User {
+    name: String,
+    age: u32,
+    active: bool,
+}
+
+let user = User {
+    name: "Alice".to_string(),
+    age: 30,
+    active: true,
+};
+
+let json = to_string(&user)?;
+// Output: {"name":"Alice","age":30,"active":true}
 ```
 
 ## Other interesting things

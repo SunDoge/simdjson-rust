@@ -4,8 +4,8 @@ use simdjson_sys as ffi;
 
 use super::Element;
 use crate::{
-    macros::{impl_drop, map_ptr_result},
     Result,
+    macros::{impl_drop, map_ptr_result},
 };
 
 pub struct DocumentStream {
@@ -17,7 +17,7 @@ impl DocumentStream {
         Self { ptr }
     }
 
-    pub fn iter(&self) -> DocumentStreamIter {
+    pub fn iter(&self) -> DocumentStreamIter<'_> {
         let begin =
             unsafe { NonNull::new_unchecked(ffi::SJ_DOM_document_stream_begin(self.ptr.as_ptr())) };
         let end =

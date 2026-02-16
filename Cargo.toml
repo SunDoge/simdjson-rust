@@ -17,14 +17,14 @@ resolver = "2"
 members = ["simdjson-sys"]
 
 [workspace.package]
-version = "0.3.0-alpha.3"
+version = "0.4.0-alpha"
 
 [workspace.dependencies]
-simdjson-sys = { path = "simdjson-sys", version = "0.1.0-alpha.2" }
+simdjson-sys = { path = "simdjson-sys", version = "0.2.0-alpha" }
 
 
 [dependencies]
-thiserror = "1.0"
+thiserror = "2.0"
 simdjson-sys = { workspace = true }
 
 # serde compatibilty

@@ -1,25 +1,19 @@
-use crate::dom::array::ArrayIter;
-use crate::dom::element::{Element, ElementType};
-use crate::dom::object::ObjectIter;
-
+use crate::dom::{ArrayIter, Element, ElementType, ObjectIter};
 use crate::error::SimdJsonError;
-use crate::libsimdjson::ffi;
+
 use serde::de::{
-    Deserialize, DeserializeSeed, Deserializer, IntoDeserializer, MapAccess, SeqAccess, Visitor,
+    Deserialize, DeserializeSeed, Deserializer, EnumAccess, IntoDeserializer, MapAccess, SeqAccess,
+    VariantAccess, Visitor,
 };
 
-// pub struct ElementVisitor;
-
-// impl<'de> Visitor for ElementVisitor {
-
-// }
+fn de_error(msg: &str) -> SimdJsonError {
+    SimdJsonError::Serde(msg.to_owned())
+}
 
 pub fn from_element<'a, T>(element: &'a Element<'a>) -> Result<T, SimdJsonError>
 where
     T: Deserialize<'a>,
 {
-    // let mut parser = Parser::default();
-    // let mut doc = parser.parse_str(s)?;
     let t = T::deserialize(element)?;
     Ok(t)
 }
@@ -34,8 +28,8 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
         match self.get_type() {
             ElementType::NullValue => self.deserialize_unit(visitor),
             ElementType::Bool => self.deserialize_bool(visitor),
-            ElementType::String => self.deserialize_str(visitor),
-            ElementType::Uint64 => self.deserialize_u64(visitor),
+            ElementType::String => self.deserialize_string(visitor),
+            ElementType::UInt64 => self.deserialize_u64(visitor),
             ElementType::Int64 => self.deserialize_i64(visitor),
             ElementType::Array => self.deserialize_seq(visitor),
             ElementType::Object => self.deserialize_map(visitor),
@@ -61,124 +55,132 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
     where
         V: Visitor<'de>,
     {
-        visitor.visit_i8(self.get_i64()? as i8)
+        let v = self.get_int64()?;
+        let narrow =
+            i8::try_from(v).map_err(|_| de_error(&format!("i64 value {v} out of range for i8")))?;
+        visitor.visit_i8(narrow)
     }
 
     fn deserialize_i16<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        visitor.visit_i16(self.get_i64()? as i16)
+        let v = self.get_int64()?;
+        let narrow = i16::try_from(v)
+            .map_err(|_| de_error(&format!("i64 value {v} out of range for i16")))?;
+        visitor.visit_i16(narrow)
     }
 
     fn deserialize_i32<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        visitor.visit_i32(self.get_i64()? as i32)
+        let v = self.get_int64()?;
+        let narrow = i32::try_from(v)
+            .map_err(|_| de_error(&format!("i64 value {v} out of range for i32")))?;
+        visitor.visit_i32(narrow)
     }
 
     fn deserialize_i64<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        visitor.visit_i64(self.get_i64()?)
+        visitor.visit_i64(self.get_int64()?)
     }
 
     fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        visitor.visit_u8(self.get_u64()? as u8)
+        let v = self.get_uint64()?;
+        let narrow =
+            u8::try_from(v).map_err(|_| de_error(&format!("u64 value {v} out of range for u8")))?;
+        visitor.visit_u8(narrow)
     }
 
     fn deserialize_u16<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        visitor.visit_u16(self.get_u64()? as u16)
+        let v = self.get_uint64()?;
+        let narrow = u16::try_from(v)
+            .map_err(|_| de_error(&format!("u64 value {v} out of range for u16")))?;
+        visitor.visit_u16(narrow)
     }
 
     fn deserialize_u32<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        visitor.visit_u32(self.get_u64()? as u32)
+        let v = self.get_uint64()?;
+        let narrow = u32::try_from(v)
+            .map_err(|_| de_error(&format!("u64 value {v} out of range for u32")))?;
+        visitor.visit_u32(narrow)
     }
 
     fn deserialize_u64<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        visitor.visit_u64(self.get_u64()?)
+        visitor.visit_u64(self.get_uint64()?)
     }
 
-    // Float parsing is stupidly hard.
     fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        visitor.visit_f32(self.get_f64()? as f32)
+        visitor.visit_f32(self.get_double()? as f32)
     }
 
-    // Float parsing is stupidly hard.
     fn deserialize_f64<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        visitor.visit_f64(self.get_f64()?)
+        visitor.visit_f64(self.get_double()?)
     }
 
-    // The `Serializer` implementation on the previous page serialized chars as
-    // single-character strings so handle that representation here.
-    fn deserialize_char<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_char<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        // Parse a string, check that it is one character, call `visit_char`.
-        unimplemented!()
+        let s = self.get_string()?;
+        let mut chars = s.chars();
+        match (chars.next(), chars.next()) {
+            (Some(c), None) => visitor.visit_char(c),
+            _ => Err(de_error("expected a single character string")),
+        }
     }
 
-    // Refer to the "Understanding deserializer lifetimes" page for information
-    // about the three deserialization flavors of strings in Serde.
-    fn deserialize_str<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_str<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        unimplemented!()
+        let s = self.get_string()?;
+        visitor.visit_str(s)
     }
 
     fn deserialize_string<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        visitor.visit_string(self.get_string()?)
+        let s = self.get_string()?;
+        visitor.visit_string(s.to_owned())
     }
 
-    // The `Serializer` implementation on the previous page serialized byte
-    // arrays as JSON arrays of bytes. Handle that representation here.
-    fn deserialize_bytes<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_bytes<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        unimplemented!()
+        self.deserialize_seq(visitor)
     }
 
-    fn deserialize_byte_buf<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_byte_buf<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        unimplemented!()
+        self.deserialize_seq(visitor)
     }
 
-    // An absent optional is represented as the JSON `null` and a present
-    // optional is represented as just the contained value.
-    //
-    // As commented in `Serializer` implementation, this is a lossy
-    // representation. For example the values `Some(())` and `None` both
-    // serialize as just `null`. Unfortunately this is typically what people
-    // expect when working with JSON. Other formats are encouraged to behave
-    // more intelligently if possible.
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
@@ -190,7 +192,6 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
         }
     }
 
-    // Unit struct means a named value containing no data.
     fn deserialize_unit_struct<V>(
         self,
         _name: &'static str,
@@ -202,9 +203,6 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
         self.deserialize_unit(visitor)
     }
 
-    // As is done here, serializers are encouraged to treat newtype structs as
-    // insignificant wrappers around the data they contain. That means not
-    // parsing anything other than the contained value.
     fn deserialize_newtype_struct<V>(
         self,
         _name: &'static str,
@@ -216,26 +214,15 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
         visitor.visit_newtype_struct(self)
     }
 
-    // Deserialization of compound types like sequences and maps happens by
-    // passing the visitor an "Access" object that gives it the ability to
-    // iterate through the data contained in the sequence.
     fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        // Parse the opening bracket of the sequence.
-        // de::Deserializer::deserialize_seq(self.into_iter(), visitor)
-        // unimplemented!()
-        let value = visitor.visit_seq(ArrayIter::new(&self.get_array()?))?;
-        Ok(value)
+        let array = self.get_array()?;
+        let iter = array.iter();
+        visitor.visit_seq(SeqAccessor(iter))
     }
 
-    // Tuples look just like sequences in JSON. Some formats may be able to
-    // represent tuples more efficiently.
-    //
-    // As indicated by the length parameter, the `Deserialize` implementation
-    // for a tuple in the Serde data model is required to know the length of the
-    // tuple before even looking at the input data.
     fn deserialize_tuple<V>(self, _len: usize, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
@@ -243,7 +230,6 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
         self.deserialize_seq(visitor)
     }
 
-    // Tuple structs look just like sequences in JSON.
     fn deserialize_tuple_struct<V>(
         self,
         _name: &'static str,
@@ -256,22 +242,15 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
         self.deserialize_seq(visitor)
     }
 
-    // Much like `deserialize_seq` but calls the visitors `visit_map` method
-    // with a `MapAccess` implementation, rather than the visitor's `visit_seq`
-    // method with a `SeqAccess` implementation.
     fn deserialize_map<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        visitor.visit_map(ObjectIter::new(&self.get_object()?))
+        let object = self.get_object()?;
+        let iter = object.iter();
+        visitor.visit_map(MapAccessor::new(iter))
     }
 
-    // Structs look just like maps in JSON.
-    //
-    // Notice the `fields` parameter - a "struct" in the Serde data model means
-    // that the `Deserialize` implementation is required to know what the fields
-    // are before even looking at the input data. Any key-value pairing in which
-    // the fields cannot be known ahead of time is probably a map.
     fn deserialize_struct<V>(
         self,
         _name: &'static str,
@@ -288,18 +267,38 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
         self,
         _name: &'static str,
         _variants: &'static [&'static str],
-        _visitor: V,
+        visitor: V,
     ) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        unimplemented!()
+        match self.get_type() {
+            ElementType::String => {
+                let s = self.get_string()?;
+                let de: serde::de::value::StrDeserializer<'_, SimdJsonError> =
+                    s.into_deserializer();
+                visitor.visit_enum(de)
+            }
+            ElementType::Object => {
+                let object = self.get_object()?;
+                let mut iter = object.iter();
+                let pair = iter.next();
+                drop(iter);
+                match pair {
+                    Some((variant, value)) => {
+                        let variant_owned = String::from(variant);
+                        visitor.visit_enum(EnumDeserializer {
+                            variant: variant_owned,
+                            value,
+                        })
+                    }
+                    None => Err(de_error("expected an object with a single key for enum")),
+                }
+            }
+            _ => Err(de_error("expected a string or object for enum")),
+        }
     }
 
-    // An identifier in Serde is the type that identifies a field of a struct or
-    // the variant of an enum. In JSON, struct fields and enum variants are
-    // represented as strings. In other formats they may be represented as
-    // numeric indices.
     fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
@@ -307,17 +306,6 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
         self.deserialize_str(visitor)
     }
 
-    // Like `deserialize_any` but indicates to the `Deserializer` that it makes
-    // no difference which `Visitor` method is called because the data is
-    // ignored.
-    //
-    // Some deserializers are able to implement this more efficiently than
-    // `deserialize_any`, for example by rapidly skipping over matched
-    // delimiters without paying close attention to the data in between.
-    //
-    // Some formats are not able to implement this at all. Formats that can
-    // implement `deserialize_any` and `deserialize_ignored_any` are known as
-    // self-describing.
     fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
@@ -326,32 +314,51 @@ impl<'de, 'a> Deserializer<'de> for &'a Element<'a> {
     }
 }
 
-impl<'de, 'a> SeqAccess<'de> for ArrayIter<'a> {
+struct SeqAccessor<'a>(ArrayIter<'a>);
+
+impl<'de, 'a> SeqAccess<'de> for SeqAccessor<'a> {
     type Error = SimdJsonError;
 
     fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>
     where
         T: DeserializeSeed<'de>,
     {
-        if let Some(element) = self.next() {
-            seed.deserialize(&element).map(Some)
-        } else {
-            Ok(None)
+        match self.0.next() {
+            Some(element) => seed.deserialize(&element).map(Some),
+            None => Ok(None),
         }
     }
 }
 
-impl<'de, 'a> MapAccess<'de> for ObjectIter<'a> {
+struct MapAccessor<'a> {
+    iter: ObjectIter<'a>,
+    pending_value: Option<Element<'a>>,
+}
+
+impl<'a> MapAccessor<'a> {
+    fn new(iter: ObjectIter<'a>) -> Self {
+        Self {
+            iter,
+            pending_value: None,
+        }
+    }
+}
+
+impl<'de, 'a> MapAccess<'de> for MapAccessor<'a> {
     type Error = SimdJsonError;
 
     fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Self::Error>
     where
         K: DeserializeSeed<'de>,
     {
-        if self.has_next() {
-            seed.deserialize(self.key().into_deserializer()).map(Some)
-        } else {
-            Ok(None)
+        match self.iter.next() {
+            Some((key, value)) => {
+                self.pending_value = Some(value);
+                let de: serde::de::value::StringDeserializer<SimdJsonError> =
+                    String::from(key).into_deserializer();
+                seed.deserialize(de).map(Some)
+            }
+            None => Ok(None),
         }
     }
 
@@ -359,8 +366,66 @@ impl<'de, 'a> MapAccess<'de> for ObjectIter<'a> {
     where
         V: DeserializeSeed<'de>,
     {
-        let result = seed.deserialize(&self.value());
-        ffi::object_iterator_next(self.ptr.pin_mut());
-        result
+        match self.pending_value.take() {
+            Some(value) => seed.deserialize(&value),
+            None => Err(de_error("next_value_seed called before next_key_seed")),
+        }
+    }
+}
+
+struct EnumDeserializer<'a> {
+    variant: String,
+    value: Element<'a>,
+}
+
+impl<'de, 'a> EnumAccess<'de> for EnumDeserializer<'a> {
+    type Error = SimdJsonError;
+    type Variant = VariantDeserializer<'a>;
+
+    fn variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant), Self::Error>
+    where
+        V: DeserializeSeed<'de>,
+    {
+        let de: serde::de::value::StringDeserializer<SimdJsonError> =
+            self.variant.into_deserializer();
+        let variant = seed.deserialize(de)?;
+        Ok((variant, VariantDeserializer(self.value)))
+    }
+}
+
+struct VariantDeserializer<'a>(Element<'a>);
+
+impl<'de, 'a> VariantAccess<'de> for VariantDeserializer<'a> {
+    type Error = SimdJsonError;
+
+    fn unit_variant(self) -> Result<(), Self::Error> {
+        Err(de_error(
+            "expected a string for unit variant, got an object key",
+        ))
+    }
+
+    fn newtype_variant_seed<T>(self, seed: T) -> Result<T::Value, Self::Error>
+    where
+        T: DeserializeSeed<'de>,
+    {
+        seed.deserialize(&self.0)
+    }
+
+    fn tuple_variant<V>(self, _len: usize, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de>,
+    {
+        serde::Deserializer::deserialize_seq(&self.0, visitor)
+    }
+
+    fn struct_variant<V>(
+        self,
+        _fields: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de>,
+    {
+        serde::Deserializer::deserialize_map(&self.0, visitor)
     }
 }

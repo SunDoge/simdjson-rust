@@ -2,7 +2,7 @@ use std::{marker::PhantomData, ptr::NonNull};
 
 use simdjson_sys as ffi;
 
-use super::{document::Document, Element};
+use super::{Element, document::Document};
 use crate::{macros::impl_drop, utils::string_view_struct_to_str};
 
 pub struct Object<'a> {
@@ -18,7 +18,7 @@ impl<'a> Object<'a> {
         }
     }
 
-    pub fn iter(&self) -> ObjectIter {
+    pub fn iter(&self) -> ObjectIter<'_> {
         let begin = unsafe { NonNull::new_unchecked(ffi::SJ_DOM_object_begin(self.ptr.as_ptr())) };
         let end = unsafe { NonNull::new_unchecked(ffi::SJ_DOM_object_end(self.ptr.as_ptr())) };
         ObjectIter::new(begin, end)

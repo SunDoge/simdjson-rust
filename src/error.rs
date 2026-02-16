@@ -102,6 +102,10 @@ pub enum SimdJsonError {
 
     #[error("todo")]
     StdIoError(#[from] std::io::Error),
+
+    #[cfg(feature = "serde_impl")]
+    #[error("serde: {0}")]
+    Serde(String),
 }
 
 impl From<i32> for SimdJsonError {
@@ -140,5 +144,19 @@ impl From<i32> for SimdJsonError {
             31 => SimdJsonError::NumErrorCodes,
             x => panic!("Unknown error code: {}", x),
         }
+    }
+}
+
+#[cfg(feature = "serde_impl")]
+impl serde::de::Error for SimdJsonError {
+    fn custom<T: std::fmt::Display>(msg: T) -> Self {
+        SimdJsonError::Serde(msg.to_string())
+    }
+}
+
+#[cfg(feature = "serde_impl")]
+impl serde::ser::Error for SimdJsonError {
+    fn custom<T: std::fmt::Display>(msg: T) -> Self {
+        SimdJsonError::Serde(msg.to_string())
     }
 }

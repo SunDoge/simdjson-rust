@@ -4,20 +4,20 @@ use simdjson_sys as ffi;
 
 use super::{array::Array, document::Document, object::Object};
 use crate::{
+    Result,
     macros::{impl_drop, map_primitive_result, map_ptr_result},
     utils::string_view_struct_to_str,
-    Result,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ElementType {
-    Array     = '[' as _,
-    Object    = '{' as _,
-    Int64     = 'l' as _,
-    UInt64    = 'u' as _,
-    Double    = 'd' as _,
-    String    = '"' as _,
-    Bool      = 't' as _,
+    Array = '[' as _,
+    Object = '{' as _,
+    Int64 = 'l' as _,
+    UInt64 = 'u' as _,
+    Double = 'd' as _,
+    String = '"' as _,
+    Bool = 't' as _,
     NullValue = 'n' as _,
 }
 
@@ -54,11 +54,11 @@ impl<'a> Element<'a> {
         unsafe { ElementType::from(ffi::SJ_DOM_element_type(self.ptr.as_ptr())) }
     }
 
-    pub fn get_array(&self) -> Result<Array> {
+    pub fn get_array(&self) -> Result<Array<'_>> {
         map_ptr_result!(ffi::SJ_DOM_element_get_array(self.ptr.as_ptr())).map(Array::new)
     }
 
-    pub fn get_object(&self) -> Result<Object> {
+    pub fn get_object(&self) -> Result<Object<'_>> {
         map_ptr_result!(ffi::SJ_DOM_element_get_object(self.ptr.as_ptr())).map(Object::new)
     }
 
@@ -83,7 +83,11 @@ impl<'a> Element<'a> {
         map_primitive_result!(ffi::SJ_DOM_element_get_bool(self.ptr.as_ptr()))
     }
 
-    pub fn at_pointer(&self, json_pointer: &str) -> Result<Element> {
+    pub fn is_null(&self) -> bool {
+        self.get_type() == ElementType::NullValue
+    }
+
+    pub fn at_pointer(&self, json_pointer: &str) -> Result<Element<'a>> {
         map_ptr_result!(ffi::SJ_DOM_element_at_pointer(
             self.ptr.as_ptr(),
             json_pointer.as_ptr().cast(),
@@ -94,3 +98,13 @@ impl<'a> Element<'a> {
 }
 
 impl_drop!(Element<'a>, ffi::SJ_DOM_element_free);
+
+#[cfg(feature = "serde_impl")]
+impl std::fmt::Display for Element<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match crate::serde::value::element_to_value(self) {
+            Ok(value) => write!(f, "{value}"),
+            Err(e) => write!(f, "<error: {e}>"),
+        }
+    }
+}

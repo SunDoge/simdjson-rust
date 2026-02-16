@@ -4,8 +4,8 @@ use simdjson_sys as ffi;
 
 use super::{document::Document, element::Element};
 use crate::{
-    macros::{impl_drop, map_ptr_result},
     Result,
+    macros::{impl_drop, map_ptr_result},
 };
 
 pub struct Array<'a> {
@@ -21,7 +21,7 @@ impl<'a> Array<'a> {
         }
     }
 
-    pub fn iter(&self) -> ArrayIter {
+    pub fn iter(&self) -> ArrayIter<'_> {
         let begin = unsafe { NonNull::new_unchecked(ffi::SJ_DOM_array_begin(self.ptr.as_ptr())) };
         let end = unsafe { NonNull::new_unchecked(ffi::SJ_DOM_array_end(self.ptr.as_ptr())) };
         ArrayIter::new(begin, end)

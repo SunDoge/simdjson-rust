@@ -3,7 +3,7 @@ use std::{env, path::PathBuf};
 fn main() {
     cc::Build::new()
         .cpp(true)
-        .flag_if_supported("-std=c++17")
+        .flag_if_supported("-std=c++20")
         .flag_if_supported("/std:c++20") // error C7555: use of designated initializers requires at least '/std:c++20'
         .flag_if_supported("-pthread")
         .flag_if_supported("-O3")
@@ -22,7 +22,7 @@ fn main() {
         .header("src/simdjson_c_api.h")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         // Finish the builder and generate the bindings.
         .generate()
         // Unwrap the Result and panic on failure.

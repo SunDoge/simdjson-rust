@@ -5,8 +5,8 @@ use simdjson_sys as ffi;
 
 use super::{document::Document, document_stream::DocumentStream, element::Element};
 use crate::{
-    macros::{impl_drop, map_ptr_result},
     Result,
+    macros::{impl_drop, map_ptr_result},
 };
 
 pub struct Parser {
@@ -25,7 +25,7 @@ impl Parser {
         Self { ptr }
     }
 
-    pub fn parse(&mut self, padded_string: &String) -> Result<Element> {
+    pub fn parse(&mut self, padded_string: &str) -> Result<Element<'_>> {
         map_ptr_result!(ffi::SJ_DOM_parser_parse(
             self.ptr.as_ptr(),
             padded_string.as_ptr().cast(),
@@ -37,7 +37,7 @@ impl Parser {
     pub fn parse_into_document<'d>(
         &self,
         doc: &'d mut Document,
-        padded_string: &String,
+        padded_string: &str,
     ) -> Result<Element<'d>> {
         map_ptr_result!(ffi::SJ_DOM_parser_parse_into_document(
             self.ptr.as_ptr(),
@@ -48,13 +48,13 @@ impl Parser {
         .map(Element::new)
     }
 
-    pub fn parse_many(&mut self, padded_string: &String) -> Result<DocumentStream> {
+    pub fn parse_many(&mut self, padded_string: &str) -> Result<DocumentStream> {
         self.parse_batch(padded_string, DEFAULT_BATCH_SIZE)
     }
 
     pub fn parse_batch(
         &mut self,
-        padded_string: &String,
+        padded_string: &str,
         batch_size: usize,
     ) -> Result<DocumentStream> {
         map_ptr_result!(ffi::SJ_DOM_parser_parse_many(

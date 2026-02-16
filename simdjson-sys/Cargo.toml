@@ -1,6 +1,6 @@
 [package]
 name = "simdjson-sys"
-version = "0.1.0-alpha.2"
+version = "0.2.0-alpha"
 edition = "2021"
 authors = ["SunDoge <384813529@qq.com>"]
 license = "Apache-2.0"
@@ -16,5 +16,5 @@ exclude = ["simdjson/", "!simdjson/singleheader/simdjson.*"]
 [dependencies]
 
 [build-dependencies]
-bindgen = "0.66.1"
-cc = { version = "1.0.83", features = ["parallel"] }
+bindgen = "0.72.1"
+cc = { version = "1.2.56", features = ["parallel"] }

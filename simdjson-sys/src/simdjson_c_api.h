@@ -233,9 +233,9 @@ SJ_DOM_parser *SJ_DOM_parser_new(size_t max_capacity);
 SJ_DOM_element_result SJ_DOM_parser_parse(SJ_DOM_parser *parser,
                                           const char *json, size_t len);
 SJ_DOM_element_result SJ_DOM_parser_parse_into_document(SJ_DOM_parser *parser,
-                                                      SJ_DOM_document *doc,
-                                                      const char *json,
-                                                      size_t len);
+                                                        SJ_DOM_document *doc,
+                                                        const char *json,
+                                                        size_t len);
 SJ_DOM_document_stream_result SJ_DOM_parser_parse_many(SJ_DOM_parser *parser,
                                                        const char *json,
                                                        size_t len,
@@ -296,6 +296,32 @@ DEFINE_GET_V2(SJ_DOM_document_stream_iterator, SJ_DOM_element_result, get)
 DEFINE_GET_V2(SJ_DOM_document_stream_iterator, void, step)
 bool SJ_DOM_document_stream_iterator_not_equal(
     SJ_DOM_document_stream_iterator *lhs, SJ_DOM_document_stream_iterator *rhs);
+
+// builder::string_builder
+DEFINE_HANDLE(SJ_string_builder)
+
+SJ_string_builder *SJ_string_builder_new(size_t initial_capacity);
+void SJ_string_builder_clear(SJ_string_builder *sb);
+void SJ_string_builder_append_bool(SJ_string_builder *sb, bool v);
+void SJ_string_builder_append_int64(SJ_string_builder *sb, int64_t v);
+void SJ_string_builder_append_uint64(SJ_string_builder *sb, uint64_t v);
+void SJ_string_builder_append_double(SJ_string_builder *sb, double v);
+void SJ_string_builder_append_null(SJ_string_builder *sb);
+void SJ_string_builder_append_char(SJ_string_builder *sb, char c);
+void SJ_string_builder_escape_and_append_with_quotes(SJ_string_builder *sb,
+                                                     const char *str,
+                                                     size_t len);
+void SJ_string_builder_start_object(SJ_string_builder *sb);
+void SJ_string_builder_end_object(SJ_string_builder *sb);
+void SJ_string_builder_start_array(SJ_string_builder *sb);
+void SJ_string_builder_end_array(SJ_string_builder *sb);
+void SJ_string_builder_append_comma(SJ_string_builder *sb);
+void SJ_string_builder_append_colon(SJ_string_builder *sb);
+void SJ_string_builder_append_raw(SJ_string_builder *sb, const char *str,
+                                  size_t len);
+SJ_string_view_result SJ_string_builder_view(const SJ_string_builder *sb);
+bool SJ_string_builder_validate_unicode(const SJ_string_builder *sb);
+size_t SJ_string_builder_size(const SJ_string_builder *sb);
 
 #ifdef __cplusplus
 }

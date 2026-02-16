@@ -1,5 +1,5 @@
-#include "simdjson_c_api.h"
 #include "simdjson.h"
+#include "simdjson_c_api.h"
 #include <cstdint>
 #include <string_view>
 #include <utility>
@@ -516,4 +516,90 @@ bool SJ_DOM_document_stream_iterator_not_equal(
     SJ_DOM_document_stream_iterator *lhs,
     SJ_DOM_document_stream_iterator *rhs) {
   return *cast_to_type(lhs) != *cast_to_type(rhs);
+}
+
+// builder::string_builder
+IMPL_HANDLE(SJ_string_builder, simdjson::builder::string_builder)
+
+SJ_string_builder *SJ_string_builder_new(size_t initial_capacity) {
+  return object_to_pointer<SJ_string_builder *>(
+      simdjson::builder::string_builder(initial_capacity));
+}
+
+void SJ_string_builder_clear(SJ_string_builder *sb) {
+  cast_to_type(sb)->clear();
+}
+
+void SJ_string_builder_append_bool(SJ_string_builder *sb, bool v) {
+  cast_to_type(sb)->append(v);
+}
+
+void SJ_string_builder_append_int64(SJ_string_builder *sb, int64_t v) {
+  cast_to_type(sb)->append(v);
+}
+
+void SJ_string_builder_append_uint64(SJ_string_builder *sb, uint64_t v) {
+  cast_to_type(sb)->append(v);
+}
+
+void SJ_string_builder_append_double(SJ_string_builder *sb, double v) {
+  cast_to_type(sb)->append(v);
+}
+
+void SJ_string_builder_append_null(SJ_string_builder *sb) {
+  cast_to_type(sb)->append_null();
+}
+
+void SJ_string_builder_append_char(SJ_string_builder *sb, char c) {
+  cast_to_type(sb)->append(c);
+}
+
+void SJ_string_builder_escape_and_append_with_quotes(SJ_string_builder *sb,
+                                                     const char *str,
+                                                     size_t len) {
+  cast_to_type(sb)->escape_and_append_with_quotes(std::string_view(str, len));
+}
+
+void SJ_string_builder_start_object(SJ_string_builder *sb) {
+  cast_to_type(sb)->start_object();
+}
+
+void SJ_string_builder_end_object(SJ_string_builder *sb) {
+  cast_to_type(sb)->end_object();
+}
+
+void SJ_string_builder_start_array(SJ_string_builder *sb) {
+  cast_to_type(sb)->start_array();
+}
+
+void SJ_string_builder_end_array(SJ_string_builder *sb) {
+  cast_to_type(sb)->end_array();
+}
+
+void SJ_string_builder_append_comma(SJ_string_builder *sb) {
+  cast_to_type(sb)->append_comma();
+}
+
+void SJ_string_builder_append_colon(SJ_string_builder *sb) {
+  cast_to_type(sb)->append_colon();
+}
+
+void SJ_string_builder_append_raw(SJ_string_builder *sb, const char *str,
+                                  size_t len) {
+  cast_to_type(sb)->append_raw(str, len);
+}
+
+SJ_string_view_result SJ_string_builder_view(const SJ_string_builder *sb) {
+  std::string_view sv;
+  const error_code error =
+      cast_to_type(const_cast<SJ_string_builder *>(sb))->view().get(sv);
+  return {static_cast<int>(error), {.data = sv.data(), .len = sv.size()}};
+}
+
+bool SJ_string_builder_validate_unicode(const SJ_string_builder *sb) {
+  return cast_to_type(const_cast<SJ_string_builder *>(sb))->validate_unicode();
+}
+
+size_t SJ_string_builder_size(const SJ_string_builder *sb) {
+  return cast_to_type(const_cast<SJ_string_builder *>(sb))->size();
 }

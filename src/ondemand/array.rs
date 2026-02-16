@@ -67,7 +67,7 @@ impl<'a> Array<'a> {
         )
     }
 
-    pub fn iter(&mut self) -> Result<ArrayIterator> {
+    pub fn iter(&mut self) -> Result<ArrayIterator<'a>> {
         let begin = map_result!(
             ffi::SJ_OD_array_begin(self.ptr.as_mut()),
             ffi::SJ_OD_array_iterator_result_error,

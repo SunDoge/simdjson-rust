@@ -2,7 +2,7 @@ use std::{marker::PhantomData, ptr::NonNull};
 
 use simdjson_sys as ffi;
 
-use super::{array::Array, number::Number, object::Object, parser::Parser, value::Value, JsonType};
+use super::{JsonType, array::Array, number::Number, object::Object, parser::Parser, value::Value};
 use crate::{
     error::Result,
     macros::{impl_drop, map_result},

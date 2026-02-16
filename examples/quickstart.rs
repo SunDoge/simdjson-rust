@@ -1,4 +1,4 @@
-use simdjson_rust::{ondemand, prelude::*, Result};
+use simdjson_rust::{Result, ondemand, prelude::*};
 
 fn main() -> Result<()> {
     let ps = load_padded_string("simdjson-sys/simdjson/jsonexamples/twitter.json")?;

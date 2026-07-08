@@ -348,9 +348,7 @@ impl<'a> TapeRef<'a> {
         // `SimdJsonError::Utf8Error`/`StringError` from `parser_parse`).
         // Re-validating here showed up as ~11% of CPU in profiling, all of it
         // redundant.
-        Ok(unsafe {
-            str::from_utf8_unchecked(&self.string_buf[start..end])
-        })
+        Ok(unsafe { str::from_utf8_unchecked(&self.string_buf[start..end]) })
     }
 
     /// Decode the `i64` value at the current position.
@@ -365,7 +363,10 @@ impl<'a> TapeRef<'a> {
             "get_int64 called on non-int64 node"
         );
         let next = self.pos + 1;
-        ensure!(next < self.tape.len(), MissingValueWordSnafu { pos: self.pos });
+        ensure!(
+            next < self.tape.len(),
+            MissingValueWordSnafu { pos: self.pos }
+        );
         Ok(self.tape[next] as i64)
     }
 
@@ -378,7 +379,10 @@ impl<'a> TapeRef<'a> {
             "get_uint64 called on non-uint64 node"
         );
         let next = self.pos + 1;
-        ensure!(next < self.tape.len(), MissingValueWordSnafu { pos: self.pos });
+        ensure!(
+            next < self.tape.len(),
+            MissingValueWordSnafu { pos: self.pos }
+        );
         Ok(self.tape[next])
     }
 
@@ -391,7 +395,10 @@ impl<'a> TapeRef<'a> {
             "get_double called on non-double node"
         );
         let next = self.pos + 1;
-        ensure!(next < self.tape.len(), MissingValueWordSnafu { pos: self.pos });
+        ensure!(
+            next < self.tape.len(),
+            MissingValueWordSnafu { pos: self.pos }
+        );
         Ok(f64::from_bits(self.tape[next]))
     }
 

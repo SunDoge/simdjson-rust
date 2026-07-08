@@ -166,8 +166,11 @@ fn deserialize_value<'de, V: Visitor<'de>>(
             let end_idx = tape.scope_close_idx();
             let count = tape.scope_count();
             tape.skip(1); // past `[`
-            let result =
-                visitor.visit_seq(TapeSeqAccess { tape, end_idx, count })?;
+            let result = visitor.visit_seq(TapeSeqAccess {
+                tape,
+                end_idx,
+                count,
+            })?;
             tape.skip(1); // past `]`
             Ok(result)
         }

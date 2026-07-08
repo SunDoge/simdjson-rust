@@ -15,10 +15,14 @@ resolver = "2"
 members = ["simdjson-sys"]
 
 [workspace.package]
-version = "0.3.0-alpha.3"
+version = "0.4.0-alpha.1"
 
 [workspace.dependencies]
-simdjson-sys = { path = "simdjson-sys" }
+simdjson-sys = { path = "simdjson-sys", version = "0.2.0-alpha.1" }
+
+[[bench]]
+harness = false
+name = "parser_bench"
 
 [dependencies]
 cxx = "1.0"
@@ -30,13 +34,9 @@ snafu = "0.9.1"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
-serde_json = "1.0"
 serde = { version = "1", features = ["derive"] }
+serde_json = "1.0"
 simd-json = "0.14"
-
-[[bench]]
-name = "parser_bench"
-harness = false
 
 [features]
 default = ["serde"]
@@ -49,10 +49,10 @@ serde = ["dep:serde"]
 # (or copy `.cargo/config.toml.example`) to also tune the Rust code.
 native = ["simdjson-sys/native"]
 
-[profile.release]
+[profile.bench]
 lto = "fat"
 codegen-units = 1
 
-[profile.bench]
+[profile.release]
 lto = "fat"
 codegen-units = 1

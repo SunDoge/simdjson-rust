@@ -285,6 +285,16 @@ impl<'a> TapeRef<'a> {
         next_sibling.saturating_sub(1)
     }
 
+    /// Returns the number of direct children in the current `[` / `{` scope.
+    ///
+    /// simdjson packs the element count into bits 32–55 of the opening
+    /// bracket's tape word (mask `0xFFFFFF` after a `>> 32`). This matches
+    /// `simdjson::internal::tape_ref::scope_count`.
+    #[inline]
+    pub fn scope_count(&self) -> usize {
+        ((self.current_word() >> 32) & 0xFFFF_FF) as usize
+    }
+
     /// Advance the cursor by `n` tape words.
     #[inline]
     pub fn skip(&mut self, n: usize) {
@@ -332,7 +342,15 @@ impl<'a> TapeRef<'a> {
                 len: self.string_buf.len(),
             }
         );
-        str::from_utf8(&self.string_buf[start..end]).context(InvalidUtf8Snafu { pos: offset })
+        // SAFETY: simdjson validates UTF-8 while building the string buffer
+        // during stage2; a parse that reaches this point has already passed
+        // simdjson's UTF-8 check (a failure would have surfaced as a
+        // `SimdJsonError::Utf8Error`/`StringError` from `parser_parse`).
+        // Re-validating here showed up as ~11% of CPU in profiling, all of it
+        // redundant.
+        Ok(unsafe {
+            str::from_utf8_unchecked(&self.string_buf[start..end])
+        })
     }
 
     /// Decode the `i64` value at the current position.

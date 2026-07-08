@@ -164,8 +164,10 @@ fn deserialize_value<'de, V: Visitor<'de>>(
         }
         b'[' => {
             let end_idx = tape.scope_close_idx();
+            let count = tape.scope_count();
             tape.skip(1); // past `[`
-            let result = visitor.visit_seq(TapeSeqAccess { tape, end_idx })?;
+            let result =
+                visitor.visit_seq(TapeSeqAccess { tape, end_idx, count })?;
             tape.skip(1); // past `]`
             Ok(result)
         }
@@ -240,6 +242,9 @@ fn skip_value(tape: &mut TapeRef<'_>) -> Result<()> {
 struct TapeSeqAccess<'a, 'de: 'a> {
     tape: &'a mut TapeRef<'de>,
     end_idx: usize,
+    /// Element count read from the `[` tape word, used as a `size_hint` so
+    /// serde can pre-allocate the destination `Vec` and avoid a grow storm.
+    count: usize,
 }
 
 impl<'a, 'de> SeqAccess<'de> for TapeSeqAccess<'a, 'de> {
@@ -251,6 +256,10 @@ impl<'a, 'de> SeqAccess<'de> for TapeSeqAccess<'a, 'de> {
         }
         seed.deserialize(&mut TapeRefDeserializer { tape: self.tape })
             .map(Some)
+    }
+
+    fn size_hint(&self) -> Option<usize> {
+        Some(self.count)
     }
 }
 

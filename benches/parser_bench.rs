@@ -2,6 +2,21 @@ use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use serde::{Deserialize, Serialize};
 use simdjson_rust::{dom::Parser, serde::from_tape};
 
+/// Deserialize `T` from `json` via the `simd-json` crate's serde path.
+///
+/// `simd_json::serde::from_str` is unsafe: it rewrites its `&mut str` input
+/// in place (using it as a padded scratch buffer), leaving it as non-UTF-8
+/// bytes, so each iteration must hand it a fresh owned copy. The clone cost
+/// is identical for every size and is not specific to any parser; it is a
+/// constant tax on this bench function alone, so read the simd-json numbers
+/// as "parse + one String clone".
+fn simd_json_crate_struct<T: for<'de> Deserialize<'de>>(json: &str) -> T {
+    let mut buf = json.to_string();
+    // SAFETY: `buf` is a fresh owned copy not referenced elsewhere; the
+    // function leaves it as non-UTF-8, but we drop it immediately after.
+    unsafe { simd_json::serde::from_str(&mut buf).unwrap() }
+}
+
 // ---------------------------------------------------------------------------
 // Struct Definitions for Benchmarking
 // ---------------------------------------------------------------------------
@@ -97,9 +112,9 @@ fn bench_small(c: &mut Criterion) {
         })
     });
 
-    group.bench_function("serde_json_parse_to_value", |b| {
+    group.bench_function("simd_json_deserialize_struct", |b| {
         b.iter(|| {
-            let res: serde_json::Value = serde_json::from_str(black_box(&json)).unwrap();
+            let res: SmallData = simd_json_crate_struct(black_box(&json));
             black_box(res);
         })
     });
@@ -108,13 +123,6 @@ fn bench_small(c: &mut Criterion) {
         b.iter(|| {
             let tape = parser.parse_str(black_box(&json)).unwrap();
             let res: SmallData = from_tape(tape).unwrap();
-            black_box(res);
-        })
-    });
-
-    group.bench_function("simdjson_rust_parse_to_value_reuse", |b| {
-        b.iter(|| {
-            let res = parser.parse_to_value(black_box(&json)).unwrap();
             black_box(res);
         })
     });
@@ -135,9 +143,9 @@ fn bench_medium(c: &mut Criterion) {
         })
     });
 
-    group.bench_function("serde_json_parse_to_value", |b| {
+    group.bench_function("simd_json_deserialize_struct", |b| {
         b.iter(|| {
-            let res: serde_json::Value = serde_json::from_str(black_box(&json)).unwrap();
+            let res: UserProfile = simd_json_crate_struct(black_box(&json));
             black_box(res);
         })
     });
@@ -146,13 +154,6 @@ fn bench_medium(c: &mut Criterion) {
         b.iter(|| {
             let tape = parser.parse_str(black_box(&json)).unwrap();
             let res: UserProfile = from_tape(tape).unwrap();
-            black_box(res);
-        })
-    });
-
-    group.bench_function("simdjson_rust_parse_to_value_reuse", |b| {
-        b.iter(|| {
-            let res = parser.parse_to_value(black_box(&json)).unwrap();
             black_box(res);
         })
     });
@@ -173,9 +174,9 @@ fn bench_large(c: &mut Criterion) {
         })
     });
 
-    group.bench_function("serde_json_parse_to_value", |b| {
+    group.bench_function("simd_json_deserialize_struct", |b| {
         b.iter(|| {
-            let res: serde_json::Value = serde_json::from_str(black_box(&json)).unwrap();
+            let res: LargeData = simd_json_crate_struct(black_box(&json));
             black_box(res);
         })
     });
@@ -184,13 +185,6 @@ fn bench_large(c: &mut Criterion) {
         b.iter(|| {
             let tape = parser.parse_str(black_box(&json)).unwrap();
             let res: LargeData = from_tape(tape).unwrap();
-            black_box(res);
-        })
-    });
-
-    group.bench_function("simdjson_rust_parse_to_value_reuse", |b| {
-        b.iter(|| {
-            let res = parser.parse_to_value(black_box(&json)).unwrap();
             black_box(res);
         })
     });

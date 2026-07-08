@@ -7,3 +7,5 @@ Cargo.lock
 .idea/
 .cache/
 build/
+
+compile_commands.json

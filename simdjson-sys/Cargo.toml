@@ -14,7 +14,8 @@ readme = "README.md"
 exclude = ["simdjson/", "!simdjson/singleheader/simdjson.*"]
 
 [dependencies]
+cxx = "1.0.197"
 
 [build-dependencies]
-bindgen = "0.66.1"
-cc = { version = "1.0.83", features = ["parallel"] }
+cmake = "0.1.54"
+cxx-build = "1.0.197"

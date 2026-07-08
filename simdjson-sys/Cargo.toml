@@ -18,3 +18,10 @@ cxx = "1.0.197"
 [build-dependencies]
 cmake = "0.1.54"
 cxx-build = "1.0.197"
+
+[features]
+# Compile the bundled simdjson (and C++ bridge) with `-march=native` for the
+# building machine. Off by default so published builds stay portable; enable
+# locally for maximum speed on your own CPU.
+default = []
+native = []

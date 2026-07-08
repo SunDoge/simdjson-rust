@@ -42,3 +42,16 @@ default = ["serde"]
 
 # serde compatibility
 serde = ["dep:serde"]
+
+# Compile the bundled simdjson C++ with `-march=native` for the building CPU.
+# Off by default for portability. Pair with `RUSTFLAGS="-C target-cpu=native"`
+# (or copy `.cargo/config.toml.example`) to also tune the Rust code.
+native = ["simdjson-sys/native"]
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+
+[profile.bench]
+lto = "fat"
+codegen-units = 1

@@ -27,16 +27,40 @@ use std::str;
 use snafu::prelude::*;
 
 /// The error type returned by Tape operations.
+///
+/// Each variant names the concrete failure and carries the positions and
+/// lengths relevant to it, so callers can inspect *what* went wrong and
+/// *where*, rather than parsing a formatted message.
 #[derive(Debug, Snafu)]
 #[snafu(visibility(pub(crate)))]
 pub enum Error {
-    #[snafu(display("tape corrupted: {message}"))]
-    TapeCorrupted { message: String },
+    /// The tape cursor advanced past the end of the tape.
+    #[snafu(display("tape position {pos} out of bounds (len={len})"))]
+    OutOfBounds { pos: usize, len: usize },
 
-    #[snafu(display("invalid UTF-8: {message}"))]
+    /// The tape word's tag byte is not a recognised `TapeType`.
+    #[snafu(display("unknown tape type byte 0x{tag:02X} at position {pos}"))]
+    UnknownTapeType { tag: u8, pos: usize },
+
+    /// The tape word's type is recognised but not valid at this position
+    /// (e.g. a closing `}` where a value is expected, or a non-string node
+    /// where an object key is expected).
+    #[snafu(display("unexpected tape type 0x{found:02X} at position {pos}"))]
+    UnexpectedTapeType { found: u8, pos: usize },
+
+    /// A string node's offset or length runs past the end of `string_buf`.
+    #[snafu(display("string at offset {offset} out of bounds (string_buf len={len})"))]
+    StringOutOfBounds { offset: usize, len: usize },
+
+    /// A number node is missing its second (value) tape word.
+    #[snafu(display("value word missing for tape node at position {pos}"))]
+    MissingValueWord { pos: usize },
+
+    /// The string bytes at the node's offset are not valid UTF-8.
+    #[snafu(display("invalid UTF-8 in string at offset {pos}"))]
     InvalidUtf8 {
         source: std::str::Utf8Error,
-        message: String,
+        pos: usize,
     },
 }
 
@@ -281,6 +305,7 @@ impl<'a> TapeRef<'a> {
     ///
     /// The returned `&str` has lifetime `'a` (tied to the parser), so it can
     /// be used for zero-copy deserialization.
+    #[inline]
     pub fn get_string(&self) -> Result<&'a str> {
         debug_assert_eq!(
             self.tape_type(),
@@ -288,38 +313,33 @@ impl<'a> TapeRef<'a> {
             "get_string called on non-string node"
         );
         let offset = self.payload() as usize;
-        if offset + 4 > self.string_buf.len() {
-            return TapeCorruptedSnafu {
-                message: format!(
-                    "string offset {offset} out of bounds (string_buf len={})",
-                    self.string_buf.len()
-                ),
+        ensure!(
+            offset + 4 <= self.string_buf.len(),
+            StringOutOfBoundsSnafu {
+                offset,
+                len: self.string_buf.len(),
             }
-            .fail();
-        }
+        );
         // First 4 bytes: little-endian u32 length.
         let len_bytes = &self.string_buf[offset..offset + 4];
         let len = u32::from_le_bytes(len_bytes.try_into().unwrap()) as usize;
         let start = offset + 4;
         let end = start + len;
-        if end > self.string_buf.len() {
-            return TapeCorruptedSnafu {
-                message: format!(
-                    "string data [{start}..{end}] out of bounds (string_buf len={})",
-                    self.string_buf.len()
-                ),
+        ensure!(
+            end <= self.string_buf.len(),
+            StringOutOfBoundsSnafu {
+                offset,
+                len: self.string_buf.len(),
             }
-            .fail();
-        }
-        str::from_utf8(&self.string_buf[start..end]).context(InvalidUtf8Snafu {
-            message: format!("invalid UTF-8 in string at offset {offset}"),
-        })
+        );
+        str::from_utf8(&self.string_buf[start..end]).context(InvalidUtf8Snafu { pos: offset })
     }
 
     /// Decode the `i64` value at the current position.
     ///
     /// The actual integer is stored in the *next* tape word (reinterpreted as
     /// `i64` bits).
+    #[inline]
     pub fn get_int64(&self) -> Result<i64> {
         debug_assert_eq!(
             self.tape_type(),
@@ -327,16 +347,12 @@ impl<'a> TapeRef<'a> {
             "get_int64 called on non-int64 node"
         );
         let next = self.pos + 1;
-        if next >= self.tape.len() {
-            return TapeCorruptedSnafu {
-                message: "i64 value word missing from tape".to_string(),
-            }
-            .fail();
-        }
+        ensure!(next < self.tape.len(), MissingValueWordSnafu { pos: self.pos });
         Ok(self.tape[next] as i64)
     }
 
     /// Decode the `u64` value at the current position.
+    #[inline]
     pub fn get_uint64(&self) -> Result<u64> {
         debug_assert_eq!(
             self.tape_type(),
@@ -344,16 +360,12 @@ impl<'a> TapeRef<'a> {
             "get_uint64 called on non-uint64 node"
         );
         let next = self.pos + 1;
-        if next >= self.tape.len() {
-            return TapeCorruptedSnafu {
-                message: "u64 value word missing from tape".to_string(),
-            }
-            .fail();
-        }
+        ensure!(next < self.tape.len(), MissingValueWordSnafu { pos: self.pos });
         Ok(self.tape[next])
     }
 
     /// Decode the `f64` value at the current position.
+    #[inline]
     pub fn get_double(&self) -> Result<f64> {
         debug_assert_eq!(
             self.tape_type(),
@@ -361,12 +373,7 @@ impl<'a> TapeRef<'a> {
             "get_double called on non-double node"
         );
         let next = self.pos + 1;
-        if next >= self.tape.len() {
-            return TapeCorruptedSnafu {
-                message: "f64 value word missing from tape".to_string(),
-            }
-            .fail();
-        }
+        ensure!(next < self.tape.len(), MissingValueWordSnafu { pos: self.pos });
         Ok(f64::from_bits(self.tape[next]))
     }
 
@@ -375,16 +382,13 @@ impl<'a> TapeRef<'a> {
     /// After a successful call the cursor is advanced past the parsed value,
     /// ready to decode the next element.
     pub fn parse_value(&mut self) -> Result<Value<'a>> {
-        if self.pos >= self.tape.len() {
-            return TapeCorruptedSnafu {
-                message: format!(
-                    "tape position {} out of bounds (len={})",
-                    self.pos,
-                    self.tape.len()
-                ),
+        ensure!(
+            self.pos < self.tape.len(),
+            OutOfBoundsSnafu {
+                pos: self.pos,
+                len: self.tape.len(),
             }
-            .fail();
-        }
+        );
 
         match self.tape_type() {
             Some(TapeType::Root) => {
@@ -453,16 +457,14 @@ impl<'a> TapeRef<'a> {
                 self.skip(1);
                 Ok(Value::Object(obj))
             }
-            Some(t) => TapeCorruptedSnafu {
-                message: format!("unexpected tape type {:?} at position {}", t, self.pos),
+            Some(t) => UnexpectedTapeTypeSnafu {
+                found: t as u8,
+                pos: self.pos,
             }
             .fail(),
-            None => TapeCorruptedSnafu {
-                message: format!(
-                    "unknown tape type byte 0x{:02X} at position {}",
-                    (self.current_word() >> 56) as u8,
-                    self.pos
-                ),
+            None => UnknownTapeTypeSnafu {
+                tag: (self.current_word() >> 56) as u8,
+                pos: self.pos,
             }
             .fail(),
         }
@@ -473,16 +475,13 @@ impl<'a> TapeRef<'a> {
     /// This is the low-level API for custom traversal. The visitor receives
     /// structured callbacks as the tape is walked.
     pub fn visit<V: TapeVisitor<'a>>(&mut self, visitor: &mut V) -> Result<V::Output> {
-        if self.pos >= self.tape.len() {
-            return TapeCorruptedSnafu {
-                message: format!(
-                    "tape position {} out of bounds (len={})",
-                    self.pos,
-                    self.tape.len()
-                ),
+        ensure!(
+            self.pos < self.tape.len(),
+            OutOfBoundsSnafu {
+                pos: self.pos,
+                len: self.tape.len(),
             }
-            .fail();
-        }
+        );
 
         match self.tape_type() {
             Some(TapeType::Root) => {
@@ -535,16 +534,14 @@ impl<'a> TapeRef<'a> {
                 self.skip(1); // past `}`
                 Ok(result)
             }
-            Some(t) => TapeCorruptedSnafu {
-                message: format!("unexpected tape type {:?} at position {}", t, self.pos),
+            Some(t) => UnexpectedTapeTypeSnafu {
+                found: t as u8,
+                pos: self.pos,
             }
             .fail(),
-            None => TapeCorruptedSnafu {
-                message: format!(
-                    "unknown tape type byte 0x{:02X} at position {}",
-                    (self.current_word() >> 56) as u8,
-                    self.pos
-                ),
+            None => UnknownTapeTypeSnafu {
+                tag: (self.current_word() >> 56) as u8,
+                pos: self.pos,
             }
             .fail(),
         }

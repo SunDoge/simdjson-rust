@@ -1,6 +1,6 @@
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use serde::{Deserialize, Serialize};
-use simdjson_rust::{dom::Parser, serde_support::from_tape};
+use simdjson_rust::{dom::Parser, serde::from_tape};
 
 // ---------------------------------------------------------------------------
 // Struct Definitions for Benchmarking

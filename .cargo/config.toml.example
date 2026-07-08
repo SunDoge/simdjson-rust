@@ -1,0 +1,8 @@
+# Copy this file to `.cargo/config.toml` to tune the Rust code for your CPU.
+# It is gitignored so machine-specific flags never get committed or published.
+#
+#   cp .cargo/config.toml.example .cargo/config.toml
+#
+# For the C++ kernels, also pass `--features native` (see Cargo.toml).
+[build]
+rustflags = ["-C", "target-cpu=native"]

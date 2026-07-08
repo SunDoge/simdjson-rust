@@ -1,7 +1,7 @@
 #[cfg(feature = "serde")]
 use serde::Deserialize;
 #[cfg(feature = "serde")]
-use simdjson_rust::serde_support::from_str;
+use simdjson_rust::serde::from_str;
 
 #[cfg(feature = "serde")]
 #[derive(Debug, Deserialize, PartialEq)]

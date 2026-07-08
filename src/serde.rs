@@ -7,7 +7,7 @@
 //!
 //! ```rust
 //! use serde::Deserialize;
-//! use simdjson_rust::serde_support::from_str;
+//! use simdjson_rust::serde::from_str;
 //!
 //! #[derive(Debug, Deserialize, PartialEq)]
 //! struct Point {
@@ -27,7 +27,7 @@ use snafu::prelude::*;
 
 use crate::{
     dom::Parser,
-    tape::{TapeRef, TapeType},
+    tape::{self, TapeRef, TapeType},
 };
 
 /// The error type returned by the Serde deserializer.
@@ -37,13 +37,13 @@ pub enum Error {
     #[snafu(display("serde error: {message}"))]
     Custom { message: String },
 
-    #[snafu(display("tape corrupted: {message}"))]
-    TapeCorrupted { message: String },
-
-    #[snafu(display("tape error: {source}"))]
+    /// A malformed or unsupported tape state was encountered while
+    /// deserializing. Carries the structured [`tape::Error`] so callers can
+    /// match on the concrete failure.
+    #[snafu(transparent)]
     Tape {
         #[snafu(backtrace)]
-        source: crate::tape::Error,
+        source: tape::Error,
     },
 
     #[snafu(display("dom error: {source}"))]
@@ -54,12 +54,6 @@ pub enum Error {
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
-
-impl From<crate::tape::Error> for Error {
-    fn from(source: crate::tape::Error) -> Self {
-        Error::Tape { source }
-    }
-}
 
 impl From<crate::dom::Error> for Error {
     fn from(source: crate::dom::Error) -> Self {
@@ -112,69 +106,92 @@ pub struct TapeDeserializer<'de> {
 ///
 /// This is the workhorse used by all `SeqAccess`/`MapAccess`/`VariantAccess`
 /// impls so they can share the same tape cursor.
+///
+/// Dispatches on the raw tag byte of the current tape word rather than going
+/// through `Option<TapeType>`, avoiding an enum round-trip and a second match
+/// on every node.
+#[inline]
 fn deserialize_value<'de, V: Visitor<'de>>(
     tape: &mut TapeRef<'de>,
     visitor: V,
 ) -> Result<V::Value> {
-    match tape.tape_type() {
-        Some(TapeType::Root) => {
+    if tape.pos >= tape.tape.len() {
+        return Err(tape::OutOfBoundsSnafu {
+            pos: tape.pos,
+            len: tape.tape.len(),
+        }
+        .build()
+        .into());
+    }
+    let word = tape.current_word_public();
+    let tag = (word >> 56) as u8;
+    match tag {
+        b'r' => {
             tape.skip(1);
             deserialize_value(tape, visitor)
         }
-        Some(TapeType::Null) => {
+        b'n' => {
             tape.skip(1);
             visitor.visit_unit()
         }
-        Some(TapeType::True) => {
+        b't' => {
             tape.skip(1);
             visitor.visit_bool(true)
         }
-        Some(TapeType::False) => {
+        b'f' => {
             tape.skip(1);
             visitor.visit_bool(false)
         }
-        Some(TapeType::Int64) => {
+        b'l' => {
             let v = tape.get_int64()?;
             tape.skip(2);
             visitor.visit_i64(v)
         }
-        Some(TapeType::Uint64) => {
+        b'u' => {
             let v = tape.get_uint64()?;
             tape.skip(2);
             visitor.visit_u64(v)
         }
-        Some(TapeType::Double) => {
+        b'd' => {
             let v = tape.get_double()?;
             tape.skip(2);
             visitor.visit_f64(v)
         }
-        Some(TapeType::String) => {
+        b'"' => {
             let s: &'de str = tape.get_string()?;
             tape.skip(1);
             visitor.visit_borrowed_str(s)
         }
-        Some(TapeType::StartArray) => {
+        b'[' => {
             let end_idx = tape.scope_close_idx();
             tape.skip(1); // past `[`
             let result = visitor.visit_seq(TapeSeqAccess { tape, end_idx })?;
             tape.skip(1); // past `]`
             Ok(result)
         }
-        Some(TapeType::StartObject) => {
+        b'{' => {
             let end_idx = tape.scope_close_idx();
             tape.skip(1); // past `{`
             let result = visitor.visit_map(TapeMapAccess { tape, end_idx })?;
             tape.skip(1); // past `}`
             Ok(result)
         }
-        Some(t) => TapeCorruptedSnafu {
-            message: format!("unexpected tape type {:?} at position {}", t, tape.pos()),
-        }
-        .fail(),
-        None => TapeCorruptedSnafu {
-            message: format!("tape position {} out of bounds or unknown type", tape.pos()),
-        }
-        .fail(),
+        _ => match TapeType::from_tape_word(word) {
+            // Recognised tag that isn't a valid value position (e.g. a stray
+            // `}` / `]`). `tag` is known, so this is unexpected, not unknown.
+            Some(_) => Err(tape::UnexpectedTapeTypeSnafu {
+                found: tag,
+                pos: tape.pos(),
+            }
+            .build()
+            .into()),
+            None => Err(tape::UnknownTapeTypeSnafu {
+                tag,
+                pos: tape.pos(),
+            }
+            .build()
+            .into()),
+        },
     }
 }
 
@@ -197,16 +214,20 @@ fn skip_value(tape: &mut TapeRef<'_>) -> Result<()> {
             tape.skip(1); // past the closing bracket
         }
         Some(t) => {
-            return TapeCorruptedSnafu {
-                message: format!("skip_value: unexpected tape type {:?}", t),
+            return Err(tape::UnexpectedTapeTypeSnafu {
+                found: t as u8,
+                pos: tape.pos(),
             }
-            .fail();
+            .build()
+            .into());
         }
         None => {
-            return TapeCorruptedSnafu {
-                message: format!("skip_value: unknown tape type at pos {}", tape.pos()),
+            return Err(tape::UnknownTapeTypeSnafu {
+                tag: (tape.current_word_public() >> 56) as u8,
+                pos: tape.pos(),
             }
-            .fail();
+            .build()
+            .into());
         }
     }
     Ok(())
@@ -250,15 +271,15 @@ impl<'a, 'de> MapAccess<'de> for TapeMapAccess<'a, 'de> {
             return Ok(None);
         }
         // Keys in object tape are always String nodes.
-        if self.tape.tape_type() != Some(TapeType::String) {
-            return TapeCorruptedSnafu {
-                message: format!(
-                    "expected string key at pos {}, got {:?}",
-                    self.tape.pos(),
-                    self.tape.tape_type()
-                ),
+        let word = self.tape.current_word_public();
+        let tag = (word >> 56) as u8;
+        if tag != b'"' {
+            return Err(tape::UnexpectedTapeTypeSnafu {
+                found: tag,
+                pos: self.tape.pos(),
             }
-            .fail();
+            .build()
+            .into());
         }
         let key: &'de str = self.tape.get_string()?;
         self.tape.skip(1);
@@ -285,11 +306,15 @@ impl<'a, 'de> EnumAccess<'de> for TapeEnumAccess<'a, 'de> {
     type Variant = TapeVariantAccess<'a, 'de>;
 
     fn variant_seed<V: DeserializeSeed<'de>>(self, seed: V) -> Result<(V::Value, Self::Variant)> {
-        if self.tape.tape_type() != Some(TapeType::String) {
-            return TapeCorruptedSnafu {
-                message: "expected string variant name in enum object".to_string(),
+        let word = self.tape.current_word_public();
+        let tag = (word >> 56) as u8;
+        if tag != b'"' {
+            return Err(tape::UnexpectedTapeTypeSnafu {
+                found: tag,
+                pos: self.tape.pos(),
             }
-            .fail();
+            .build()
+            .into());
         }
         let name: &'de str = self.tape.get_string()?;
         self.tape.skip(1);

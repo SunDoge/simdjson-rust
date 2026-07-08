@@ -9,3 +9,7 @@ Cargo.lock
 build/
 
 compile_commands.json
+
+# Local-only cargo config that enables `-C target-cpu=native` for benching.
+# Copy from `.cargo/config.toml.example`; never commit machine-specific flags.
+/.cargo/config.toml

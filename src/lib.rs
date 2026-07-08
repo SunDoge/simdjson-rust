@@ -22,7 +22,7 @@
 //!
 //! ```rust,ignore
 //! use serde::Deserialize;
-//! use simdjson_rust::serde_support::from_str;
+//! use simdjson_rust::serde::from_str;
 //!
 //! #[derive(Deserialize, Debug)]
 //! struct Config {
@@ -39,7 +39,7 @@ pub mod error;
 pub mod tape;
 
 #[cfg(feature = "serde")]
-pub mod serde_support;
+pub mod serde;
 
 /// Re-export the simdjson-sys padding constant.
 pub use simdjson_sys::SIMDJSON_PADDING;

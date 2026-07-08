@@ -1,5 +1,13 @@
 fn main() {
-    let dst = cmake::Config::new(".").build();
+    let native = std::env::var_os("CARGO_FEATURE_NATIVE").is_some();
+
+    let mut cmake_cfg = cmake::Config::new(".");
+    if native {
+        // Tune the C++ kernels for the building CPU. Off by default so that
+        // published builds remain portable across machines.
+        cmake_cfg.cxxflag("-march=native");
+    }
+    let dst = cmake_cfg.build();
     let include_dir = dst.join("include");
     let lib_dir = dst.join("lib");
 

@@ -103,7 +103,7 @@ mod tape_integration {
     #[cfg(feature = "serde")]
     mod with_serde {
         use serde::Deserialize;
-        use simdjson_rust::serde_support::{from_bytes, from_str};
+        use simdjson_rust::serde::{from_bytes, from_str};
 
         #[derive(Debug, Deserialize, PartialEq)]
         struct Person {

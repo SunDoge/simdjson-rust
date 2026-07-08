@@ -1,16 +1,45 @@
-mod macros;
+//! # simdjson-rust
+//!
+//! High-performance JSON parsing for Rust, backed by the
+//! [simdjson](https://github.com/simdjson/simdjson) C++ library.
+//!
+//! ## Quick Start
+//!
+//! ```rust
+//! use simdjson_rust::dom::Parser;
+//!
+//! let mut parser = Parser::default();
+//! let value = parser
+//!     .parse_to_value(r#"{"hello": "world", "n": 42}"#)
+//!     .unwrap();
+//! println!("{value:?}");
+//! ```
+//!
+//! ## Serde Support
+//!
+//! With the default `serde` feature you can deserialize directly into any
+//! `serde::Deserialize` type:
+//!
+//! ```rust,ignore
+//! use serde::Deserialize;
+//! use simdjson_rust::serde_support::from_str;
+//!
+//! #[derive(Deserialize, Debug)]
+//! struct Config {
+//!     name: String,
+//!     value: u64,
+//! }
+//!
+//! let cfg: Config = from_str(r#"{"name": "example", "value": 99}"#).unwrap();
+//! println!("{cfg:?}");
+//! ```
 
 pub mod dom;
-mod error;
-pub mod ondemand;
-pub mod padded_string;
-pub mod prelude;
-mod utils;
+pub mod error;
+pub mod tape;
 
-pub use error::{Result, SimdJsonError};
-pub use simdjson_sys::{SIMDJSON_MAXSIZE_BYTES, SIMDJSON_PADDING};
+#[cfg(feature = "serde")]
+pub mod serde_support;
 
-// pub mod serde;
-
-#[cfg(test)]
-mod tests {}
+/// Re-export the simdjson-sys padding constant.
+pub use simdjson_sys::SIMDJSON_PADDING;

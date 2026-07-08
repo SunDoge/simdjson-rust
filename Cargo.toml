@@ -1,16 +1,14 @@
 [package]
 name = "simdjson-rust"
 version = { workspace = true }
-authors = ["SunDoge <384813529@qq.com>"]
-edition = "2021"
-license = "Apache-2.0"
+edition = "2024"
 description = "Rust bindings for the simdjson project."
-homepage = "https://crates.io/crates/simdjson-rust"
 documentation = "https://docs.rs/simdjson-rust"
-repository = "https://github.com/SunDoge/simdjson-rust"
 readme = "README.md"
+homepage = "https://crates.io/crates/simdjson-rust"
+repository = "https://github.com/SunDoge/simdjson-rust"
+license = "Apache-2.0"
 exclude = [".github/", "examples/"]
-
 
 [workspace]
 resolver = "2"
@@ -20,20 +18,27 @@ members = ["simdjson-sys"]
 version = "0.3.0-alpha.3"
 
 [workspace.dependencies]
-simdjson-sys = { path = "simdjson-sys", version = "0.1.0-alpha.2" }
-
+simdjson-sys = { path = "simdjson-sys" }
 
 [dependencies]
-thiserror = "1.0"
+cxx = "1.0"
 simdjson-sys = { workspace = true }
 
 # serde compatibilty
 serde = { version = "1", features = ["derive"], optional = true }
-serde_json = { version = "1", optional = true }
+snafu = "0.9.1"
 
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+serde_json = "1.0"
+serde = { version = "1", features = ["derive"] }
+
+[[bench]]
+name = "parser_bench"
+harness = false
 
 [features]
-default = []
+default = ["serde"]
 
 # serde compatibility
-serde_impl = ["serde", "serde_json"]
+serde = ["dep:serde"]

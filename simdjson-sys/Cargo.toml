@@ -2,7 +2,6 @@
 name = "simdjson-sys"
 version = "0.1.0-alpha.2"
 edition = "2021"
-authors = ["SunDoge <384813529@qq.com>"]
 license = "Apache-2.0"
 description = "Low level Rust bindings for simdjson."
 homepage = "https://crates.io/crates/simdjson-sys"

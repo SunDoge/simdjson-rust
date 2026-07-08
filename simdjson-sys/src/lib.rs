@@ -1,5 +1,3 @@
-#![allow(clippy::missing_safety_doc)]
-
 #[cxx::bridge(namespace = "simdjson_sys::dom")]
 pub mod dom_ffi {
     struct TapeView<'a> {
@@ -24,39 +22,39 @@ pub const SIMDJSON_PADDING: usize = 64;
 pub const SIMDJSON_MAXSIZE_BYTES: usize = 0xFFFFFFFF;
 pub const DEFAULT_BATCH_SIZE: usize = 1000000;
 
-pub struct Parser {
-    inner: cxx::UniquePtr<dom_ffi::parser>,
-}
-
-impl Default for Parser {
-    fn default() -> Self {
-        Self::new(SIMDJSON_MAXSIZE_BYTES)
-    }
-}
-
-impl Parser {
-    pub fn new(max_capacity: usize) -> Self {
-        Self {
-            inner: dom_ffi::parser_new(max_capacity),
-        }
-    }
-
-    pub fn parse_string(&mut self, json: &mut String) -> i32 {
-        if json.capacity() < json.len() + SIMDJSON_PADDING {
-            json.reserve(SIMDJSON_PADDING);
-        }
-
-        dom_ffi::parser_parse(self.inner.pin_mut(), json.as_bytes(), false)
-    }
-
-    pub fn get_tape_view(&self) -> dom_ffi::TapeView<'_> {
-        dom_ffi::parser_get_tape_view(self.inner.as_ref().expect("parser must not be null"))
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use super::Parser;
+    use super::*;
+
+    pub struct Parser {
+        inner: cxx::UniquePtr<dom_ffi::parser>,
+    }
+
+    impl Default for Parser {
+        fn default() -> Self {
+            Self::new(SIMDJSON_MAXSIZE_BYTES)
+        }
+    }
+
+    impl Parser {
+        pub fn new(max_capacity: usize) -> Self {
+            Self {
+                inner: dom_ffi::parser_new(max_capacity),
+            }
+        }
+
+        pub fn parse_string(&mut self, json: &mut String) -> i32 {
+            if json.capacity() < json.len() + SIMDJSON_PADDING {
+                json.reserve(SIMDJSON_PADDING);
+            }
+
+            dom_ffi::parser_parse(self.inner.pin_mut(), json.as_bytes(), false)
+        }
+
+        pub fn get_tape_view(&self) -> dom_ffi::TapeView<'_> {
+            dom_ffi::parser_get_tape_view(self.inner.as_ref().expect("parser must not be null"))
+        }
+    }
 
     #[test]
     fn parser_parses_string_and_exposes_tape_view() {

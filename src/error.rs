@@ -1,144 +1,123 @@
-use thiserror::Error;
+//! Simdjson error code translations and strong type definitions.
 
-pub type Result<T> = std::result::Result<T, SimdJsonError>;
+use snafu::prelude::*;
 
-#[derive(Debug, Error)]
+/// Strongly typed error enum representing C++ simdjson error codes.
+#[derive(Debug, Snafu, Clone, Copy, PartialEq, Eq)]
 pub enum SimdJsonError {
-    #[error("This parser can't support a document that big")]
+    #[snafu(display("CAPACITY: This parser can't support a document that big"))]
     Capacity,
 
-    #[error("Error allocating memory, we're most likely out of memory")]
+    #[snafu(display("MEMALLOC: Memory allocation failure"))]
     MemAlloc,
 
-    #[error("Something went wrong while writing to the tape")]
+    #[snafu(display("TAPE_ERROR: The JSON is so badly formed we couldn't build a tape"))]
     TapeError,
 
-    #[error("The JSON document was too deep (too many nested objects and arrays)")]
+    #[snafu(display("DEPTH_ERROR: Your document exceeds the maximum depth"))]
     DepthError,
 
-    #[error("Problem while parsing a string")]
+    #[snafu(display("STRING_ERROR: Problem while parsing a string"))]
     StringError,
 
-    #[error("Problem while parsing an atom starting with the letter 't'")]
+    #[snafu(display("T_ATOM_ERROR: Problem while parsing an atom starting with 't'"))]
     TAtomError,
 
-    #[error("Problem while parsing an atom starting with the letter 'f'")]
+    #[snafu(display("F_ATOM_ERROR: Problem while parsing an atom starting with 'f'"))]
     FAtomError,
 
-    #[error("Problem while parsing an atom starting with the letter 'n'")]
+    #[snafu(display("N_ATOM_ERROR: Problem while parsing an atom starting with 'n'"))]
     NAtomError,
 
-    #[error("Problem while parsing a number")]
+    #[snafu(display("NUMBER_ERROR: Problem while parsing a number"))]
     NumberError,
 
-    #[error("The input is not valid UTF-8")]
+    #[snafu(display("UTF8_ERROR: The input is not valid UTF-8"))]
     Utf8Error,
 
-    #[error("Uninitialized")]
+    #[snafu(display("UNINITIALIZED: Uninitialized or an empty parser"))]
     Uninitialized,
 
-    #[error("Empty: no JSON found")]
+    #[snafu(display("EMPTY: No structural element found"))]
     Empty,
 
-    #[error("Within strings, some characters must be escaped, we found unescaped characters")]
+    #[snafu(display("UNESCAPED_CHARS: Found unescaped characters in a string"))]
     UnescapedChars,
 
-    #[error("A string is opened, but never closed.")]
+    #[snafu(display("UNCLOSED_STRING: Unclosed string"))]
     UnclosedString,
 
-    #[error(
-        "simdjson does not have an implementation supported by this CPU architecture (perhaps \
-         it's a non-SIMD CPU?)."
-    )]
+    #[snafu(display("UNSUPPORTED_ARCHITECTURE: Unsupported architecture"))]
     UnsupportedArchitecture,
 
-    #[error("The JSON element does not have the requested type.")]
+    #[snafu(display("INCORRECT_TYPE: Element has the wrong type for this operation"))]
     IncorrectType,
 
-    #[error("The JSON number is too large or too small to fit within the requested type.")]
+    #[snafu(display("NUMBER_OUT_OF_RANGE: Number is too large or too small"))]
     NumberOutOfRange,
 
-    #[error("Attempted to access an element of a JSON array that is beyond its length.")]
+    #[snafu(display("INDEX_OUT_OF_BOUNDS: Array index is too large"))]
     IndexOutOfBounds,
 
-    #[error("The JSON field referenced does not exist in this object.")]
+    #[snafu(display("NO_SUCH_FIELD: The key was not found in the object"))]
     NoSuchField,
 
-    #[error("Error reading the file.")]
+    #[snafu(display("IO_ERROR: Error reading file"))]
     IoError,
 
-    #[error("Invalid JSON pointer syntax.")]
+    #[snafu(display("INVALID_JSON_POINTER: Invalid JSON pointer syntax"))]
     InvalidJsonPointer,
 
-    #[error("Invalid URI fragment syntax.")]
+    #[snafu(display("INVALID_URI_FRAGMENT: Fragment is not valid"))]
     InvalidUriFragment,
 
-    #[error("todo")]
+    #[snafu(display("UNEXPECTED_ERROR: Something went wrong, this is a bug in simdjson"))]
     UnexpectedError,
 
-    #[error("todo")]
-    ParserInUse,
-
-    #[error("todo")]
-    OutOfOrderIteration,
-
-    #[error("todo")]
-    InsufficientPadding,
-
-    #[error("todo")]
-    IncompleteArrayOrObject,
-
-    #[error("todo")]
-    ScalarDocumentAsValue,
-
-    #[error("todo")]
-    OutOfBounds,
-
-    #[error("todo")]
-    TailingContent,
-
-    #[error("todo")]
-    NumErrorCodes,
-
-    #[error("todo")]
-    StdIoError(#[from] std::io::Error),
+    #[snafu(display("UNKNOWN_ERROR: Unknown error code {code}"))]
+    Unknown { code: i32 },
 }
 
-impl From<i32> for SimdJsonError {
-    fn from(error_code: i32) -> Self {
-        match error_code {
-            1 => SimdJsonError::Capacity,
-            2 => SimdJsonError::MemAlloc,
-            3 => SimdJsonError::TapeError,
-            4 => SimdJsonError::DepthError,
-            5 => SimdJsonError::StringError,
-            6 => SimdJsonError::TAtomError,
-            7 => SimdJsonError::FAtomError,
-            8 => SimdJsonError::NAtomError,
-            9 => SimdJsonError::NumberError,
-            10 => SimdJsonError::Utf8Error,
-            11 => SimdJsonError::Uninitialized,
-            12 => SimdJsonError::Empty,
-            13 => SimdJsonError::UnescapedChars,
-            14 => SimdJsonError::UnclosedString,
-            15 => SimdJsonError::UnsupportedArchitecture,
-            16 => SimdJsonError::IncorrectType,
-            17 => SimdJsonError::NumberOutOfRange,
-            18 => SimdJsonError::IndexOutOfBounds,
-            19 => SimdJsonError::NoSuchField,
-            20 => SimdJsonError::IoError,
-            21 => SimdJsonError::InvalidJsonPointer,
-            22 => SimdJsonError::InvalidUriFragment,
-            23 => SimdJsonError::UnexpectedError,
-            24 => SimdJsonError::ParserInUse,
-            25 => SimdJsonError::OutOfOrderIteration,
-            26 => SimdJsonError::InsufficientPadding,
-            27 => SimdJsonError::IncompleteArrayOrObject,
-            28 => SimdJsonError::ScalarDocumentAsValue,
-            29 => SimdJsonError::OutOfBounds,
-            30 => SimdJsonError::TailingContent,
-            31 => SimdJsonError::NumErrorCodes,
-            x => panic!("Unknown error code: {}", x),
+impl SimdJsonError {
+    /// Convert a raw C++ simdjson error code into a strongly typed
+    /// `SimdJsonError`.
+    ///
+    /// If the code is `0` (SUCCESS), this returns `None`. For all other codes,
+    /// this returns `Some(SimdJsonError)`.
+    pub fn from_code(code: i32) -> Option<Self> {
+        match code {
+            0 => None,
+            1 => Some(Self::Capacity),
+            2 => Some(Self::MemAlloc),
+            3 => Some(Self::TapeError),
+            4 => Some(Self::DepthError),
+            5 => Some(Self::StringError),
+            6 => Some(Self::TAtomError),
+            7 => Some(Self::FAtomError),
+            8 => Some(Self::NAtomError),
+            9 => Some(Self::NumberError),
+            10 => Some(Self::Utf8Error),
+            11 => Some(Self::Uninitialized),
+            12 => Some(Self::Empty),
+            13 => Some(Self::UnescapedChars),
+            14 => Some(Self::UnclosedString),
+            15 => Some(Self::UnsupportedArchitecture),
+            16 => Some(Self::IncorrectType),
+            17 => Some(Self::NumberOutOfRange),
+            18 => Some(Self::IndexOutOfBounds),
+            19 => Some(Self::NoSuchField),
+            20 => Some(Self::IoError),
+            21 => Some(Self::InvalidJsonPointer),
+            22 => Some(Self::InvalidUriFragment),
+            23 => Some(Self::UnexpectedError),
+            other => Some(Self::Unknown { code: other }),
+        }
+    }
+
+    pub fn check_code(code: i32) -> Result<(), Self> {
+        match Self::from_code(code) {
+            Some(err) => Err(err),
+            None => Ok(()),
         }
     }
 }

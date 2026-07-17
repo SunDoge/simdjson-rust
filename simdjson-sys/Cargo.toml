@@ -1,20 +1,27 @@
 [package]
 name = "simdjson-sys"
-version = "0.1.0-alpha.2"
+version = "0.2.0-alpha.1"
 edition = "2021"
-authors = ["SunDoge <384813529@qq.com>"]
-license = "Apache-2.0"
 description = "Low level Rust bindings for simdjson."
-homepage = "https://crates.io/crates/simdjson-sys"
 documentation = "https://docs.rs/simdjson-sys"
-repository = "https://github.com/SunDoge/simdjson-rust/tree/master/simdjson-sys"
 readme = "README.md"
+homepage = "https://crates.io/crates/simdjson-sys"
+repository = "https://github.com/SunDoge/simdjson-rust/tree/master/simdjson-sys"
+license = "Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-exclude = ["simdjson/", "!simdjson/singleheader/simdjson.*"]
+exclude = ["!simdjson/singleheader/simdjson.*", "simdjson/"]
 
 [dependencies]
+cxx = "1.0.197"
 
 [build-dependencies]
-bindgen = "0.66.1"
-cc = { version = "1.0.83", features = ["parallel"] }
+cmake = "0.1"
+cxx-build = "1.0.197"
+
+[features]
+# Compile the bundled simdjson (and C++ bridge) with `-march=native` for the
+# building machine. Off by default so published builds stay portable; enable
+# locally for maximum speed on your own CPU.
+default = []
+native = []

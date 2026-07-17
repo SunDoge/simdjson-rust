@@ -1,13 +1,21 @@
-use simdjson_rust::{ondemand, prelude::*, Result};
+use simdjson_rust::dom::Parser;
 
-fn main() -> Result<()> {
-    let ps = load_padded_string("simdjson-sys/simdjson/jsonexamples/twitter.json")?;
-    let mut parser = ondemand::Parser::default();
-    let mut tweets = parser.iterate(&ps)?;
-    println!(
-        "{} results.",
-        tweets.at_pointer("/search_metadata/count")?.get_uint64()?
-    );
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let json = r#"{
+        "search_metadata": {
+            "count": 100
+        }
+    }"#;
+    let mut parser = Parser::default();
+    let v = parser.parse_to_value(json)?;
+    let count = v
+        .get("search_metadata")
+        .unwrap()
+        .get("count")
+        .unwrap()
+        .as_u64()
+        .unwrap();
+    println!("{} results.", count);
 
     Ok(())
 }

@@ -1,0 +1,4 @@
+[tools]
+cargo-release = "latest"
+fd = "latest"
+just = "latest"

@@ -99,7 +99,7 @@ jobs:
       # Build and Test
 
       - name: Build
-        run: cargo build --workspace --locked
+        run: cargo build --workspace
 
       - name: Test
-        run: cargo test --workspace --all-targets --locked
+        run: cargo test --workspace --all-targets

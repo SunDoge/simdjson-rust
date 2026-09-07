@@ -27,13 +27,13 @@ jobs:
             cpp: msvc
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: true
 
       # Cache
       - name: Cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry/index/
@@ -53,11 +53,36 @@ jobs:
           toolchain: ${{ matrix.rust }}
           components: rustfmt, clippy
 
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          compiler: ${{ matrix.cpp }}
-          vcvarsall: ${{ contains(matrix.os, 'windows') }}
+      - name: Select Unix C++ compiler
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          if [[ '${{ matrix.cpp }}' == 'gcc' ]]; then
+            echo "CC=gcc" >> "$GITHUB_ENV"
+            echo "CXX=g++" >> "$GITHUB_ENV"
+          elif [[ "$RUNNER_OS" == 'macOS' ]]; then
+            llvm_bin="$(brew --prefix llvm@18)/bin"
+            echo "CC=$llvm_bin/clang" >> "$GITHUB_ENV"
+            echo "CXX=$llvm_bin/clang++" >> "$GITHUB_ENV"
+          else
+            echo "CC=clang" >> "$GITHUB_ENV"
+            echo "CXX=clang++" >> "$GITHUB_ENV"
+          fi
+
+      - name: Configure Visual Studio environment
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $before = @{}
+          Get-ChildItem Env: | ForEach-Object { $before[$_.Name] = $_.Value }
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vsPath) { throw 'Visual Studio C++ tools were not found' }
+          Import-Module "$vsPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vsPath -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+          Get-ChildItem Env: | Where-Object { $before[$_.Name] -ne $_.Value } | ForEach-Object {
+            "$($_.Name)=$($_.Value)" >> $env:GITHUB_ENV
+          }
 
       # Rust's Windows target uses the MSVC ABI. Use LLVM's matching driver
       # for both CMake and the cxx bridge, rather than clang++.
@@ -65,8 +90,10 @@ jobs:
         if: runner.os == 'Windows' && matrix.cpp == 'llvm'
         shell: pwsh
         run: |
-          "CC=clang-cl" >> $env:GITHUB_ENV
-          "CXX=clang-cl" >> $env:GITHUB_ENV
+          $clang = "$env:ProgramFiles\LLVM\bin\clang-cl.exe"
+          if (-not (Test-Path $clang)) { throw 'clang-cl was not found' }
+          "CC=$clang" >> $env:GITHUB_ENV
+          "CXX=$clang" >> $env:GITHUB_ENV
           "CMAKE_GENERATOR=Ninja" >> $env:GITHUB_ENV
 
       # Build and Test

@@ -19,7 +19,7 @@ Install Cocogitto and enable the local commit message hook:
 
 ```sh
 mise install cocogitto
-mise exec -- cog install-hook commit-msg
+mise run setup-hooks
 ```
 
 Normal `git commit` commands are then checked before the commit is created.
@@ -28,7 +28,7 @@ Alternatively, use `cog commit` to compose a conventional message.
 To run the same history check as CI:
 
 ```sh
-mise exec -- cog check conventional-commits-start..HEAD
+mise run check-commits
 ```
 
 The fixed `conventional-commits-start` tag marks the commit introducing this
@@ -40,6 +40,20 @@ CI checks all new non-merge commits on pushes and pull requests. Git-generated
 merge commits are ignored. When squash-merging, use a conventional PR title as
 the resulting commit message. Hooks are local to each clone, so contributors
 must install them once; CI also checks commits made without the hook.
+
+## Development tasks
+
+Run `mise tasks` to list the available tasks:
+
+```sh
+mise run bench
+mise run copy-compile-commands
+```
+
+The benchmark task enables the `native` feature for C++ compilation. Copy
+`.cargo/config.toml.example` to `.cargo/config.toml` to also tune the Rust code
+for your CPU. The compilation database task copies CMake's generated
+`compile_commands.json` from `target/` into `simdjson-sys/` for editor tooling.
 
 ## CI coverage
 

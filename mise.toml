@@ -20,3 +20,13 @@ run = "cog install-hook commit-msg"
 [tasks.check-commits]
 description = "Validate commits made after Conventional Commits was introduced"
 run = "cog check conventional-commits-start..HEAD"
+
+[tasks.release-check]
+description = "Verify features, documentation and both release packages without uploading"
+run = [
+  "cargo test --workspace --all-targets --all-features",
+  "cargo test --workspace --all-targets --no-default-features",
+  "cargo test --workspace --doc",
+  "cargo doc --workspace --no-deps",
+  "cargo publish --dry-run --workspace",
+]

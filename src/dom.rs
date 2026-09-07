@@ -3,7 +3,7 @@
 //! This module provides a safe, ergonomic Rust API over the simdjson DOM
 //! parser. After parsing, the result is available as a zero-copy
 //! [`Value`](crate::tape::Value), or as a raw
-//! [`TapeRef`](crate::tape::TapeRef) for custom traversal.
+//! [`TapeRef`] for custom traversal.
 
 use simdjson_sys::{SIMDJSON_PADDING, dom_ffi};
 use snafu::prelude::*;
@@ -56,6 +56,7 @@ pub struct Parser {
     inner: cxx::UniquePtr<dom_ffi::parser>,
     /// Reuse the padded buffer to avoid reallocation on every parse.
     padded: Vec<u8>,
+    valid: bool,
 }
 
 impl Default for Parser {
@@ -70,6 +71,7 @@ impl Parser {
         Self {
             inner: dom_ffi::parser_new(max_capacity),
             padded: Vec::new(),
+            valid: false,
         }
     }
 
@@ -83,9 +85,16 @@ impl Parser {
     /// # Errors
     ///
     /// Returns [`Error::SimdJson`] if the parser rejects the input.
-    pub fn parse_bytes_with_padding(&mut self, json: &[u8]) -> Result<TapeRef<'_>> {
-        let code = dom_ffi::parser_parse(self.inner.pin_mut(), json, false);
+    /// # Safety
+    ///
+    /// The allocation must contain at least `SIMDJSON_PADDING` initialized,
+    /// readable bytes after the slice, valid throughout this call.
+    pub unsafe fn parse_bytes_with_padding(&mut self, json: &[u8]) -> Result<TapeRef<'_>> {
+        self.valid = false;
+        // SAFETY: guaranteed by the caller.
+        let code = unsafe { dom_ffi::parser_parse(self.inner.pin_mut(), json, false) };
         SimdJsonError::check_code(code).context(SimdJsonSnafu)?;
+        self.valid = true;
         Ok(self.tape_ref())
     }
 
@@ -104,6 +113,7 @@ impl Parser {
         // with that extra space, copy the JSON into it, zero the tail, then
         // pass a slice of the original length. simdjson uses the slice length
         // as the document length but reads the zero-padded tail unsafely.
+        self.valid = false;
         let json_len = json.len();
         self.padded.clear();
         self.padded.reserve(json_len + SIMDJSON_PADDING);
@@ -113,8 +123,11 @@ impl Parser {
             .extend(std::iter::repeat_n(0u8, SIMDJSON_PADDING));
 
         // Pass only the JSON length; the zero tail is read past the slice end.
-        let code = dom_ffi::parser_parse(self.inner.pin_mut(), &self.padded[..json_len], false);
+        // SAFETY: the allocation includes the initialized zero tail above.
+        let code =
+            unsafe { dom_ffi::parser_parse(self.inner.pin_mut(), &self.padded[..json_len], false) };
         SimdJsonError::check_code(code).context(SimdJsonSnafu)?;
+        self.valid = true;
         Ok(self.tape_ref())
     }
 
@@ -123,21 +136,32 @@ impl Parser {
     ///
     /// The string must have `s.capacity() >= s.len() + SIMDJSON_PADDING`.
     pub fn parse_padded(&mut self, json: &mut String) -> Result<TapeRef<'_>> {
+        self.valid = false;
         ensure!(
-            json.capacity() >= json.len() + SIMDJSON_PADDING,
+            json.capacity() - json.len() >= SIMDJSON_PADDING,
             InsufficientPaddingSnafu
         );
-        let code = dom_ffi::parser_parse(self.inner.pin_mut(), json.as_bytes(), false);
+        let len = json.len();
+        json.extend(std::iter::repeat_n('\0', SIMDJSON_PADDING));
+        json.truncate(len);
+        // SAFETY: initialized padding remains allocated after truncation.
+        let code = unsafe { dom_ffi::parser_parse(self.inner.pin_mut(), json.as_bytes(), false) };
         SimdJsonError::check_code(code).context(SimdJsonSnafu)?;
+        self.valid = true;
         Ok(self.tape_ref())
     }
 
     /// Returns a reference to the current tape.
     ///
-    /// This is only meaningful after a successful `parse*` call.
+    /// Returns an empty tape before parsing or after a failed parse.
     pub fn tape_ref(&self) -> TapeRef<'_> {
-        let view =
-            dom_ffi::parser_get_tape_view(self.inner.as_ref().expect("parser must not be null"));
+        if !self.valid {
+            return TapeRef::new(&[], &[]);
+        }
+        // SAFETY: the last parse succeeded and the parser has not been mutated.
+        let view = unsafe {
+            dom_ffi::parser_get_tape_view(self.inner.as_ref().expect("parser must not be null"))
+        };
         TapeRef::new(view.tape, view.string_buf)
     }
 

@@ -32,6 +32,9 @@ pub enum SimdJsonError {
     #[snafu(display("NUMBER_ERROR: Problem while parsing a number"))]
     NumberError,
 
+    #[snafu(display("BIGINT_ERROR: Integer cannot be represented in 64 bits"))]
+    BigIntError,
+
     #[snafu(display("UTF8_ERROR: The input is not valid UTF-8"))]
     Utf8Error,
 
@@ -74,6 +77,30 @@ pub enum SimdJsonError {
     #[snafu(display("UNEXPECTED_ERROR: Something went wrong, this is a bug in simdjson"))]
     UnexpectedError,
 
+    #[snafu(display("PARSER_IN_USE"))]
+    ParserInUse,
+
+    #[snafu(display("OUT_OF_ORDER_ITERATION"))]
+    OutOfOrderIteration,
+
+    #[snafu(display("INSUFFICIENT_PADDING"))]
+    InsufficientPadding,
+
+    #[snafu(display("INCOMPLETE_ARRAY_OR_OBJECT"))]
+    IncompleteArrayOrObject,
+
+    #[snafu(display("SCALAR_DOCUMENT_AS_VALUE"))]
+    ScalarDocumentAsValue,
+
+    #[snafu(display("OUT_OF_BOUNDS"))]
+    OutOfBounds,
+
+    #[snafu(display("TRAILING_CONTENT"))]
+    TrailingContent,
+
+    #[snafu(display("OUT_OF_CAPACITY"))]
+    OutOfCapacity,
+
     #[snafu(display("UNKNOWN_ERROR: Unknown error code {code}"))]
     Unknown { code: i32 },
 }
@@ -96,20 +123,29 @@ impl SimdJsonError {
             7 => Some(Self::FAtomError),
             8 => Some(Self::NAtomError),
             9 => Some(Self::NumberError),
-            10 => Some(Self::Utf8Error),
-            11 => Some(Self::Uninitialized),
-            12 => Some(Self::Empty),
-            13 => Some(Self::UnescapedChars),
-            14 => Some(Self::UnclosedString),
-            15 => Some(Self::UnsupportedArchitecture),
-            16 => Some(Self::IncorrectType),
-            17 => Some(Self::NumberOutOfRange),
-            18 => Some(Self::IndexOutOfBounds),
-            19 => Some(Self::NoSuchField),
-            20 => Some(Self::IoError),
-            21 => Some(Self::InvalidJsonPointer),
-            22 => Some(Self::InvalidUriFragment),
-            23 => Some(Self::UnexpectedError),
+            10 => Some(Self::BigIntError),
+            11 => Some(Self::Utf8Error),
+            12 => Some(Self::Uninitialized),
+            13 => Some(Self::Empty),
+            14 => Some(Self::UnescapedChars),
+            15 => Some(Self::UnclosedString),
+            16 => Some(Self::UnsupportedArchitecture),
+            17 => Some(Self::IncorrectType),
+            18 => Some(Self::NumberOutOfRange),
+            19 => Some(Self::IndexOutOfBounds),
+            20 => Some(Self::NoSuchField),
+            21 => Some(Self::IoError),
+            22 => Some(Self::InvalidJsonPointer),
+            23 => Some(Self::InvalidUriFragment),
+            24 => Some(Self::UnexpectedError),
+            25 => Some(Self::ParserInUse),
+            26 => Some(Self::OutOfOrderIteration),
+            27 => Some(Self::InsufficientPadding),
+            28 => Some(Self::IncompleteArrayOrObject),
+            29 => Some(Self::ScalarDocumentAsValue),
+            30 => Some(Self::OutOfBounds),
+            31 => Some(Self::TrailingContent),
+            32 => Some(Self::OutOfCapacity),
             other => Some(Self::Unknown { code: other }),
         }
     }

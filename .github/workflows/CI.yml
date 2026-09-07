@@ -32,8 +32,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
-        with:
-          submodules: true
 
       # Setup compilers and tools
 
@@ -88,10 +86,25 @@ jobs:
           "CXX=$clang" >> $env:GITHUB_ENV
           "CMAKE_GENERATOR=Ninja" >> $env:GITHUB_ENV
 
-      # Build and Test
-
-      - name: Build
-        run: cargo build --workspace
+      # Tests also build the workspace.
 
       - name: Test
-        run: cargo test --workspace --all-targets
+        run: cargo test --workspace --all-targets --all-features
+
+      - name: Check optional features and release packages
+        if: matrix.os == 'ubuntu-22.04' && matrix.cpp == 'gcc'
+        run: |
+          cargo test --workspace --no-default-features --all-targets
+          cargo test --workspace --doc
+          cargo publish --dry-run --workspace
+
+  MSRV:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: "1.88.0"
+          cache-key: msrv
+          rustflags: ""
+      - run: cargo check --workspace --all-targets --all-features

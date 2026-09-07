@@ -2,27 +2,34 @@
 name = "simdjson-rust"
 version = { workspace = true }
 edition = "2024"
+rust-version = { workspace = true }
 description = "Rust bindings for the simdjson project."
 documentation = "https://docs.rs/simdjson-rust"
 readme = "README.md"
 homepage = "https://crates.io/crates/simdjson-rust"
 repository = "https://github.com/SunDoge/simdjson-rust"
 license = "Apache-2.0"
-exclude = [".github/", "examples/"]
+exclude = [".github/"]
 
 [workspace]
-resolver = "2"
+resolver = "3"
 members = ["simdjson-sys"]
 
 [workspace.package]
+rust-version = "1.88"
 version = "0.4.0-alpha.1"
 
 [workspace.dependencies]
-simdjson-sys = { path = "simdjson-sys", version = "0.2.0-alpha.1" }
+simdjson-sys = { path = "simdjson-sys", version = "0.4.0-alpha.1" }
 
 [[bench]]
 harness = false
 name = "parser_bench"
+required-features = ["serde"]
+
+[[example]]
+name = "perf_sample"
+required-features = ["serde"]
 
 [dependencies]
 cxx = "1.0"

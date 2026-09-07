@@ -26,7 +26,7 @@ fn main() {
             },
         );
     }
-    if native {
+    if native && !msvc {
         // Tune the C++ kernels for the building CPU. Off by default so that
         // published builds remain portable across machines.
         cmake_cfg.cxxflag("-march=native");
@@ -35,7 +35,11 @@ fn main() {
     let include_dir = dst.join("include");
     let lib_dir = dst.join("lib");
 
-    cxx_build::bridge("src/lib.rs")
+    let mut bridge = cxx_build::bridge("src/lib.rs");
+    if native && !msvc {
+        bridge.flag("-march=native");
+    }
+    bridge
         .include("src")
         .include(&include_dir)
         .file("src/simdjson_dom_bridge.cpp")
@@ -47,4 +51,6 @@ fn main() {
     println!("cargo:rerun-if-changed=src/simdjson_dom_bridge.h");
     println!("cargo:rerun-if-changed=src/simdjson_dom_bridge.cpp");
     println!("cargo:rerun-if-changed=CMakeLists.txt");
+    println!("cargo:rerun-if-changed=src/lib.rs");
+    println!("cargo:rerun-if-changed=vendor/simdjson");
 }

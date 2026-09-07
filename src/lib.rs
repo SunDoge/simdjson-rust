@@ -20,7 +20,9 @@
 //! With the default `serde` feature you can deserialize directly into any
 //! `serde::Deserialize` type:
 //!
-//! ```rust,ignore
+//! ```rust
+//! # #[cfg(feature = "serde")]
+//! # {
 //! use serde::Deserialize;
 //! use simdjson_rust::serde::from_str;
 //!
@@ -32,6 +34,7 @@
 //!
 //! let cfg: Config = from_str(r#"{"name": "example", "value": 99}"#).unwrap();
 //! println!("{cfg:?}");
+//! # }
 //! ```
 
 pub mod dom;

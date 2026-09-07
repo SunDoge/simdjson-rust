@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 0.4.0-alpha.2 (release candidate, not yet published)
 
+- Expose safe `minify` and `minify_bytes` helpers plus a bounds-checked
+  low-level minification binding. No parser, padding or Serde is required.
+
 - Update the CXX DOM bindings to simdjson v4.6.4, exposing a borrowed tape,
   `Value` tree, and optional Serde deserialization. Both crates now use the
   same version. This prerelease includes breaking API changes.

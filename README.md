@@ -69,6 +69,22 @@ for json in inputs {
 }
 ```
 
+## Minify JSON
+
+```rust
+use simdjson_rust::minify;
+
+let compact = minify(r#" { "message": "keep spaces here", "n": 1.00 } "#).unwrap();
+assert_eq!(compact, r#"{"message":"keep spaces here","n":1.00}"#);
+```
+
+`minify(&str)` returns a `String`; `minify_bytes(&[u8])` returns a `Vec<u8>`
+and does not validate UTF-8. Neither needs a parser, padding, or the `serde`
+feature. They preserve string contents and number spellings while removing
+JSON whitespace outside strings. **Minification does not validate JSON**:
+some errors, such as unclosed strings, are reported, but malformed syntax can
+still succeed. Use the DOM parser when validation is needed.
+
 ## Performance
 
 Run the included benchmarks on your own hardware and data. Results from earlier

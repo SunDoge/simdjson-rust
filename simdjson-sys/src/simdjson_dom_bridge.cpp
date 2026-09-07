@@ -98,3 +98,25 @@ TapeView parser_get_tape_view(const simdjson::dom::parser &parser) {
 }
 
 } // namespace simdjson_sys::dom
+
+namespace simdjson_sys {
+int32_t minify(rust::Slice<const uint8_t> json, rust::Slice<uint8_t> output,
+               size_t &written) {
+  written = 0;
+  if (output.size() < json.size()) {
+    return static_cast<int32_t>(simdjson::CAPACITY);
+  }
+  // Avoid passing empty Rust slices' dangling pointers to native code.
+  if (json.empty()) {
+    return static_cast<int32_t>(simdjson::SUCCESS);
+  }
+  size_t length = 0;
+  const auto error = simdjson::minify(
+      reinterpret_cast<const char *>(json.data()), json.size(),
+      reinterpret_cast<char *>(output.data()), length);
+  if (error == simdjson::SUCCESS) {
+    written = length;
+  }
+  return static_cast<int32_t>(error);
+}
+} // namespace simdjson_sys

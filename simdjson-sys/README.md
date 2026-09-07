@@ -22,3 +22,11 @@ for a safe API that tracks parser validity and handles padding.
 
 The optional `native` feature enables `-march=native` for the library and bridge
 on non-MSVC targets. Leave it disabled when distributing portable binaries.
+
+## Minification
+
+`minify_ffi::minify(json, output, written)` is a safe low-level binding to
+simdjson's text minifier. It requires no input padding and checks that the
+output slice has at least the input length, returning `CAPACITY` otherwise.
+On success, `written` is the output length; on error it is zero and output
+contents are unspecified. It does not validate JSON syntax or UTF-8.

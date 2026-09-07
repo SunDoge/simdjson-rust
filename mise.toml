@@ -1,6 +1,7 @@
 [tools]
 cargo-release = "latest"
 cocogitto = "6.5.0"
+cmake = "latest"
 fd = "latest"
 
 [tasks.copy-compile-commands]

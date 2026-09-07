@@ -15,7 +15,7 @@ jobs:
         os:
           - ubuntu-22.04
           - windows-2022
-          - macos-12
+          - macos-15
         rust:
           - "stable"
         cpp:
@@ -29,32 +29,30 @@ jobs:
             cpp: msvc
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
       # Cache
       - name: Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: |
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             target/
-          key: "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-${{ hashFiles('Cargo.toml') }}-Cpp:${{ matrix.cpp }}"
+          key: "cache-v2-${{ matrix.os }}-${{ runner.arch }}-${{ matrix.rust }}-${{ matrix.cpp }}-${{ hashFiles('**/Cargo.toml', 'Cargo.lock', '**/build.rs', '**/CMakeLists.txt') }}"
           restore-keys: |
-            "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-"
+            cache-v2-${{ matrix.os }}-${{ runner.arch }}-${{ matrix.rust }}-${{ matrix.cpp }}-
 
       # Setup compilers and tools
 
       - name: Setup Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.rust }}
-          default: true
           components: rustfmt, clippy
 
       - name: Setup Cpp
@@ -63,10 +61,20 @@ jobs:
           compiler: ${{ matrix.cpp }}
           vcvarsall: ${{ contains(matrix.os, 'windows') }}
 
+      # Rust's Windows target uses the MSVC ABI. Use LLVM's matching driver
+      # for both CMake and the cxx bridge, rather than clang++.
+      - name: Configure Windows LLVM
+        if: runner.os == 'Windows' && matrix.cpp == 'llvm'
+        shell: pwsh
+        run: |
+          "CC=clang-cl" >> $env:GITHUB_ENV
+          "CXX=clang-cl" >> $env:GITHUB_ENV
+          "CMAKE_GENERATOR=Ninja" >> $env:GITHUB_ENV
+
       # Build and Test
 
       - name: Build
-        run: cargo build
+        run: cargo build --workspace --locked
 
       - name: Test
-        run: cargo test --all-targets
+        run: cargo test --workspace --all-targets --locked

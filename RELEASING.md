@@ -1,6 +1,6 @@
 # Releasing
 
-The next candidate is `0.4.0-alpha.2` for both crates. No release has been
+The next candidate is `0.4.0-alpha.3` for both crates. No release has been
 published by preparing this branch.
 
 ## One-time crates.io setup
@@ -41,8 +41,8 @@ completion. See the [crates.io setup guide](https://crates.io/docs/trusted-publi
 4. On the approved master commit, push the version tag, for example:
 
    ```sh
-   git tag v0.4.0-alpha.2
-   git push origin v0.4.0-alpha.2
+   git tag v0.4.0-alpha.3
+   git push origin v0.4.0-alpha.3
    ```
 
    **Pushing this tag starts a real crates.io publication.** The

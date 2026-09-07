@@ -1,0 +1,64 @@
+name: Publish crates
+
+on:
+  push:
+    tags: ['v[0-9]*']
+
+# Publish the workspace serially; never cancel an upload halfway through.
+concurrency:
+  group: publish-crates
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          cache-key: ubuntu-22.04-gcc
+          rustflags: ""
+
+      - name: Check release commit and version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          git merge-base --is-ancestor HEAD origin/master
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+
+          metadata = json.loads(subprocess.check_output([
+              "cargo", "metadata", "--no-deps", "--format-version", "1",
+          ], text=True))
+          members = set(metadata["workspace_members"])
+          packages = [p for p in metadata["packages"] if p["id"] in members]
+          expected = {"simdjson-sys", "simdjson-rust"}
+          if {p["name"] for p in packages} != expected:
+              raise SystemExit("Unexpected workspace packages; review the publishing configuration")
+          for package in packages:
+              if os.environ["RELEASE_TAG"] != "v" + package["version"]:
+                  raise SystemExit(f"Tag does not match {package['name']} {package['version']}")
+          print(f"Publishing both crates for {os.environ['RELEASE_TAG']}")
+          PY
+
+      - name: Authenticate with crates.io
+        id: auth
+        uses: rust-lang/crates-io-auth-action@v1
+
+      - name: Publish workspace
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: cargo publish --workspace

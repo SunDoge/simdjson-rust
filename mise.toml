@@ -1,4 +1,5 @@
 [tools]
 cargo-release = "latest"
+cocogitto = "6.5.0"
 fd = "latest"
 just = "latest"

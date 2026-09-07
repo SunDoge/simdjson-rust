@@ -7,3 +7,11 @@ copy-compile-commands:
 # Requires `.cargo/config.toml` (copy from .cargo/config.toml.example).
 bench:
     cargo bench --bench parser_bench --features native
+
+# Enable local commit message validation after installing the mise tools.
+setup-hooks:
+    cog install-hook commit-msg
+
+# Validate only commits made after Conventional Commits was introduced.
+check-commits:
+    cog check conventional-commits-start..HEAD

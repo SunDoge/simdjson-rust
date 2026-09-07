@@ -2,6 +2,12 @@ name: CI
 on:
   pull_request:
   push:
+    branches: ['**']
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   Test:
@@ -10,10 +16,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-22.04
-          - windows-2022
-          - macos-15
+        # Reserve macOS minutes for master and explicit manual runs.
+        os: ${{ fromJSON((github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master')) && '["ubuntu-22.04", "windows-2022", "macos-15"]' || '["ubuntu-22.04", "windows-2022"]') }}
         rust:
           - "stable"
         cpp:
@@ -31,27 +35,15 @@ jobs:
         with:
           submodules: true
 
-      # Cache
-      - name: Cache
-        uses: actions/cache@v6
-        with:
-          path: |
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/registry/src/
-            ~/.cargo/git/db/
-            target/
-          key: "cache-v2-${{ matrix.os }}-${{ runner.arch }}-${{ matrix.rust }}-${{ matrix.cpp }}-${{ hashFiles('**/Cargo.toml', 'Cargo.lock', '**/build.rs', '**/CMakeLists.txt') }}"
-          restore-keys: |
-            cache-v2-${{ matrix.os }}-${{ runner.arch }}-${{ matrix.rust }}-${{ matrix.cpp }}-
-
       # Setup compilers and tools
 
       - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
           components: rustfmt, clippy
+          cache-key: ${{ matrix.os }}-${{ matrix.cpp }}
+          rustflags: ""
 
       - name: Select Unix C++ compiler
         if: runner.os != 'Windows'

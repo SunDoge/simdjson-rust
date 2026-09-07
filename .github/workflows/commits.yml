@@ -1,0 +1,23 @@
+name: Commits
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  conventional-commits:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check new commits
+        uses: cocogitto/cocogitto-action@v4.1.0
+        with:
+          command: check
+          args: conventional-commits-start..HEAD

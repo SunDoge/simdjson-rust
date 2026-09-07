@@ -36,7 +36,7 @@ policy. Earlier history is excluded; old messages do not need to be rewritten.
 Keep this tag when cloning or fetching,
 and do not move it. It is a migration marker, not a release tag.
 
-CI checks all new non-merge commits on pushes and pull requests. Git-generated
+CI checks all new non-merge commits on master pushes and pull requests. Git-generated
 merge commits are ignored. When squash-merging, use a conventional PR title as
 the resulting commit message. Hooks are local to each clone, so contributors
 must install them once; CI also checks commits made without the hook.
@@ -57,8 +57,9 @@ for your CPU. The compilation database task copies CMake's generated
 
 ## CI coverage
 
-Linux (GCC and LLVM) and Windows (MSVC and LLVM) run on branch pushes and pull
-requests. macOS runs only on pushes to `master` or when CI is manually triggered
+Linux (GCC and LLVM) and Windows (MSVC and LLVM) run on pull requests and pushes
+to `master`. Feature branch pushes are checked through their PR, avoiding a
+second run for the same update. macOS runs only on pushes to `master` or when CI is manually triggered
 from the Actions page. New pushes cancel outdated runs for the same branch or PR.
 Rust dependencies and build outputs are cached by
 `actions-rust-lang/setup-rust-toolchain`, with separate keys for C++ compilers.

@@ -2,8 +2,6 @@ name: CI
 on:
   pull_request:
   push:
-    branches:
-      - master
 
 jobs:
   Test:
@@ -15,7 +13,7 @@ jobs:
         os:
           - ubuntu-22.04
           - windows-2022
-          - macos-12
+          - macos-15
         rust:
           - "stable"
         cpp:
@@ -29,44 +27,79 @@ jobs:
             cpp: msvc
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
         with:
           submodules: true
 
       # Cache
       - name: Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: |
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/registry/src/
             ~/.cargo/git/db/
             target/
-          key: "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-${{ hashFiles('Cargo.toml') }}-Cpp:${{ matrix.cpp }}"
+          key: "cache-v2-${{ matrix.os }}-${{ runner.arch }}-${{ matrix.rust }}-${{ matrix.cpp }}-${{ hashFiles('**/Cargo.toml', 'Cargo.lock', '**/build.rs', '**/CMakeLists.txt') }}"
           restore-keys: |
-            "cache-OS:${{ matrix.os }}-Rust:${{ matrix.rust }}-"
+            cache-v2-${{ matrix.os }}-${{ runner.arch }}-${{ matrix.rust }}-${{ matrix.cpp }}-
 
       # Setup compilers and tools
 
       - name: Setup Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.rust }}
-          default: true
           components: rustfmt, clippy
 
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          compiler: ${{ matrix.cpp }}
-          vcvarsall: ${{ contains(matrix.os, 'windows') }}
+      - name: Select Unix C++ compiler
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          if [[ '${{ matrix.cpp }}' == 'gcc' ]]; then
+            echo "CC=gcc" >> "$GITHUB_ENV"
+            echo "CXX=g++" >> "$GITHUB_ENV"
+          elif [[ "$RUNNER_OS" == 'macOS' ]]; then
+            llvm_bin="$(brew --prefix llvm@18)/bin"
+            echo "CC=$llvm_bin/clang" >> "$GITHUB_ENV"
+            echo "CXX=$llvm_bin/clang++" >> "$GITHUB_ENV"
+          else
+            echo "CC=clang" >> "$GITHUB_ENV"
+            echo "CXX=clang++" >> "$GITHUB_ENV"
+          fi
+
+      - name: Configure Visual Studio environment
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $before = @{}
+          Get-ChildItem Env: | ForEach-Object { $before[$_.Name] = $_.Value }
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vsPath) { throw 'Visual Studio C++ tools were not found' }
+          Import-Module "$vsPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vsPath -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+          Get-ChildItem Env: | Where-Object { $before[$_.Name] -ne $_.Value } | ForEach-Object {
+            "$($_.Name)=$($_.Value)" >> $env:GITHUB_ENV
+          }
+
+      # Rust's Windows target uses the MSVC ABI. Use LLVM's matching driver
+      # for both CMake and the cxx bridge, rather than clang++.
+      - name: Configure Windows LLVM
+        if: runner.os == 'Windows' && matrix.cpp == 'llvm'
+        shell: pwsh
+        run: |
+          $clang = "$env:ProgramFiles\LLVM\bin\clang-cl.exe"
+          if (-not (Test-Path $clang)) { throw 'clang-cl was not found' }
+          "CC=$clang" >> $env:GITHUB_ENV
+          "CXX=$clang" >> $env:GITHUB_ENV
+          "CMAKE_GENERATOR=Ninja" >> $env:GITHUB_ENV
 
       # Build and Test
 
       - name: Build
-        run: cargo build
+        run: cargo build --workspace
 
       - name: Test
-        run: cargo test --all-targets
+        run: cargo test --workspace --all-targets

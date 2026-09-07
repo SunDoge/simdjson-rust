@@ -29,7 +29,7 @@ This crate hands that tape to Rust as two borrowed slices (`&[u64]` tape +
 
 ```toml
 [dependencies]
-simdjson-rust = "0.4.0-alpha.1"
+simdjson-rust = "0.4.0-alpha.2"
 ```
 
 ```rust
@@ -71,36 +71,10 @@ for json in inputs {
 
 ## Performance
 
-Numbers below are from `cargo bench --bench parser_bench --features native` on
-the author's machine (criterion, median). They compare three serde struct
-deserialization paths — `serde_json`, the pure-Rust [`simd-json`][simd-json]
-crate, and this crate — across three input sizes. Treat them as relative
-indicators, not absolute claims; always benchmark on your own hardware and
-your own data shape.
-
-| Input           | `serde_json` | `simd-json` | `simdjson-rust` |
-| --------------- | ------------ | ----------- | --------------- |
-| Small (~100 B)  | 84 ns        | 286 ns      | **110 ns**      |
-| Medium (~2 KB)  | ~810 ns      | 1210 ns     | **638 ns**      |
-| Large (~100 KB) | 187 µs       | 176 µs      | **137 µs**      |
-
-Where `simdjson-rust` wins:
-
-- **Large inputs**: the C++ stage1+stage2 pass is highly tuned, and the Rust
-  tape-walk that follows is pure sequential `&[u64]` reads. On 100 KB the
-  crate beats both `serde_json` and `simd-json`.
-- **Repeated small parses**: `Parser` is reusable, so the per-call fixed cost
-  is low; `serde_json` is still a touch faster on a single 100 B document, but
-  `simdjson-rust` pulls ahead once the parser is reused and on medium inputs.
-- **Zero-copy strings**: simdjson unescapes strings into `string_buf` during
-  stage2, so `&'de str` fields borrow directly with no re-validation or
-  allocation.
-
-Where it does _not_ win:
-
-- A single tiny JSON parsed once — `serde_json`'s scalar parser has the lowest
-  fixed cost.
-- Anything that needs the C++ toolchain at build time (see below).
+Run the included benchmarks on your own hardware and data. Results from earlier
+revisions predate the current safety checks and are not representative of this
+release. String values borrow the parser's buffer without allocating; Rust
+validates UTF-8 when exposing a string from the public tape API.
 
 ### How the benchmark is run
 
@@ -124,12 +98,21 @@ that bench function, not the parser. Read its column as "parse + one
 
 ## Build requirements
 
-This crate builds simdjson from source via CMake, so the build host needs a
-C++17 compiler and CMake. simdjson is fetched through CMake's `FetchContent`
-on first build (no manual download), then cached. There is an opt-in `native`
-cargo feature that compiles the C++ kernels with `-march=native` for the
-building CPU; it is **off by default** so published binaries stay portable.
-See `.cargo/config.toml.example` for the matching Rust `-C target-cpu=native`.
+Requires **Rust 1.88 or newer**, **CMake 3.15 or newer**, and a C++17 compiler
+(C++20 for MSVC targets). The `simdjson-sys` crate includes the unmodified
+simdjson v4.6.4 singleheader sources and their license. Building the C++ library
+does not download anything; offline Cargo builds still require cached Rust
+dependencies.
+
+The opt-in `native` feature tunes the C++ library and bridge with `-march=native`
+on non-MSVC targets. It has no effect on MSVC targets and is off by default for
+portability. See `.cargo/config.toml.example` for matching Rust CPU tuning.
+
+The default `serde` feature can be disabled for DOM-only usage. The
+`parse_bytes_with_padding` method is unsafe: its caller must provide 64
+initialized readable bytes after the input slice. Prefer `parse_bytes` or
+`parse_str` for automatic padding. `parse_padded` initializes spare capacity in
+a mutable `String` while preserving its contents.
 
 ## Why only DOM, not ondemand?
 

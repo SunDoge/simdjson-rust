@@ -13,8 +13,26 @@ pub mod dom_ffi {
         type parser;
 
         fn parser_new(max_capacity: usize) -> UniquePtr<parser>;
-        fn parser_parse(parser: Pin<&mut parser>, json: &[u8], realloc_if_needed: bool) -> i32;
-        fn parser_get_tape_view(parser: &parser) -> TapeView<'_>;
+        /// Parse a document, optionally copying it into padded storage.
+        ///
+        /// # Safety
+        ///
+        /// With `realloc_if_needed = false`, the allocation must provide 64
+        /// initialized readable bytes beyond `json` for the duration of the call.
+        // CXX-generated declarations trigger this lint despite the docs above.
+        #[allow(clippy::missing_safety_doc)]
+        unsafe fn parser_parse(
+            parser: Pin<&mut parser>,
+            json: &[u8],
+            realloc_if_needed: bool,
+        ) -> i32;
+        /// Borrow the initialized tape and string buffer.
+        ///
+        /// # Safety
+        ///
+        /// The last parse must have succeeded, with no subsequent mutation.
+        #[allow(clippy::missing_safety_doc)]
+        unsafe fn parser_get_tape_view(parser: &parser) -> TapeView<'_>;
     }
 }
 
@@ -26,46 +44,41 @@ pub const DEFAULT_BATCH_SIZE: usize = 1000000;
 mod tests {
     use super::*;
 
-    pub struct Parser {
-        inner: cxx::UniquePtr<dom_ffi::parser>,
-    }
-
-    impl Default for Parser {
-        fn default() -> Self {
-            Self::new(SIMDJSON_MAXSIZE_BYTES)
-        }
-    }
-
-    impl Parser {
-        pub fn new(max_capacity: usize) -> Self {
-            Self {
-                inner: dom_ffi::parser_new(max_capacity),
-            }
-        }
-
-        pub fn parse_string(&mut self, json: &mut String) -> i32 {
-            if json.capacity() < json.len() + SIMDJSON_PADDING {
-                json.reserve(SIMDJSON_PADDING);
-            }
-
-            dom_ffi::parser_parse(self.inner.pin_mut(), json.as_bytes(), false)
-        }
-
-        pub fn get_tape_view(&self) -> dom_ffi::TapeView<'_> {
-            dom_ffi::parser_get_tape_view(self.inner.as_ref().expect("parser must not be null"))
-        }
-    }
-
     #[test]
     fn parser_parses_string_and_exposes_tape_view() {
-        let mut parser = Parser::default();
-        let mut json = String::from(r#"{"answer":42,"message":"ok"}"#);
+        let mut parser = dom_ffi::parser_new(SIMDJSON_MAXSIZE_BYTES);
+        let json = String::from(r#"{"answer":42,"message":"ok"}"#);
 
-        assert_eq!(parser.parse_string(&mut json), 0);
+        // SAFETY: realloc=true lets simdjson own the padded input.
+        assert_eq!(
+            unsafe { dom_ffi::parser_parse(parser.pin_mut(), json.as_bytes(), true) },
+            0
+        );
 
-        let view = parser.get_tape_view();
+        // SAFETY: the parse above succeeded.
+        let view = unsafe { dom_ffi::parser_get_tape_view(parser.as_ref().unwrap()) };
         assert!(!view.tape.is_empty());
         assert_eq!(view.tape[0] >> 56, u64::from(b'r'));
         assert!(!view.string_buf.is_empty());
+    }
+    #[test]
+    fn string_view_contains_only_initialized_prefix() {
+        let mut parser = dom_ffi::parser_new(SIMDJSON_MAXSIZE_BYTES);
+        for (json, expected) in [
+            (r#"["longer string", "x"]"#, 24),
+            // This integer's payload has a string tag in its high byte.
+            ("[2449958197289549824]", 0),
+            (r#""x""#, 6),
+            ("null", 0),
+        ] {
+            // SAFETY: realloc=true copies input into padded storage.
+            assert_eq!(
+                unsafe { dom_ffi::parser_parse(parser.pin_mut(), json.as_bytes(), true) },
+                0
+            );
+            // SAFETY: the last parse succeeded and no mutation intervened.
+            let view = unsafe { dom_ffi::parser_get_tape_view(parser.as_ref().unwrap()) };
+            assert_eq!(view.string_buf.len(), expected, "{json}");
+        }
     }
 }

@@ -73,18 +73,18 @@ const PAYLOAD_MASK: u64 = 0x00FF_FFFF_FFFF_FFFF;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum TapeType {
-    Root        = b'r',
+    Root = b'r',
     StartObject = b'{',
-    EndObject   = b'}',
-    StartArray  = b'[',
-    EndArray    = b']',
-    String      = b'"',
-    Int64       = b'l',
-    Uint64      = b'u',
-    Double      = b'd',
-    True        = b't',
-    False       = b'f',
-    Null        = b'n',
+    EndObject = b'}',
+    StartArray = b'[',
+    EndArray = b']',
+    String = b'"',
+    Int64 = b'l',
+    Uint64 = b'u',
+    Double = b'd',
+    True = b't',
+    False = b'f',
+    Null = b'n',
 }
 
 impl TapeType {
@@ -280,7 +280,7 @@ impl<'a> TapeRef<'a> {
     #[inline]
     pub fn scope_close_idx(&self) -> usize {
         // Extract lower 32 bits = next sibling index.
-        let next_sibling = (self.payload() & 0xFFFF_FFFF) as usize;
+        let next_sibling = (self.payload() & 0x00FF_FFFFFF) as usize;
         // The closing `}` or `]` is one position before the next sibling.
         next_sibling.saturating_sub(1)
     }
@@ -292,7 +292,7 @@ impl<'a> TapeRef<'a> {
     /// `simdjson::internal::tape_ref::scope_count`.
     #[inline]
     pub fn scope_count(&self) -> usize {
-        ((self.current_word() >> 32) & 0xFFFF_FF) as usize
+        ((self.current_word() >> 32) & 0x00FF_FFFF) as usize
     }
 
     /// Advance the cursor by `n` tape words.
@@ -309,7 +309,7 @@ impl<'a> TapeRef<'a> {
 
     /// Decode the string at the current position.
     ///
-    /// The string buffer layout is: 4-byte little-endian length prefix followed
+    /// The string buffer layout is: 4-byte native-endian length prefix followed
     /// by raw UTF-8 bytes. The tape word payload is a byte offset into
     /// `string_buf`.
     ///
@@ -317,38 +317,29 @@ impl<'a> TapeRef<'a> {
     /// be used for zero-copy deserialization.
     #[inline]
     pub fn get_string(&self) -> Result<&'a str> {
-        debug_assert_eq!(
-            self.tape_type(),
-            Some(TapeType::String),
-            "get_string called on non-string node"
-        );
-        let offset = self.payload() as usize;
+        let word = *self.tape.get(self.pos).context(OutOfBoundsSnafu {
+            pos: self.pos,
+            len: self.tape.len(),
+        })?;
+        let tag = (word >> 56) as u8;
         ensure!(
-            offset + 4 <= self.string_buf.len(),
-            StringOutOfBoundsSnafu {
-                offset,
-                len: self.string_buf.len(),
+            tag == b'"',
+            UnexpectedTapeTypeSnafu {
+                found: tag,
+                pos: self.pos
             }
         );
-        // First 4 bytes: little-endian u32 length.
-        let len_bytes = &self.string_buf[offset..offset + 4];
-        let len = u32::from_le_bytes(len_bytes.try_into().unwrap()) as usize;
-        let start = offset + 4;
-        let end = start + len;
-        ensure!(
-            end <= self.string_buf.len(),
-            StringOutOfBoundsSnafu {
-                offset,
-                len: self.string_buf.len(),
-            }
-        );
-        // SAFETY: simdjson validates UTF-8 while building the string buffer
-        // during stage2; a parse that reaches this point has already passed
-        // simdjson's UTF-8 check (a failure would have surfaced as a
-        // `SimdJsonError::Utf8Error`/`StringError` from `parser_parse`).
-        // Re-validating here showed up as ~11% of CPU in profiling, all of it
-        // redundant.
-        Ok(unsafe { str::from_utf8_unchecked(&self.string_buf[start..end]) })
+        let offset = (word & PAYLOAD_MASK) as usize;
+        let bounds = || StringOutOfBoundsSnafu {
+            offset,
+            len: self.string_buf.len(),
+        };
+        let start = offset.checked_add(4).context(bounds())?;
+        let header = self.string_buf.get(offset..start).context(bounds())?;
+        let len = u32::from_ne_bytes(header.try_into().unwrap()) as usize;
+        let end = start.checked_add(len).context(bounds())?;
+        let bytes = self.string_buf.get(start..end).context(bounds())?;
+        str::from_utf8(bytes).context(InvalidUtf8Snafu { pos: offset })
     }
 
     /// Decode the `i64` value at the current position.

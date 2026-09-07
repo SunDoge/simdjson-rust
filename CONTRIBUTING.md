@@ -63,3 +63,8 @@ second run for the same update. macOS runs only on pushes to `master` or when CI
 from the Actions page. New pushes cancel outdated runs for the same branch or PR.
 Rust dependencies and build outputs are cached by
 `actions-rust-lang/setup-rust-toolchain`, with separate keys for C++ compilers.
+
+The Linux GCC job also checks optional features and verifies both release
+packages without uploading. A Linux job checks Rust 1.88, the minimum supported
+version. See [RELEASING.md](RELEASING.md) for the release procedure and run
+`mise run release-check` before proposing a release.

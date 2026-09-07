@@ -1,7 +1,7 @@
 # simdjson-sys
 
 Low-level CXX bindings to the simdjson v4.6.4 DOM parser. Version
-0.4.0-alpha.1 accompanies simdjson-rust 0.4.0-alpha.1.
+0.4.0-alpha.2 accompanies simdjson-rust 0.4.0-alpha.2.
 
 Requires Rust 1.88+, CMake 3.15+, and a C++17 compiler (C++20 for MSVC targets).
 The published crate bundles unmodified upstream singleheader sources; the C++

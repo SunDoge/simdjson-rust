@@ -17,10 +17,10 @@ members = ["simdjson-sys"]
 
 [workspace.package]
 rust-version = "1.88"
-version = "0.4.0-alpha.1"
+version = "0.4.0-alpha.2"
 
 [workspace.dependencies]
-simdjson-sys = { path = "simdjson-sys", version = "0.4.0-alpha.1" }
+simdjson-sys = { path = "simdjson-sys", version = "0.4.0-alpha.2" }
 
 [[bench]]
 harness = false

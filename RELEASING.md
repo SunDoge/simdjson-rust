@@ -1,6 +1,6 @@
 # Releasing
 
-The next candidate is `0.4.0-alpha.1` for both crates. No release has been
+The next candidate is `0.4.0-alpha.2` for both crates. No release has been
 published by preparing this branch.
 
 1. Keep `[workspace.package].version` and the workspace `simdjson-sys`
@@ -19,7 +19,7 @@ published by preparing this branch.
    publishes `simdjson-sys` before `simdjson-rust`. If interrupted after the
    first upload, check crates.io and publish only the missing crate; versions
    cannot be overwritten.
-6. Tag the published commit `v0.4.0-alpha.1` and create its GitHub release with
+6. Tag the published commit `v0.4.0-alpha.2` and create its GitHub release with
    migration notes. Check docs.rs for both crates.
 
 For an upstream simdjson update, replace both files in

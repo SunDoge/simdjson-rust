@@ -29,7 +29,7 @@ This crate hands that tape to Rust as two borrowed slices (`&[u64]` tape +
 
 ```toml
 [dependencies]
-simdjson-rust = "0.4.0-alpha.1"
+simdjson-rust = "0.4.0-alpha.2"
 ```
 
 ```rust

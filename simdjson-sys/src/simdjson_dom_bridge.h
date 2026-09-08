@@ -16,3 +16,8 @@ int32_t parser_parse(simdjson::dom::parser &parser,
 TapeView parser_get_tape_view(const simdjson::dom::parser &parser);
 
 } // namespace simdjson_sys::dom
+
+namespace simdjson_sys {
+int32_t minify(rust::Slice<const uint8_t> json, rust::Slice<uint8_t> output,
+               size_t &written);
+} // namespace simdjson_sys

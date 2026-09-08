@@ -1,6 +1,6 @@
 # Releasing
 
-The next candidate is `0.4.0-alpha.2` for both crates. No release has been
+The next candidate is `0.4.0-alpha.3` for both crates. No release has been
 published by preparing this branch.
 
 ## One-time crates.io setup
@@ -41,8 +41,8 @@ completion. See the [crates.io setup guide](https://crates.io/docs/trusted-publi
 4. On the approved master commit, push the version tag, for example:
 
    ```sh
-   git tag v0.4.0-alpha.2
-   git push origin v0.4.0-alpha.2
+   git tag v0.4.0-alpha.3
+   git push origin v0.4.0-alpha.3
    ```
 
    **Pushing this tag starts a real crates.io publication.** The
@@ -61,10 +61,27 @@ recover from the same tagged checkout using `cargo publish -p simdjson-rust`
 with local publisher credentials. If both versions exist, do not republish.
 Never move a tag that has already published a crate version.
 
-For an upstream simdjson update, replace both files in
-`simdjson-sys/vendor/simdjson` from the same official release, retain its
-license, and update the recorded revision. Review the error enum and tape
-layout against that revision, then rerun safety regression tests and CI.
+## Update the bundled simdjson
+
+With Python 3.9+ and Git installed, run from the repository root:
+
+```sh
+mise run update-simdjson 4.6.4
+# A v-prefixed version also works:
+# mise run update-simdjson v4.6.4
+```
+
+The task resolves the exact upstream tag to a commit, downloads both official
+singleheader files and LICENSE from that commit, checks the header version,
+and records the revision and SHA-256 checksums in the vendor README. All files
+are downloaded and validated before any working-tree changes. It updates the
+current version in both READMEs and adds an Unreleased changelog entry when the
+version changes, preserving historical release notes. Repeating the same update
+leaves identical files untouched.
+
+Review upstream error codes and DOM tape layout, then run `mise run release-check`,
+the Rust 1.88 check, and platform CI. The task does not change Rust crate versions,
+commit, or publish. Use `cargo release version` separately when preparing a release.
 
 Offline verification requires cached Cargo dependencies. After `cargo fetch`,
 `cargo test --workspace --offline` builds the vendored C++ source without a

@@ -1,7 +1,7 @@
 # simdjson-sys
 
 Low-level CXX bindings to the simdjson v4.6.4 DOM parser. Version
-0.4.0-alpha.2 accompanies simdjson-rust 0.4.0-alpha.2.
+0.4.0-alpha.3 accompanies simdjson-rust 0.4.0-alpha.3.
 
 Requires Rust 1.88+, CMake 3.15+, and a C++17 compiler (C++20 for MSVC targets).
 The published crate bundles unmodified upstream singleheader sources; the C++
@@ -22,3 +22,11 @@ for a safe API that tracks parser validity and handles padding.
 
 The optional `native` feature enables `-march=native` for the library and bridge
 on non-MSVC targets. Leave it disabled when distributing portable binaries.
+
+## Minification
+
+`minify_ffi::minify(json, output, written)` is a safe low-level binding to
+simdjson's text minifier. It requires no input padding and checks that the
+output slice has at least the input length, returning `CAPACITY` otherwise.
+On success, `written` is the output length; on error it is zero and output
+contents are unspecified. It does not validate JSON syntax or UTF-8.

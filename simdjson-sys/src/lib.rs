@@ -36,6 +36,20 @@ pub mod dom_ffi {
     }
 }
 
+/// Low-level minification without JSON validation or input padding.
+#[cxx::bridge(namespace = "simdjson_sys")]
+pub mod minify_ffi {
+    unsafe extern "C++" {
+        include!("simdjson_dom_bridge.h");
+
+        /// Remove JSON whitespace outside strings. `output.len()` must be at
+        /// least `json.len()`; otherwise returns CAPACITY without writing.
+        /// `written` is zero on error; output contents on error are unspecified.
+        /// This does not validate JSON syntax or UTF-8.
+        fn minify(json: &[u8], output: &mut [u8], written: &mut usize) -> i32;
+    }
+}
+
 pub const SIMDJSON_PADDING: usize = 64;
 pub const SIMDJSON_MAXSIZE_BYTES: usize = 0xFFFFFFFF;
 pub const DEFAULT_BATCH_SIZE: usize = 1000000;

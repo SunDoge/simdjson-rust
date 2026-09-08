@@ -30,3 +30,7 @@ run = [
   "cargo doc --workspace --no-deps",
   "cargo publish --dry-run --workspace",
 ]
+
+[tasks.update-simdjson]
+description = "Update vendored simdjson from an explicit upstream release version"
+run = "python3 scripts/update_simdjson.py"

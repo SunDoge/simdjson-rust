@@ -37,6 +37,9 @@
 //! # }
 //! ```
 
+mod minify;
+pub use minify::{minify, minify_bytes};
+
 pub mod dom;
 pub mod error;
 pub mod tape;

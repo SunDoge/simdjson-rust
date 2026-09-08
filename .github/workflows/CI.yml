@@ -91,6 +91,10 @@ jobs:
       - name: Test
         run: cargo test --workspace --all-targets --all-features
 
+      - name: Test maintenance scripts
+        if: matrix.os == 'ubuntu-22.04' && matrix.cpp == 'gcc'
+        run: python3 -m unittest discover -s scripts/tests -v
+
       - name: Check optional features and release packages
         if: matrix.os == 'ubuntu-22.04' && matrix.cpp == 'gcc'
         run: |

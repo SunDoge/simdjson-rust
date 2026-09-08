@@ -43,6 +43,9 @@ must install them once; CI also checks commits made without the hook.
 
 ## Development tasks
 
+Python maintenance scripts support Python 3.9+ and must include parameter and
+return type annotations, including helper functions and tests.
+
 Run `mise tasks` to list the available tasks:
 
 ```sh

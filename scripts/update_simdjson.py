@@ -9,20 +9,20 @@ import subprocess
 import tempfile
 from urllib.request import urlopen
 
-ROOT = Path(__file__).resolve().parents[1]
-UPSTREAM = 'https://github.com/simdjson/simdjson.git'
-FILES = {'simdjson.h': 'singleheader/simdjson.h',
+ROOT: Path = Path(__file__).resolve().parents[1]
+UPSTREAM: str = 'https://github.com/simdjson/simdjson.git'
+FILES: dict[str, str] = {'simdjson.h': 'singleheader/simdjson.h',
          'simdjson.cpp': 'singleheader/simdjson.cpp', 'LICENSE': 'LICENSE'}
 
 
-def release_version(value):
+def release_version(value: str) -> str:
     version = value.removeprefix('v')
     if not re.fullmatch(r'\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?', version):
         raise argparse.ArgumentTypeError('expected an explicit release version, e.g. 4.6.4')
     return version
 
 
-def resolve_commit(version):
+def resolve_commit(version: str) -> str:
     ref = f'refs/tags/v{version}'
     result = subprocess.run(['git', 'ls-remote', '--tags', UPSTREAM, ref, ref + '^{}'],
                             check=True, text=True, capture_output=True, timeout=60)
@@ -34,17 +34,17 @@ def resolve_commit(version):
     return commit
 
 
-def download(commit, path):
+def download(commit: str, path: str) -> bytes:
     # Resolve the tag once; every file is fetched from the same immutable commit.
     url = f'https://raw.githubusercontent.com/simdjson/simdjson/{commit}/{path}'
     with urlopen(url, timeout=60) as response:
-        data = response.read()
+        data: bytes = response.read()
     if not data:
         raise ValueError(f'empty upstream file: {path}')
     return data
 
 
-def prepare(root, version, commit):
+def prepare(root: Path, version: str, commit: str) -> dict[Path, bytes]:
     vendor = root / 'simdjson-sys/vendor/simdjson'
     old_readme = (vendor / 'README.md').read_text(encoding="utf-8")
     match = re.search(r'simdjson v([^\s]+)\.', old_readme)
@@ -84,7 +84,7 @@ def prepare(root, version, commit):
     return changes
 
 
-def apply(changes):
+def apply(changes: dict[Path, bytes]) -> None:
     # Download and validate everything before touching the working tree.
     # Replace individual files atomically and avoid rewriting unchanged sources.
     for path, data in changes.items():
@@ -101,7 +101,7 @@ def apply(changes):
         print(f'Updated {path.relative_to(ROOT)}')
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('version', type=release_version, help='upstream release, e.g. 4.6.4 or v4.6.4')
     args = parser.parse_args()

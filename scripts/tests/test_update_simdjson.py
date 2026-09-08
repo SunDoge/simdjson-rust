@@ -1,33 +1,28 @@
 import argparse
-import importlib.util
 from pathlib import Path
 import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
 
-SPEC = importlib.util.spec_from_file_location(
-    'update_simdjson', Path(__file__).resolve().parents[1] / 'update_simdjson.py'
-)
-updater = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(updater)
+from scripts import update_simdjson as updater
 
 
 class UpdateTests(unittest.TestCase):
-    def test_versions_and_annotated_tags(self):
+    def test_versions_and_annotated_tags(self) -> None:
         self.assertEqual(updater.release_version('v4.6.4'), '4.6.4')
         for value in ['latest', '../4.6.4', '--help', '4.6.4;echo bad']:
             with self.assertRaises(argparse.ArgumentTypeError):
                 updater.release_version(value)
         tag = 'refs/tags/v4.6.4'
         output = f'{"a" * 40}\t{tag}\n{"b" * 40}\t{tag}^{{}}\n'
-        with patch.object(updater.subprocess, 'run', return_value=subprocess.CompletedProcess([], 0, output)):
+        with patch('scripts.update_simdjson.subprocess.run', return_value=subprocess.CompletedProcess([], 0, output)):
             self.assertEqual(updater.resolve_commit('4.6.4'), 'b' * 40)
-        with patch.object(updater.subprocess, 'run', return_value=subprocess.CompletedProcess([], 0, '')):
+        with patch('scripts.update_simdjson.subprocess.run', return_value=subprocess.CompletedProcess([], 0, '')):
             with self.assertRaises(ValueError):
                 updater.resolve_commit('4.6.4')
 
-    def fixture(self, root):
+    def fixture(self, root: Path) -> None:
         vendor = root / 'simdjson-sys/vendor/simdjson'
         vendor.mkdir(parents=True)
         for name, content in {
@@ -40,11 +35,11 @@ class UpdateTests(unittest.TestCase):
         (root / 'simdjson-sys/README.md').write_text('simdjson v4.6.4 DOM')
         (root / 'CHANGELOG.md').write_text('## [Unreleased]\n\n## Old release\nUsed v4.6.4\n')
 
-    def download(self, commit, path):
+    def download(self, commit: str, path: str) -> bytes:
         return {'singleheader/simdjson.h': b'#define SIMDJSON_VERSION "4.6.5"\n',
                 'singleheader/simdjson.cpp': b'new source', 'LICENSE': b'new license'}[path]
 
-    def test_update_preserves_history_and_is_repeatable(self):
+    def test_update_preserves_history_and_is_repeatable(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self.fixture(root)
@@ -58,12 +53,12 @@ class UpdateTests(unittest.TestCase):
                 self.assertTrue(all(path.read_bytes() == data for path, data in changes.items()))
                 self.assertNotIn(root / 'CHANGELOG.md', changes)
 
-    def test_failed_download_and_wrong_version_leave_files_untouched(self):
+    def test_failed_download_and_wrong_version_leave_files_untouched(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self.fixture(root)
             before = {p: p.read_bytes() for p in root.rglob('*') if p.is_file()}
-            def fail_on_license(commit, path):
+            def fail_on_license(commit: str, path: str) -> bytes:
                 if path == 'LICENSE':
                     raise OSError('download interrupted')
                 return self.download(commit, path)
